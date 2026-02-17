@@ -1,0 +1,33 @@
+target_profiles:
+  - "profile_handle_1"
+  - "profile_handle_2"
+  - "profile_handle_3"
+  - "profile_handle_4"
+  - "profile_handle_5"
+
+limits:
+  max_follows_per_profile: 6
+  max_sessions_per_day: 2
+  follow_delay_min: 15
+  follow_delay_max: 45
+  profile_switch_delay_min: 60
+  profile_switch_delay_max: 180
+
+schedule:
+  session_1:
+    window_start: "09:00"
+    window_end: "12:00"
+  session_2:
+    window_start: "17:00"
+    window_end: "21:00"
+
+dashboard:
+  host: "0.0.0.0"
+  port: 5000
+
+browser:
+  headless: true
+  state_dir: "data/browser_state"
+  user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+  viewport_width: 1920
+  viewport_height: 1080
