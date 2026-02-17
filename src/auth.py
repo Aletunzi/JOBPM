@@ -128,6 +128,13 @@ async def perform_login(page: Page, credentials: dict) -> bool:
     try:
         await password_input.wait_for(state="visible", timeout=10000)
     except PlaywrightTimeout:
+        debug_path = "data/debug_password.png"
+        try:
+            await page.screenshot(path=debug_path, full_page=True)
+            logger.error("Password input not found — screenshot saved to %s", debug_path)
+            logger.error("Current URL: %s", page.url)
+        except Exception as e:
+            logger.error("Could not save debug screenshot: %s", e)
         logger.error("Password input not found — login flow may have changed.")
         return False
 
