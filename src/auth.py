@@ -99,34 +99,34 @@ async def perform_login(page: Page, credentials: dict) -> bool:
         logger.error("Login page did not load — username input not found.")
         return False
 
-    await type_human_into_element(username_input, credentials["email"], page)
+    # Use Playwright native fill/click for login reliability
+    await username_input.fill(credentials["email"])
+    logger.info("Email entered.")
     await human_delay(0.5, 1.0)
 
     # Click "Next"
     next_btn = page.locator('button:has-text("Next")')
-    await click_element_human(page, next_btn)
-    await human_delay(2, 4)
+    await next_btn.click()
+    logger.info("Clicked Next.")
+    await human_delay(3, 5)
 
     # --- Step 2: Handle possible username verification step ---
-    # X sometimes asks "Enter your phone number or username" as an extra check
     unusual_input = page.locator('[data-testid="ocfEnterTextTextInput"]')
     try:
         if await unusual_input.is_visible(timeout=3000):
             logger.info("X requested additional username verification.")
-            await type_human_into_element(
-                unusual_input, credentials["username"], page
-            )
+            await unusual_input.fill(credentials["username"])
             await human_delay(0.5, 1.0)
             next_btn2 = page.locator('[data-testid="ocfEnterTextNextButton"]')
-            await click_element_human(page, next_btn2)
-            await human_delay(2, 4)
+            await next_btn2.click()
+            await human_delay(3, 5)
     except PlaywrightTimeout:
         pass
 
     # --- Step 3: Enter password ---
     password_input = page.locator('input[type="password"]')
     try:
-        await password_input.wait_for(state="visible", timeout=10000)
+        await password_input.wait_for(state="visible", timeout=15000)
     except PlaywrightTimeout:
         debug_path = "data/debug_password.png"
         try:
@@ -138,12 +138,14 @@ async def perform_login(page: Page, credentials: dict) -> bool:
         logger.error("Password input not found — login flow may have changed.")
         return False
 
-    await type_human_into_element(password_input, credentials["password"], page)
+    await password_input.fill(credentials["password"])
+    logger.info("Password entered.")
     await human_delay(0.5, 1.0)
 
     # Click "Log in"
     login_btn = page.locator('[data-testid="LoginForm_Login_Button"]')
-    await click_element_human(page, login_btn)
+    await login_btn.click()
+    logger.info("Clicked Log in.")
     await human_delay(3, 5)
 
     # --- Step 4: Verify login success ---
