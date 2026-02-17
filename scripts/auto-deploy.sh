@@ -21,6 +21,10 @@ if [ "$LOCAL" != "$REMOTE" ]; then
     # Pull latest changes
     git reset --hard "origin/$BRANCH" >> "$LOG_FILE" 2>&1
 
+    # Reset session log so bot can run again
+    echo '{"sessions": []}' > "$REPO_DIR/data/session_log.json"
+    rm -rf "$REPO_DIR/data/browser_state"
+
     # Restart the bot
     systemctl restart satora-bot.service
 

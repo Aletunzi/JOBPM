@@ -99,10 +99,18 @@ async def perform_login(page: Page, credentials: dict) -> bool:
         logger.error("Login page did not load — username input not found.")
         return False
 
-    # Use Playwright native fill/click for login reliability
-    await username_input.fill(credentials["email"])
-    logger.info("Email entered.")
-    await human_delay(0.5, 1.0)
+    # Click input field and type with real keyboard events (fill() is ignored by X's React form)
+    await username_input.click()
+    await human_delay(0.3, 0.5)
+    await page.keyboard.type(credentials["email"], delay=50)
+    logger.info("Email typed via keyboard.")
+    await human_delay(1.0, 2.0)
+
+    # Take a screenshot after typing to verify
+    try:
+        await page.screenshot(path="data/debug_after_email.png", full_page=True)
+    except Exception:
+        pass
 
     # Click "Next"
     next_btn = page.locator('button:has-text("Next")')
@@ -110,12 +118,20 @@ async def perform_login(page: Page, credentials: dict) -> bool:
     logger.info("Clicked Next.")
     await human_delay(3, 5)
 
+    # Take screenshot after Next to see what page we're on
+    try:
+        await page.screenshot(path="data/debug_after_next.png", full_page=True)
+    except Exception:
+        pass
+
     # --- Step 2: Handle possible username verification step ---
     unusual_input = page.locator('[data-testid="ocfEnterTextTextInput"]')
     try:
-        if await unusual_input.is_visible(timeout=3000):
+        if await unusual_input.is_visible(timeout=5000):
             logger.info("X requested additional username verification.")
-            await unusual_input.fill(credentials["username"])
+            await unusual_input.click()
+            await human_delay(0.3, 0.5)
+            await page.keyboard.type(credentials["username"], delay=50)
             await human_delay(0.5, 1.0)
             next_btn2 = page.locator('[data-testid="ocfEnterTextNextButton"]')
             await next_btn2.click()
@@ -138,8 +154,10 @@ async def perform_login(page: Page, credentials: dict) -> bool:
         logger.error("Password input not found — login flow may have changed.")
         return False
 
-    await password_input.fill(credentials["password"])
-    logger.info("Password entered.")
+    await password_input.click()
+    await human_delay(0.3, 0.5)
+    await page.keyboard.type(credentials["password"], delay=50)
+    logger.info("Password typed via keyboard.")
     await human_delay(0.5, 1.0)
 
     # Click "Log in"
