@@ -9,7 +9,7 @@ from pathlib import Path
 import yaml
 from dotenv import load_dotenv
 from playwright.async_api import async_playwright, BrowserContext, Page
-from playwright_stealth import stealth_async
+from playwright_stealth import stealth_async, StealthConfig
 
 # Load .env early — before any credential access
 _env_path = Path(__file__).resolve().parent.parent / ".env"
@@ -50,7 +50,7 @@ async def create_browser_context(playwright, config: dict | None = None) -> Brow
         user_agent=browser_cfg.get(
             "user_agent",
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-            "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+            "(KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
         ),
         locale="en-US",
         timezone_id="Europe/Rome",
@@ -61,17 +61,39 @@ async def create_browser_context(playwright, config: dict | None = None) -> Brow
         ],
     )
 
+    # Minimal stealth config — only essential scripts to avoid X detecting
+    # "privacy extensions" and blocking the page
+    stealth_cfg = StealthConfig(
+        webdriver=True,
+        chrome_app=False,
+        chrome_csi=False,
+        chrome_load_times=False,
+        chrome_runtime=False,
+        iframe_content_window=False,
+        media_codecs=False,
+        navigator_hardware_concurrency=4,
+        navigator_languages=False,
+        navigator_permissions=False,
+        navigator_platform=False,
+        navigator_plugins=False,
+        navigator_user_agent=False,
+        navigator_vendor=False,
+        outerdimensions=False,
+        hairline=False,
+        webgl_vendor=False,
+    )
+
     # Apply stealth to every page in the context
     for page in context.pages:
-        await stealth_async(page)
+        await stealth_async(page, stealth_cfg)
 
-    context.on("page", lambda page: stealth_async(page))
+    context.on("page", lambda page: stealth_async(page, stealth_cfg))
 
     # Auto-login if not authenticated
     from src.auth import get_credentials, is_logged_in, perform_login
 
     page = context.pages[0] if context.pages else await context.new_page()
-    await stealth_async(page)
+    await stealth_async(page, stealth_cfg)
 
     if not await is_logged_in(page):
         logger.info("Not logged in — attempting automated login.")

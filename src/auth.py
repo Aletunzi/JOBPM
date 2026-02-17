@@ -69,6 +69,19 @@ async def perform_login(page: Page, credentials: dict) -> bool:
     await page.goto("https://x.com/i/flow/login", wait_until="domcontentloaded")
     await human_delay(3, 5)
 
+    # Handle "Something went wrong" error page — click "Try again" up to 3 times
+    for attempt in range(3):
+        try_again = page.locator('text="Try again"')
+        try:
+            if await try_again.is_visible(timeout=3000):
+                logger.warning("X showed 'Something went wrong' — clicking Try again (attempt %d)", attempt + 1)
+                await try_again.click()
+                await human_delay(3, 5)
+            else:
+                break
+        except PlaywrightTimeout:
+            break
+
     # --- Step 1: Enter username/email ---
     username_input = page.locator('input[autocomplete="username"]')
     try:
