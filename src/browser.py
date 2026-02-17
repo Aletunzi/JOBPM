@@ -1,15 +1,14 @@
 """
-Browser management: Playwright setup with stealth and persistent context.
+Browser management: Playwright setup with persistent context.
+No stealth library — just minimal JS overrides to avoid X.com blocking.
 """
 
-import os
 import logging
 from pathlib import Path
 
 import yaml
 from dotenv import load_dotenv
 from playwright.async_api import async_playwright, BrowserContext, Page
-from playwright_stealth import stealth_async, StealthConfig
 
 # Load .env early — before any credential access
 _env_path = Path(__file__).resolve().parent.parent / ".env"
@@ -19,14 +18,22 @@ logger = logging.getLogger(__name__)
 
 CONFIG_PATH = Path(__file__).resolve().parent.parent / "config" / "settings.yaml"
 
+# Simple JS to hide webdriver flag — lightweight, not detected as "extension"
+_WEBDRIVER_OVERRIDE = "Object.defineProperty(navigator, 'webdriver', {get: () => undefined});"
+
 
 def load_config() -> dict:
     with open(CONFIG_PATH, "r") as f:
         return yaml.safe_load(f)
 
 
+async def _apply_stealth(page: Page):
+    """Apply minimal anti-detection JS without using playwright-stealth library."""
+    await page.add_init_script(_WEBDRIVER_OVERRIDE)
+
+
 async def create_browser_context(playwright, config: dict | None = None) -> BrowserContext:
-    """Create a persistent browser context with stealth applied.
+    """Create a persistent browser context.
 
     On first run, performs automated login using credentials from
     environment variables.  Subsequent runs reuse saved cookies/state.
@@ -61,39 +68,17 @@ async def create_browser_context(playwright, config: dict | None = None) -> Brow
         ],
     )
 
-    # Minimal stealth config — only essential scripts to avoid X detecting
-    # "privacy extensions" and blocking the page
-    stealth_cfg = StealthConfig(
-        webdriver=True,
-        chrome_app=False,
-        chrome_csi=False,
-        chrome_load_times=False,
-        chrome_runtime=False,
-        iframe_content_window=False,
-        media_codecs=False,
-        navigator_hardware_concurrency=4,
-        navigator_languages=False,
-        navigator_permissions=False,
-        navigator_platform=False,
-        navigator_plugins=False,
-        navigator_user_agent=False,
-        navigator_vendor=False,
-        outerdimensions=False,
-        hairline=False,
-        webgl_vendor=False,
-    )
-
-    # Apply stealth to every page in the context
+    # Apply minimal stealth to every page
     for page in context.pages:
-        await stealth_async(page, stealth_cfg)
+        await _apply_stealth(page)
 
-    context.on("page", lambda page: stealth_async(page, stealth_cfg))
+    context.on("page", lambda page: _apply_stealth(page))
 
     # Auto-login if not authenticated
     from src.auth import get_credentials, is_logged_in, perform_login
 
     page = context.pages[0] if context.pages else await context.new_page()
-    await stealth_async(page, stealth_cfg)
+    await _apply_stealth(page)
 
     if not await is_logged_in(page):
         logger.info("Not logged in — attempting automated login.")
@@ -116,7 +101,7 @@ async def get_page(context: BrowserContext) -> Page:
         page = context.pages[0]
     else:
         page = await context.new_page()
-    await stealth_async(page)
+    await _apply_stealth(page)
     return page
 
 
