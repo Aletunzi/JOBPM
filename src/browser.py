@@ -57,7 +57,7 @@ async def create_browser_context(playwright, config: dict | None = None) -> Brow
         user_agent=browser_cfg.get(
             "user_agent",
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-            "(KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
+            "(KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
         ),
         locale="en-US",
         timezone_id="Europe/Rome",
