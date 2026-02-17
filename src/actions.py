@@ -3,6 +3,7 @@ Core actions: search for profiles, navigate to verified followers, follow users.
 Includes rate-limit and captcha detection.
 """
 
+import asyncio
 import logging
 import random
 
@@ -116,7 +117,6 @@ async def search_profile(page: Page, handle: str) -> None:
         delay = max(0.08, min(0.25, delay_base))
         if i > 0 and i % random.randint(3, 6) == 0:
             delay += random.uniform(0.2, 0.5)
-        import asyncio
         await asyncio.sleep(delay)
 
     await human_delay(0.8, 1.5)
@@ -159,7 +159,7 @@ async def navigate_to_profile(page: Page, handle: str) -> bool:
         return True
 
     logger.warning("URL mismatch after navigation: %s (expected @%s)", page.url, handle)
-    return True  # proceed anyway, the profile link click was successful
+    return False
 
 
 async def go_to_verified_followers(page: Page, handle: str) -> bool:
@@ -200,15 +200,22 @@ async def go_to_verified_followers(page: Page, handle: str) -> bool:
 
 async def _get_follow_button_state(user_cell) -> str | None:
     """Return 'follow' or 'following' based on the button inside a UserCell."""
-    # The follow/following button inside each user cell
-    btn = user_cell.locator('[data-testid$="-follow"]').first
-    if await btn.is_visible(timeout=1000):
-        label = await btn.get_attribute("aria-label") or ""
-        text = (await btn.text_content() or "").strip().lower()
-        if "following" in label.lower() or text == "following":
+    # Check for "Following" button first (data-testid ends with "-unfollow")
+    unfollow_btn = user_cell.locator('[data-testid$="-unfollow"]').first
+    try:
+        if await unfollow_btn.is_visible(timeout=500):
             return "following"
-        if "follow" in label.lower() or text == "follow":
+    except PlaywrightTimeout:
+        pass
+
+    # Check for "Follow" button (data-testid ends with "-follow")
+    follow_btn = user_cell.locator('[data-testid$="-follow"]').first
+    try:
+        if await follow_btn.is_visible(timeout=500):
             return "follow"
+    except PlaywrightTimeout:
+        pass
+
     return None
 
 

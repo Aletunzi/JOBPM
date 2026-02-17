@@ -4,7 +4,7 @@ Flask dashboard for monitoring SatoraXagent sessions.
 
 import json
 from collections import defaultdict
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 from flask import Flask, jsonify, render_template
@@ -90,7 +90,7 @@ def api_stats():
 
     # This week (Monday to Sunday)
     today = date.today()
-    monday = today - __import__("datetime").timedelta(days=today.weekday())
+    monday = today - timedelta(days=today.weekday())
     week_follows = sum(
         s.get("total_follows", 0)
         for s in sessions
