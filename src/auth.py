@@ -74,6 +74,15 @@ async def perform_login(page: Page, credentials: dict) -> bool:
     try:
         await username_input.wait_for(state="visible", timeout=15000)
     except PlaywrightTimeout:
+        # Debug: save screenshot and page URL to understand what X is showing
+        debug_path = "data/debug_login.png"
+        try:
+            await page.screenshot(path=debug_path, full_page=True)
+            logger.error("Login page did not load — screenshot saved to %s", debug_path)
+            logger.error("Current URL: %s", page.url)
+            logger.error("Page title: %s", await page.title())
+        except Exception as e:
+            logger.error("Could not save debug screenshot: %s", e)
         logger.error("Login page did not load — username input not found.")
         return False
 
