@@ -4,7 +4,9 @@ Entry point: schedules and runs follow sessions with APScheduler.
 
 import asyncio
 import logging
+import os
 import random
+import re
 import signal
 import sys
 import threading
@@ -17,6 +19,27 @@ from src.actions import RateLimitError, CaptchaError, run_session
 from src.browser import BrowserManager, load_config
 from src.session_tracker import SessionRecord, can_run_session
 
+
+class CredentialMaskingFilter(logging.Filter):
+    """Scrub sensitive values from log records before they are emitted."""
+
+    def __init__(self):
+        super().__init__()
+        self._patterns: list[re.Pattern] = []
+        for key in ("X_PASSWORD", "X_EMAIL", "X_USERNAME"):
+            val = os.environ.get(key, "")
+            if val and len(val) >= 3:
+                self._patterns.append(re.compile(re.escape(val)))
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        msg = record.getMessage()
+        for pat in self._patterns:
+            msg = pat.sub("***REDACTED***", msg)
+        record.msg = msg
+        record.args = None
+        return True
+
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -25,6 +48,12 @@ logging.basicConfig(
         logging.FileHandler("data/agent.log"),
     ],
 )
+
+# Install credential masking on all handlers
+_mask_filter = CredentialMaskingFilter()
+for handler in logging.root.handlers:
+    handler.addFilter(_mask_filter)
+
 logger = logging.getLogger(__name__)
 
 

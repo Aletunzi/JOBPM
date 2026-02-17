@@ -1,9 +1,6 @@
 target_profiles:
-  - "profile_handle_1"
-  - "profile_handle_2"
-  - "profile_handle_3"
-  - "profile_handle_4"
-  - "profile_handle_5"
+  - "gregisenberg"
+  - "starter_story"
 
 limits:
   max_follows_per_profile: 6

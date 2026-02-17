@@ -7,8 +7,13 @@ import logging
 from pathlib import Path
 
 import yaml
+from dotenv import load_dotenv
 from playwright.async_api import async_playwright, BrowserContext, Page
 from playwright_stealth import stealth_async
+
+# Load .env early — before any credential access
+_env_path = Path(__file__).resolve().parent.parent / ".env"
+load_dotenv(_env_path)
 
 logger = logging.getLogger(__name__)
 
@@ -23,8 +28,8 @@ def load_config() -> dict:
 async def create_browser_context(playwright, config: dict | None = None) -> BrowserContext:
     """Create a persistent browser context with stealth applied.
 
-    On first run the browser opens in headed mode so the user can log in
-    manually.  Subsequent runs reuse the saved cookies/state.
+    On first run, performs automated login using credentials from
+    environment variables.  Subsequent runs reuse saved cookies/state.
     """
     if config is None:
         config = load_config()
@@ -33,11 +38,11 @@ async def create_browser_context(playwright, config: dict | None = None) -> Brow
     state_dir = Path(__file__).resolve().parent.parent / browser_cfg.get("state_dir", "data/browser_state")
     state_dir.mkdir(parents=True, exist_ok=True)
 
-    first_run = not any(state_dir.iterdir())
+    headless = browser_cfg.get("headless", True)
 
     context = await playwright.chromium.launch_persistent_context(
         user_data_dir=str(state_dir),
-        headless=False if first_run else browser_cfg.get("headless", True),
+        headless=headless,
         viewport={
             "width": browser_cfg.get("viewport_width", 1920),
             "height": browser_cfg.get("viewport_height", 1080),
@@ -62,11 +67,23 @@ async def create_browser_context(playwright, config: dict | None = None) -> Brow
 
     context.on("page", lambda page: stealth_async(page))
 
-    if first_run:
-        logger.info(
-            "First run detected — browser opened in headed mode. "
-            "Please log in to X manually, then close the browser."
-        )
+    # Auto-login if not authenticated
+    from src.auth import get_credentials, is_logged_in, perform_login
+
+    page = context.pages[0] if context.pages else await context.new_page()
+    await stealth_async(page)
+
+    if not await is_logged_in(page):
+        logger.info("Not logged in — attempting automated login.")
+        creds = get_credentials()
+        success = await perform_login(page, creds)
+        if not success:
+            raise RuntimeError(
+                "Automated login failed. Check credentials in .env file."
+            )
+        # Save state after successful login
+        await context.storage_state(path=str(state_dir / "storage_state.json"))
+        logger.info("Login state saved to persistent context.")
 
     return context
 
