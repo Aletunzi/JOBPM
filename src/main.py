@@ -7,6 +7,7 @@ import logging
 import random
 import signal
 import sys
+import threading
 from datetime import datetime, timedelta
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -107,8 +108,28 @@ async def reschedule_daily(scheduler: AsyncIOScheduler, config: dict) -> None:
         schedule_sessions(scheduler, config)
 
 
+def _start_dashboard(config: dict) -> None:
+    """Start the Flask dashboard in a background thread."""
+    from src.dashboard.app import app
+
+    dash_cfg = config.get("dashboard", {})
+    host = dash_cfg.get("host", "0.0.0.0")
+    port = int(dash_cfg.get("port", 5000))
+
+    thread = threading.Thread(
+        target=app.run,
+        kwargs={"host": host, "port": port, "debug": False},
+        daemon=True,
+    )
+    thread.start()
+    logger.info("Dashboard running on http://%s:%d", host, port)
+
+
 async def main() -> None:
     config = load_config()
+
+    # Launch dashboard in background thread
+    _start_dashboard(config)
 
     scheduler = AsyncIOScheduler()
     schedule_sessions(scheduler, config)
