@@ -21,9 +21,9 @@ if [ "$LOCAL" != "$REMOTE" ]; then
     # Pull latest changes
     git reset --hard "origin/$BRANCH" >> "$LOG_FILE" 2>&1
 
-    # Reset session log so bot can run again
-    echo '{"sessions": []}' > "$REPO_DIR/data/session_log.json"
-    rm -rf "$REPO_DIR/data/browser_state"
+    # Update dependencies if requirements changed
+    source "$REPO_DIR/venv/bin/activate"
+    pip install -q -r requirements.txt >> "$LOG_FILE" 2>&1
 
     # Restart services
     systemctl restart satora-dashboard.service

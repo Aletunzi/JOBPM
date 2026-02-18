@@ -1,5 +1,4 @@
 name: Deploy to Hetzner
-# Secrets configured - deploy ready
 
 on:
   workflow_dispatch:
@@ -24,38 +23,83 @@ jobs:
           chmod 600 /tmp/deploy_key
           echo "SSH key generated."
 
-      - name: Delete existing servers
+      - name: Check for existing server
+        id: check_server
         run: |
-          echo "Checking for existing servers..."
           BODY=$(curl -sf -H "Authorization: Bearer $HETZNER_TOKEN" \
             https://api.hetzner.cloud/v1/servers) || {
-            echo "ERROR: Hetzner API call failed. Check HETZNER_API_TOKEN."
+            echo "ERROR: Hetzner API call failed."
             exit 1
           }
 
-          # Parse server IDs and delete them
-          SERVERS=$(echo "$BODY" | python3 -c "
+          SERVER_INFO=$(echo "$BODY" | python3 -c "
           import json, sys
           data = json.load(sys.stdin)
           for s in data.get('servers', []):
-              print(f\"{s['id']} {s['name']}\")
+              if s['name'] == 'satora-bot':
+                  ip = s['public_net']['ipv4']['ip']
+                  print(f\"{s['id']} {ip}\")
+                  break
           ")
 
-          if [ -z "$SERVERS" ]; then
-            echo "No existing servers found."
+          if [ -n "$SERVER_INFO" ]; then
+            SID=$(echo "$SERVER_INFO" | cut -d' ' -f1)
+            SIP=$(echo "$SERVER_INFO" | cut -d' ' -f2)
+            echo "server_exists=true" >> $GITHUB_OUTPUT
+            echo "server_id=$SID" >> $GITHUB_OUTPUT
+            echo "server_ip=$SIP" >> $GITHUB_OUTPUT
+            echo "$SIP" > /tmp/server_ip.txt
+            echo "Found existing server: ID=$SID IP=$SIP"
           else
-            echo "$SERVERS" | while read -r SID SNAME; do
-              echo "Deleting server $SNAME (ID: $SID)..."
-              curl -sf -X DELETE \
-                -H "Authorization: Bearer $HETZNER_TOKEN" \
-                "https://api.hetzner.cloud/v1/servers/$SID"
-              echo "  Deleted."
-            done
-            echo "Waiting for servers to be fully removed..."
-            sleep 10
+            echo "server_exists=false" >> $GITHUB_OUTPUT
+            echo "No existing server found — will create one."
           fi
 
-      - name: Create server
+      # ─── PATH A: Server exists → just update ───
+      - name: Update existing server
+        if: steps.check_server.outputs.server_exists == 'true'
+        run: |
+          IP=${{ steps.check_server.outputs.server_ip }}
+          echo "Updating server at $IP ..."
+
+          # Wait for SSH to be available
+          for i in $(seq 1 10); do
+            ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 -i /tmp/deploy_key root@$IP "echo ok" 2>/dev/null && break
+            echo "  SSH not ready (attempt $i/10), waiting 5s..."
+            sleep 5
+          done
+
+          ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -i /tmp/deploy_key root@$IP << 'REMOTE'
+          set -e
+          cd /root/SatoraXagent
+          echo "=== Manual deploy $(date) ==="
+
+          # Pull latest code
+          git fetch origin
+          git reset --hard origin/claude/x-verified-followers-agent-6ncTJ
+
+          # Update dependencies if requirements changed
+          source venv/bin/activate
+          pip install -q -r requirements.txt
+
+          # Restart services
+          systemctl restart satora-dashboard.service
+          systemctl restart satora-bot.service
+
+          echo "=== Deploy complete $(date) ==="
+          REMOTE
+
+          echo ""
+          echo "========================================="
+          echo "  UPDATE COMPLETE"
+          echo "  IP: $IP"
+          echo "  Dashboard: http://$IP:5000/"
+          echo "  Screenshots: http://$IP:8080/"
+          echo "========================================="
+
+      # ─── PATH B: No server → create from scratch ───
+      - name: Create new server
+        if: steps.check_server.outputs.server_exists == 'false'
         run: |
           python3 << 'PYSCRIPT'
           import json, subprocess, os, textwrap
@@ -176,7 +220,8 @@ jobs:
               exit(1)
           PYSCRIPT
 
-      - name: Wait for health check
+      - name: Wait for health check (new server only)
+        if: steps.check_server.outputs.server_exists == 'false'
         run: |
           IP=$(cat /tmp/server_ip.txt)
           echo "Waiting for dashboard to come up at http://$IP:5000/api/health ..."
