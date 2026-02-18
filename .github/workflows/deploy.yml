@@ -18,6 +18,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Generate SSH key
+        run: |
+          ssh-keygen -t ed25519 -f /tmp/deploy_key -N "" -q
+          chmod 600 /tmp/deploy_key
+          echo "SSH key generated."
+
       - name: Delete existing servers
         run: |
           echo "Checking for existing servers..."
@@ -61,6 +67,9 @@ jobs:
           webhook_secret = "${{ secrets.WEBHOOK_SECRET }}"
           branch = "claude/x-verified-followers-agent-6ncTJ"
 
+          with open("/tmp/deploy_key.pub") as f:
+              ssh_pubkey = f.read().strip()
+
           cloud_init = textwrap.dedent(f"""\
           #cloud-config
           package_update: true
@@ -90,6 +99,9 @@ jobs:
             - libglib2.0-0
             - libx11-xcb1
 
+          ssh_authorized_keys:
+            - {ssh_pubkey}
+
           write_files:
             - path: /root/.env-bot
               permissions: "0600"
@@ -106,16 +118,23 @@ jobs:
                 set -e
                 exec > /var/log/bot-setup.log 2>&1
                 echo "=== Bot Setup Started $(date) ==="
+                echo "[1/7] Cloning repository..."
                 git clone -b {branch} https://github.com/Aletunzi/SatoraXagent.git /root/SatoraXagent
                 cd /root/SatoraXagent
                 mkdir -p data
                 cp /root/.env-bot .env
+                echo "[2/7] Creating virtualenv..."
                 python3 -m venv venv
                 source venv/bin/activate
+                echo "[3/7] Installing pip dependencies..."
                 pip install -r requirements.txt
+                echo "[4/7] Installing Playwright chromium..."
                 playwright install chromium
+                echo "[5/7] Installing Playwright system deps..."
                 playwright install-deps chromium || true
+                echo "[6/7] Running setup-server.sh..."
                 bash scripts/setup-server.sh
+                echo "[7/7] Starting bot service..."
                 systemctl start satora-bot
                 echo "=== Bot Setup Complete $(date) ==="
 
@@ -161,9 +180,12 @@ jobs:
         run: |
           IP=$(cat /tmp/server_ip.txt)
           echo "Waiting for dashboard to come up at http://$IP:5000/api/health ..."
-          for i in $(seq 1 40); do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://$IP:5000/api/health" 2>/dev/null || echo "000")
-            if [ "$STATUS" = "200" ]; then
+          echo "Will try up to 60 attempts (15 minutes)..."
+          echo ""
+
+          for i in $(seq 1 60); do
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "http://$IP:5000/api/health" 2>/dev/null) || HTTP_CODE="000"
+            if [ "$HTTP_CODE" = "200" ]; then
               echo ""
               echo "Dashboard is up! (attempt $i)"
               HEALTH=$(curl -s "http://$IP:5000/api/health")
@@ -177,8 +199,61 @@ jobs:
               echo "========================================="
               exit 0
             fi
-            echo "  Attempt $i/40 — not ready yet (HTTP $STATUS), waiting 15s..."
+
+            # Every 10 attempts, SSH in and show progress
+            if [ $((i % 10)) -eq 0 ]; then
+              echo ""
+              echo "--- SSH progress check (attempt $i) ---"
+              ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 -i /tmp/deploy_key root@$IP \
+                "tail -5 /var/log/bot-setup.log 2>/dev/null || echo 'Setup log not available yet'; \
+                 cloud-init status 2>/dev/null || true" 2>/dev/null || echo "(SSH not ready yet)"
+              echo "---"
+              echo ""
+            fi
+
+            echo "  Attempt $i/60 — HTTP $HTTP_CODE, waiting 15s..."
             sleep 15
           done
-          echo "ERROR: Dashboard did not come up within 10 minutes."
+
+          echo ""
+          echo "ERROR: Dashboard did not come up within 15 minutes."
           exit 1
+
+      - name: Diagnose failure
+        if: failure()
+        run: |
+          IP=$(cat /tmp/server_ip.txt 2>/dev/null) || { echo "No server IP found."; exit 0; }
+          echo "========================================="
+          echo "  DEPLOYMENT FAILED — DIAGNOSTICS"
+          echo "  Server IP: $IP"
+          echo "========================================="
+          echo ""
+
+          SSH_CMD="ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -i /tmp/deploy_key root@$IP"
+
+          echo "=== cloud-init status ==="
+          $SSH_CMD "cloud-init status --long" 2>/dev/null || echo "(Could not connect via SSH)"
+          echo ""
+
+          echo "=== Bot setup log ==="
+          $SSH_CMD "cat /var/log/bot-setup.log" 2>/dev/null || echo "(Log not available)"
+          echo ""
+
+          echo "=== cloud-init output log (last 50 lines) ==="
+          $SSH_CMD "tail -50 /var/log/cloud-init-output.log" 2>/dev/null || echo "(Log not available)"
+          echo ""
+
+          echo "=== systemctl status satora-dashboard ==="
+          $SSH_CMD "systemctl status satora-dashboard" 2>/dev/null || echo "(Service not found)"
+          echo ""
+
+          echo "=== journalctl satora-dashboard (last 30 lines) ==="
+          $SSH_CMD "journalctl -u satora-dashboard --no-pager -n 30" 2>/dev/null || echo "(No logs)"
+          echo ""
+
+          echo "=== systemctl status satora-bot ==="
+          $SSH_CMD "systemctl status satora-bot" 2>/dev/null || echo "(Service not found)"
+          echo ""
+
+          echo "=== Listening ports ==="
+          $SSH_CMD "ss -tlnp" 2>/dev/null || echo "(Could not check)"
