@@ -101,14 +101,16 @@ jobs:
           X_PASSWORD: ${{ secrets.X_PASSWORD }}
           WEBHOOK_SECRET_OLD: ${{ secrets.WEBHOOK_SECRET_OLD }}
           WEBHOOK_SECRET_NEW: ${{ secrets.WEBHOOK_SECRET }}
+          BRANCH: claude/x-verified-followers-agent-6ncTJ
         run: |
           IP=${{ steps.check_server.outputs.server_ip }}
+          SSH_CMD="ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -i /tmp/deploy_key root@$IP"
 
           echo "Server is healthy — updating secrets via API..."
 
-          # Use the OLD secret to authenticate, send the new values
-          # If WEBHOOK_SECRET_OLD is not set, fall back to the current one
+          # Try API first
           AUTH_SECRET="${WEBHOOK_SECRET_OLD:-$WEBHOOK_SECRET_NEW}"
+          API_OK=false
 
           RESPONSE=$(curl -sf -X POST "http://$IP:5000/api/update-env" \
             -H "Content-Type: application/json" \
@@ -117,26 +119,48 @@ jobs:
               \"X_EMAIL\": \"${X_EMAIL}\",
               \"X_PASSWORD\": \"${X_PASSWORD}\",
               \"WEBHOOK_SECRET\": \"${WEBHOOK_SECRET_NEW}\"
-            }") || {
-            echo "WARNING: Failed to update secrets via API."
-            echo "If scripts/.fix-secret is present, auto-deploy will"
-            echo "update WEBHOOK_SECRET on next cycle (~2 min)."
-            echo ""
-            echo "Otherwise, set WEBHOOK_SECRET_OLD in GitHub Secrets"
-            echo "to the previous value so the API call can authenticate."
-            echo ""
-            echo "Continuing — server is healthy and auto-deploy will sync."
-            exit 0
-          }
+            }") && API_OK=true || true
 
-          echo "API response: $RESPONSE"
+          if [ "$API_OK" = "true" ]; then
+            echo "API response: $RESPONSE"
+            echo "========================================="
+            echo "  SECRETS UPDATED via API"
+            echo "  IP: $IP"
+            echo "  Dashboard: http://$IP:5000/"
+            echo "  Screenshots: http://$IP:8080/"
+            echo "========================================="
+          else
+            echo "API update failed — falling back to SSH..."
+            echo ""
 
-          echo "========================================="
-          echo "  SECRETS UPDATED via API"
-          echo "  IP: $IP"
-          echo "  Dashboard: http://$IP:5000/"
-          echo "  Screenshots: http://$IP:8080/"
-          echo "========================================="
+            # 1. Pull latest code on server
+            echo "--- Pulling latest code via SSH ---"
+            $SSH_CMD "cd /root/SatoraXagent && git fetch origin $BRANCH && git reset --hard origin/$BRANCH" || {
+              echo "ERROR: SSH git pull failed."
+              exit 1
+            }
+
+            # 2. Update secrets directly in .env-bot
+            echo "--- Updating secrets in .env-bot ---"
+            $SSH_CMD "sed -i 's/^X_EMAIL=.*/X_EMAIL=${X_EMAIL}/' /root/.env-bot && \
+              sed -i 's/^X_PASSWORD=.*/X_PASSWORD=${X_PASSWORD}/' /root/.env-bot && \
+              sed -i 's/^WEBHOOK_SECRET=.*/WEBHOOK_SECRET=${WEBHOOK_SECRET_NEW}/' /root/.env-bot"
+
+            # 3. Update pip deps if needed
+            $SSH_CMD "cd /root/SatoraXagent && source venv/bin/activate && pip install -q -r requirements.txt" || true
+
+            # 4. Restart services
+            echo "--- Restarting services ---"
+            $SSH_CMD "systemctl restart satora-dashboard && systemctl restart satora-bot"
+
+            echo ""
+            echo "========================================="
+            echo "  SECRETS UPDATED via SSH fallback"
+            echo "  IP: $IP"
+            echo "  Dashboard: http://$IP:5000/"
+            echo "  Screenshots: http://$IP:8080/"
+            echo "========================================="
+          fi
 
       - name: Broken server detected
         if: steps.check_server.outputs.server_status == 'broken'

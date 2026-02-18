@@ -9,7 +9,9 @@ LOG_FILE="/root/SatoraXagent/data/deploy.log"
 cd "$REPO_DIR" || exit 1
 
 # Fetch latest from remote
-git fetch origin "$BRANCH" 2>/dev/null
+if ! git fetch origin "$BRANCH" >> "$LOG_FILE" 2>&1; then
+    echo "$(date): ERROR: git fetch failed" >> "$LOG_FILE"
+fi
 
 # Check if there are new commits
 LOCAL=$(git rev-parse HEAD)
