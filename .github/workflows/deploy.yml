@@ -5,8 +5,6 @@ on:
   push:
     branches:
       - 'claude/x-verified-followers-agent-6ncTJ'
-    paths:
-      - '.github/workflows/deploy.yml'
 
 jobs:
   deploy:
@@ -96,31 +94,55 @@ jobs:
             echo "No existing server found."
           fi
 
-      - name: Server already healthy
+      - name: Update secrets on healthy server
         if: steps.check_server.outputs.server_status == 'healthy'
+        env:
+          X_EMAIL: ${{ secrets.X_EMAIL }}
+          X_PASSWORD: ${{ secrets.X_PASSWORD }}
+          WEBHOOK_SECRET: ${{ secrets.WEBHOOK_SECRET }}
         run: |
           IP=${{ steps.check_server.outputs.server_ip }}
+
+          echo "Server is healthy — updating secrets via SSH..."
+          echo "${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}" > /tmp/deploy_key
+          chmod 600 /tmp/deploy_key
+
+          # Write .env-bot content to a temp file, scp it over
+          cat > /tmp/env-bot << EOF
+          X_EMAIL=${X_EMAIL}
+          X_PASSWORD=${X_PASSWORD}
+          WEBHOOK_SECRET=${WEBHOOK_SECRET}
+          EOF
+
+          scp -o StrictHostKeyChecking=no -i /tmp/deploy_key /tmp/env-bot root@$IP:/root/.env-bot
+          ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -i /tmp/deploy_key root@$IP \
+            "systemctl restart satora-dashboard && echo 'Secrets updated, dashboard restarted.'"
+
+          rm -f /tmp/deploy_key /tmp/env-bot
+
           echo "========================================="
-          echo "  SERVER IS RUNNING"
+          echo "  SERVER UPDATED"
           echo "  IP: $IP"
           echo "  Dashboard: http://$IP:5000/"
           echo "  Screenshots: http://$IP:8080/"
-          echo "  Auto-deploy timer handles code updates."
+          echo "  Secrets synced from GitHub."
           echo "========================================="
 
-      - name: Delete broken server
+      - name: Broken server detected
         if: steps.check_server.outputs.server_status == 'broken'
         run: |
           SID=${{ steps.check_server.outputs.server_id }}
-          echo "Deleting broken server ID=$SID ..."
-          curl -sf -X DELETE \
-            -H "Authorization: Bearer $HETZNER_TOKEN" \
-            "https://api.hetzner.cloud/v1/servers/$SID"
-          echo "Deleted. Waiting 10s for cleanup..."
-          sleep 10
+          echo "========================================="
+          echo "  SERVER IS BROKEN (ID=$SID)"
+          echo "  Dashboard is not responding."
+          echo ""
+          echo "  To fix: delete the server manually from"
+          echo "  Hetzner console, then re-run this workflow."
+          echo "========================================="
+          exit 1
 
       - name: Create new server
-        if: steps.check_server.outputs.server_status != 'healthy'
+        if: steps.check_server.outputs.server_status == 'none'
         run: |
           python3 << 'PYSCRIPT'
           import json, subprocess, os, textwrap
@@ -248,7 +270,7 @@ jobs:
           PYSCRIPT
 
       - name: Wait for health check
-        if: steps.check_server.outputs.server_status != 'healthy'
+        if: steps.check_server.outputs.server_status == 'none'
         run: |
           IP=$(cat /tmp/server_ip.txt)
           echo "Waiting for dashboard at http://$IP:5000/api/health ..."
