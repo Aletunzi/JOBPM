@@ -21,34 +21,33 @@ jobs:
       - name: Delete existing servers
         run: |
           echo "Checking for existing servers..."
-          RESPONSE=$(curl -s -w "\n%{http_code}" -H "Authorization: Bearer $HETZNER_TOKEN" \
-            https://api.hetzner.cloud/v1/servers)
-          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
-          BODY=$(echo "$RESPONSE" | sed '$d')
-          echo "HTTP status: $HTTP_CODE"
-          if [ "$HTTP_CODE" != "200" ]; then
-            echo "ERROR: Hetzner API returned $HTTP_CODE"
-            echo "Response: $BODY"
-            echo "Check that HETZNER_API_TOKEN secret is correct."
+          BODY=$(curl -sf -H "Authorization: Bearer $HETZNER_TOKEN" \
+            https://api.hetzner.cloud/v1/servers) || {
+            echo "ERROR: Hetzner API call failed. Check HETZNER_API_TOKEN."
             exit 1
+          }
+
+          # Parse server IDs and delete them
+          SERVERS=$(echo "$BODY" | python3 -c "
+          import json, sys
+          data = json.load(sys.stdin)
+          for s in data.get('servers', []):
+              print(f\"{s['id']} {s['name']}\")
+          ")
+
+          if [ -z "$SERVERS" ]; then
+            echo "No existing servers found."
+          else
+            echo "$SERVERS" | while read -r SID SNAME; do
+              echo "Deleting server $SNAME (ID: $SID)..."
+              curl -sf -X DELETE \
+                -H "Authorization: Bearer $HETZNER_TOKEN" \
+                "https://api.hetzner.cloud/v1/servers/$SID"
+              echo "  Deleted."
+            done
+            echo "Waiting for servers to be fully removed..."
+            sleep 10
           fi
-          echo "$BODY" | python3 << 'PYSCRIPT'
-          import json, sys, subprocess, os
-          raw = sys.stdin.read().strip()
-          if not raw:
-              print("No response from API, skipping cleanup.")
-              sys.exit(0)
-          data = json.loads(raw)
-          token = os.environ["HETZNER_TOKEN"]
-          for s in data.get("servers", []):
-              print(f"Deleting server {s['name']} (ID: {s['id']})...")
-              subprocess.run(["curl", "-s", "-X", "DELETE",
-                  "-H", f"Authorization: Bearer {token}",
-                  f"https://api.hetzner.cloud/v1/servers/{s['id']}"])
-          if not data.get("servers"):
-              print("No existing servers found.")
-          PYSCRIPT
-          sleep 5
 
       - name: Create server
         run: |
