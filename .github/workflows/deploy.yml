@@ -1,0 +1,203 @@
+name: Deploy to Hetzner
+
+on:
+  push:
+    branches:
+      - claude/x-verified-followers-agent-6ncTJ
+    paths:
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch:
+
+env:
+  HETZNER_TOKEN: SLxfQQh0JP0LVz4BLbVRMomxZkH6vJLYOLLGvoieJbo7ELPQAw2MwoKzJp4KmEd2
+  BOT_X_USERNAME: Satora_ai
+  BOT_X_EMAIL: info@satora.xyz
+  BOT_X_PASSWORD: "Drrqswa333!"
+  BRANCH: claude/x-verified-followers-agent-6ncTJ
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Delete existing servers
+        run: |
+          echo "Checking for existing servers..."
+          SERVERS=$(curl -s -H "Authorization: Bearer $HETZNER_TOKEN" \
+            https://api.hetzner.cloud/v1/servers)
+
+          echo "$SERVERS" | python3 << 'PYSCRIPT'
+          import json, sys, subprocess
+          data = json.load(sys.stdin)
+          import os
+          token = os.environ["HETZNER_TOKEN"]
+          for s in data.get("servers", []):
+              print(f"Deleting server {s['name']} (ID: {s['id']})...")
+              subprocess.run([
+                  "curl", "-s", "-X", "DELETE",
+                  "-H", f"Authorization: Bearer {token}",
+                  f"https://api.hetzner.cloud/v1/servers/{s['id']}"
+              ])
+              print("Deleted.")
+          if not data.get("servers"):
+              print("No existing servers found.")
+          PYSCRIPT
+          echo "Waiting 10s..."
+          sleep 10
+
+      - name: Create server with cloud-init
+        run: |
+          # The GITHUB_TOKEN is valid for ~24h, enough for cloud-init to clone
+          GH_TOKEN="${{ github.token }}"
+
+          python3 << PYSCRIPT
+          import json, subprocess, os
+
+          hetzner_token = os.environ["HETZNER_TOKEN"]
+          x_user = os.environ["BOT_X_USERNAME"]
+          x_email = os.environ["BOT_X_EMAIL"]
+          x_pass = os.environ["BOT_X_PASSWORD"]
+          gh_token = "${GH_TOKEN}"
+          branch = os.environ["BRANCH"]
+
+          cloud_init = f"""#cloud-config
+          package_update: true
+          packages:
+            - python3
+            - python3-pip
+            - python3-venv
+            - git
+            - xvfb
+            - libnss3
+            - libatk1.0-0
+            - libatk-bridge2.0-0
+            - libcups2
+            - libdrm2
+            - libxkbcommon0
+            - libxcomposite1
+            - libxdamage1
+            - libxrandr2
+            - libgbm1
+            - libpango-1.0-0
+            - libcairo2
+            - libasound2t64
+            - libxshmfence1
+            - fonts-liberation
+            - libgl1
+            - libpangocairo-1.0-0
+            - libglib2.0-0
+            - libx11-xcb1
+
+          write_files:
+            - path: /root/.env-bot
+              permissions: "0600"
+              content: |
+                X_USERNAME={x_user}
+                X_EMAIL={x_email}
+                X_PASSWORD={x_pass}
+
+            - path: /root/setup-bot.sh
+              permissions: "0755"
+              content: |
+                #!/bin/bash
+                set -e
+                exec > /var/log/bot-setup.log 2>&1
+                echo "=== Bot Setup Started $(date) ==="
+
+                BRANCH="{branch}"
+
+                # Clone repo (use token for private repo)
+                git clone -b "$BRANCH" https://x-access-token:{gh_token}@github.com/Aletunzi/SatoraXagent.git /root/SatoraXagent
+                cd /root/SatoraXagent
+
+                # Remove token from remote URL (security)
+                git remote set-url origin https://github.com/Aletunzi/SatoraXagent.git
+
+                mkdir -p data
+                cp /root/.env-bot .env
+
+                python3 -m venv venv
+                source venv/bin/activate
+
+                pip install -r requirements.txt
+                playwright install chromium
+                playwright install-deps chromium || true
+
+                bash scripts/setup-server.sh
+                systemctl start satora-bot
+
+                echo "=== Bot Setup Complete $(date) ==="
+
+          runcmd:
+            - bash /root/setup-bot.sh
+          """
+
+          # Fix indentation (remove leading spaces from heredoc)
+          lines = cloud_init.split("\\n")
+          # Find minimum indentation
+          min_indent = 999
+          for line in lines:
+              stripped = line.lstrip()
+              if stripped:
+                  indent = len(line) - len(stripped)
+                  min_indent = min(min_indent, indent)
+          cloud_init = "\\n".join(
+              line[min_indent:] if len(line) >= min_indent else line
+              for line in lines
+          )
+
+          payload = {{
+              "name": "satora-bot",
+              "server_type": "cx22",
+              "image": "ubuntu-24.04",
+              "location": "nbg1",
+              "user_data": cloud_init,
+              "public_net": {{
+                  "enable_ipv4": True,
+                  "enable_ipv6": True
+              }},
+              "start_after_create": True
+          }}
+
+          result = subprocess.run(
+              ["curl", "-s", "-X", "POST",
+               "https://api.hetzner.cloud/v1/servers",
+               "-H", f"Authorization: Bearer {{hetzner_token}}",
+               "-H", "Content-Type: application/json",
+               "-d", json.dumps(payload)],
+              capture_output=True, text=True
+          )
+
+          data = json.loads(result.stdout)
+          if "server" in data:
+              server = data["server"]
+              ip = server["public_net"]["ipv4"]["ip"]
+              print(f"Server created!")
+              print(f"  Name: {{server['name']}}")
+              print(f"  ID: {{server['id']}}")
+              print(f"  IP: {{ip}}")
+              print(f"  Dashboard: http://{{ip}}:5000/")
+              print(f"  Screenshots: http://{{ip}}:8080/")
+
+              with open("/tmp/server_ip.txt", "w") as f:
+                  f.write(ip)
+          else:
+              print("ERROR:", json.dumps(data, indent=2))
+              exit(1)
+          PYSCRIPT
+
+      - name: Wait and verify
+        run: |
+          IP=$(cat /tmp/server_ip.txt)
+          echo "Server IP: $IP"
+          echo "Waiting 5 min for cloud-init..."
+          sleep 300
+          echo ""
+          echo "========================================="
+          echo "  DEPLOYMENT COMPLETE"
+          echo "  IP: $IP"
+          echo "  Dashboard: http://$IP:5000/"
+          echo "  Screenshots: http://$IP:8080/"
+          echo "========================================="
