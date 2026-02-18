@@ -17,11 +17,43 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Generate SSH key
+      - name: Generate and register SSH key
         run: |
+          # Generate ephemeral key
           ssh-keygen -t ed25519 -f /tmp/deploy_key -N "" -q
           chmod 600 /tmp/deploy_key
-          echo "SSH key generated."
+
+          # Delete any leftover deploy key from previous runs
+          EXISTING=$(curl -sf -H "Authorization: Bearer $HETZNER_TOKEN" \
+            https://api.hetzner.cloud/v1/ssh_keys | python3 -c "
+          import json, sys
+          data = json.load(sys.stdin)
+          for k in data.get('ssh_keys', []):
+              if k['name'] == 'deploy-tmp':
+                  print(k['id'])
+          " 2>/dev/null || true)
+
+          if [ -n "$EXISTING" ]; then
+            echo "Removing old deploy-tmp key (ID: $EXISTING)..."
+            curl -sf -X DELETE \
+              -H "Authorization: Bearer $HETZNER_TOKEN" \
+              "https://api.hetzner.cloud/v1/ssh_keys/$EXISTING" || true
+          fi
+
+          # Register new key via Hetzner API
+          PUBKEY=$(cat /tmp/deploy_key.pub)
+          RESULT=$(curl -sf -X POST \
+            -H "Authorization: Bearer $HETZNER_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"name\": \"deploy-tmp\", \"public_key\": \"$PUBKEY\"}" \
+            https://api.hetzner.cloud/v1/ssh_keys) || {
+            echo "ERROR: Failed to register SSH key."
+            exit 1
+          }
+
+          SSH_KEY_ID=$(echo "$RESULT" | python3 -c "import json,sys; print(json.load(sys.stdin)['ssh_key']['id'])")
+          echo "SSH key registered: ID=$SSH_KEY_ID"
+          echo "$SSH_KEY_ID" > /tmp/ssh_key_id.txt
 
       - name: Check for existing server
         id: check_server
@@ -45,61 +77,50 @@ jobs:
           if [ -n "$SERVER_INFO" ]; then
             SID=$(echo "$SERVER_INFO" | cut -d' ' -f1)
             SIP=$(echo "$SERVER_INFO" | cut -d' ' -f2)
-            echo "server_exists=true" >> $GITHUB_OUTPUT
-            echo "server_id=$SID" >> $GITHUB_OUTPUT
-            echo "server_ip=$SIP" >> $GITHUB_OUTPUT
-            echo "$SIP" > /tmp/server_ip.txt
             echo "Found existing server: ID=$SID IP=$SIP"
+
+            # Check if it's healthy
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "http://$SIP:5000/api/health" 2>/dev/null) || HTTP_CODE="000"
+
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "server_status=healthy" >> $GITHUB_OUTPUT
+              echo "server_ip=$SIP" >> $GITHUB_OUTPUT
+              echo "Server is healthy! Auto-deploy timer will handle code updates."
+            else
+              echo "server_status=broken" >> $GITHUB_OUTPUT
+              echo "server_id=$SID" >> $GITHUB_OUTPUT
+              echo "Server is NOT healthy (HTTP $HTTP_CODE). Will delete and recreate."
+            fi
           else
-            echo "server_exists=false" >> $GITHUB_OUTPUT
-            echo "No existing server found — will create one."
+            echo "server_status=none" >> $GITHUB_OUTPUT
+            echo "No existing server found."
           fi
 
-      # ─── PATH A: Server exists → just update ───
-      - name: Update existing server
-        if: steps.check_server.outputs.server_exists == 'true'
+      - name: Server already healthy
+        if: steps.check_server.outputs.server_status == 'healthy'
         run: |
           IP=${{ steps.check_server.outputs.server_ip }}
-          echo "Updating server at $IP ..."
-
-          # Wait for SSH to be available
-          for i in $(seq 1 10); do
-            ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 -i /tmp/deploy_key root@$IP "echo ok" 2>/dev/null && break
-            echo "  SSH not ready (attempt $i/10), waiting 5s..."
-            sleep 5
-          done
-
-          ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -i /tmp/deploy_key root@$IP << 'REMOTE'
-          set -e
-          cd /root/SatoraXagent
-          echo "=== Manual deploy $(date) ==="
-
-          # Pull latest code
-          git fetch origin
-          git reset --hard origin/claude/x-verified-followers-agent-6ncTJ
-
-          # Update dependencies if requirements changed
-          source venv/bin/activate
-          pip install -q -r requirements.txt
-
-          # Restart services
-          systemctl restart satora-dashboard.service
-          systemctl restart satora-bot.service
-
-          echo "=== Deploy complete $(date) ==="
-          REMOTE
-
-          echo ""
           echo "========================================="
-          echo "  UPDATE COMPLETE"
+          echo "  SERVER IS RUNNING"
           echo "  IP: $IP"
           echo "  Dashboard: http://$IP:5000/"
           echo "  Screenshots: http://$IP:8080/"
+          echo "  Auto-deploy timer handles code updates."
           echo "========================================="
 
-      # ─── PATH B: No server → create from scratch ───
+      - name: Delete broken server
+        if: steps.check_server.outputs.server_status == 'broken'
+        run: |
+          SID=${{ steps.check_server.outputs.server_id }}
+          echo "Deleting broken server ID=$SID ..."
+          curl -sf -X DELETE \
+            -H "Authorization: Bearer $HETZNER_TOKEN" \
+            "https://api.hetzner.cloud/v1/servers/$SID"
+          echo "Deleted. Waiting 10s for cleanup..."
+          sleep 10
+
       - name: Create new server
-        if: steps.check_server.outputs.server_exists == 'false'
+        if: steps.check_server.outputs.server_status != 'healthy'
         run: |
           python3 << 'PYSCRIPT'
           import json, subprocess, os, textwrap
@@ -110,6 +131,9 @@ jobs:
           x_pass = "${{ secrets.X_PASSWORD }}"
           webhook_secret = "${{ secrets.WEBHOOK_SECRET }}"
           branch = "claude/x-verified-followers-agent-6ncTJ"
+
+          with open("/tmp/ssh_key_id.txt") as f:
+              ssh_key_id = int(f.read().strip())
 
           with open("/tmp/deploy_key.pub") as f:
               ssh_pubkey = f.read().strip()
@@ -161,7 +185,8 @@ jobs:
                 #!/bin/bash
                 set -e
                 exec > /var/log/bot-setup.log 2>&1
-                echo "=== Bot Setup Started $(date) ==="
+                echo "=== Bot Setup Started ==="
+                date
                 echo "[1/7] Cloning repository..."
                 git clone -b {branch} https://github.com/Aletunzi/SatoraXagent.git /root/SatoraXagent
                 cd /root/SatoraXagent
@@ -180,7 +205,8 @@ jobs:
                 bash scripts/setup-server.sh
                 echo "[7/7] Starting bot service..."
                 systemctl start satora-bot
-                echo "=== Bot Setup Complete $(date) ==="
+                echo "=== Bot Setup Complete ==="
+                date
 
           runcmd:
             - bash /root/setup-bot.sh
@@ -192,6 +218,7 @@ jobs:
               "image": "ubuntu-24.04",
               "location": "nbg1",
               "user_data": cloud_init,
+              "ssh_keys": [ssh_key_id],
               "public_net": {"enable_ipv4": True, "enable_ipv6": True},
               "start_after_create": True
           }
@@ -220,12 +247,12 @@ jobs:
               exit(1)
           PYSCRIPT
 
-      - name: Wait for health check (new server only)
-        if: steps.check_server.outputs.server_exists == 'false'
+      - name: Wait for health check
+        if: steps.check_server.outputs.server_status != 'healthy'
         run: |
           IP=$(cat /tmp/server_ip.txt)
-          echo "Waiting for dashboard to come up at http://$IP:5000/api/health ..."
-          echo "Will try up to 60 attempts (15 minutes)..."
+          echo "Waiting for dashboard at http://$IP:5000/api/health ..."
+          echo "Polling every 15s, up to 60 attempts (15 min)..."
           echo ""
 
           for i in $(seq 1 60); do
@@ -251,7 +278,7 @@ jobs:
               echo "--- SSH progress check (attempt $i) ---"
               ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 -i /tmp/deploy_key root@$IP \
                 "tail -5 /var/log/bot-setup.log 2>/dev/null || echo 'Setup log not available yet'; \
-                 cloud-init status 2>/dev/null || true" 2>/dev/null || echo "(SSH not ready yet)"
+                 echo '---'; cloud-init status 2>/dev/null || true" 2>/dev/null || echo "(SSH not ready yet)"
               echo "---"
               echo ""
             fi
@@ -284,8 +311,8 @@ jobs:
           $SSH_CMD "cat /var/log/bot-setup.log" 2>/dev/null || echo "(Log not available)"
           echo ""
 
-          echo "=== cloud-init output log (last 50 lines) ==="
-          $SSH_CMD "tail -50 /var/log/cloud-init-output.log" 2>/dev/null || echo "(Log not available)"
+          echo "=== cloud-init output log (last 80 lines) ==="
+          $SSH_CMD "tail -80 /var/log/cloud-init-output.log" 2>/dev/null || echo "(Log not available)"
           echo ""
 
           echo "=== systemctl status satora-dashboard ==="
@@ -302,3 +329,12 @@ jobs:
 
           echo "=== Listening ports ==="
           $SSH_CMD "ss -tlnp" 2>/dev/null || echo "(Could not check)"
+
+      - name: Cleanup SSH key from Hetzner
+        if: always()
+        run: |
+          SSH_KEY_ID=$(cat /tmp/ssh_key_id.txt 2>/dev/null) || exit 0
+          echo "Cleaning up deploy-tmp SSH key (ID: $SSH_KEY_ID)..."
+          curl -sf -X DELETE \
+            -H "Authorization: Bearer $HETZNER_TOKEN" \
+            "https://api.hetzner.cloud/v1/ssh_keys/$SSH_KEY_ID" || true

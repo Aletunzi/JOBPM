@@ -192,8 +192,8 @@ def api_run_once():
         cmd,
         cwd=str(REPO_DIR),
         env=env,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
     )
 
     logger.info("run-once session started (PID %d)", _run_once_proc.pid)
