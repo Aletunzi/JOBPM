@@ -2,6 +2,11 @@ name: Deploy to Hetzner
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - 'claude/x-verified-followers-agent-6ncTJ'
+    paths:
+      - '.github/workflows/deploy.yml'
 
 jobs:
   deploy:
