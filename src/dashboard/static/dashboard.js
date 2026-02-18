@@ -243,6 +243,99 @@ async function loadEventLog() {
     }
 }
 
+// ---- Run Now ----
+
+let _runOncePolling = null;
+
+async function triggerRunOnce() {
+    const btn = document.getElementById("run-now-btn");
+    btn.disabled = true;
+    btn.className = "btn-run running";
+    btn.textContent = "Starting...";
+
+    try {
+        const secret = localStorage.getItem("webhook_secret") || "";
+        const res = await fetch("/api/run-once" + (secret ? `?secret=${encodeURIComponent(secret)}` : ""), {
+            method: "POST",
+        });
+        const data = await res.json();
+
+        if (res.status === 403) {
+            // Need secret — prompt user
+            const input = prompt("Enter WEBHOOK_SECRET to authorize:");
+            if (input) {
+                localStorage.setItem("webhook_secret", input);
+                btn.disabled = false;
+                btn.className = "btn-run";
+                btn.textContent = "Run Now";
+                return triggerRunOnce();
+            }
+            btn.className = "btn-run error";
+            btn.textContent = "Unauthorized";
+            setTimeout(() => resetRunBtn(), 3000);
+            return;
+        }
+
+        if (res.status === 409) {
+            btn.className = "btn-run running";
+            btn.textContent = "Already running...";
+            startPollingRunOnce();
+            return;
+        }
+
+        if (!res.ok) {
+            btn.className = "btn-run error";
+            btn.textContent = "Error";
+            setTimeout(() => resetRunBtn(), 3000);
+            return;
+        }
+
+        btn.textContent = "Running...";
+        startPollingRunOnce();
+    } catch (e) {
+        console.error("Run-once failed:", e);
+        btn.className = "btn-run error";
+        btn.textContent = "Error";
+        setTimeout(() => resetRunBtn(), 3000);
+    }
+}
+
+function startPollingRunOnce() {
+    if (_runOncePolling) return;
+    _runOncePolling = setInterval(async () => {
+        try {
+            const res = await fetch("/api/run-once/status");
+            const data = await res.json();
+
+            const btn = document.getElementById("run-now-btn");
+
+            if (data.status === "finished") {
+                clearInterval(_runOncePolling);
+                _runOncePolling = null;
+
+                if (data.exit_code === 0) {
+                    btn.className = "btn-run success";
+                    btn.textContent = "Done!";
+                } else {
+                    btn.className = "btn-run error";
+                    btn.textContent = "Failed (exit " + data.exit_code + ")";
+                }
+                refresh();
+                setTimeout(() => resetRunBtn(), 5000);
+            }
+        } catch (e) {
+            console.error("Polling error:", e);
+        }
+    }, 3000);
+}
+
+function resetRunBtn() {
+    const btn = document.getElementById("run-now-btn");
+    btn.disabled = false;
+    btn.className = "btn-run";
+    btn.textContent = "Run Now";
+}
+
 // ---- Init ----
 
 async function refresh() {
@@ -253,4 +346,15 @@ document.addEventListener("DOMContentLoaded", () => {
     refresh();
     // Auto-refresh every 30 seconds
     setInterval(refresh, 30000);
+
+    // Check if a run-once is already running on load
+    fetch("/api/run-once/status").then(r => r.json()).then(data => {
+        if (data.status === "running") {
+            const btn = document.getElementById("run-now-btn");
+            btn.disabled = true;
+            btn.className = "btn-run running";
+            btn.textContent = "Running...";
+            startPollingRunOnce();
+        }
+    }).catch(() => {});
 });

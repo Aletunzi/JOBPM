@@ -25,7 +25,8 @@ if [ "$LOCAL" != "$REMOTE" ]; then
     echo '{"sessions": []}' > "$REPO_DIR/data/session_log.json"
     rm -rf "$REPO_DIR/data/browser_state"
 
-    # Restart the bot
+    # Restart services
+    systemctl restart satora-dashboard.service
     systemctl restart satora-bot.service
 
     echo "$(date): Deploy complete." >> "$LOG_FILE"

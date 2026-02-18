@@ -24,10 +24,12 @@ After=network.target
 [Service]
 Type=simple
 WorkingDirectory=/root/SatoraXagent
+EnvironmentFile=/root/.env-bot
+Environment=DISPLAY=:99
+Environment=DASHBOARD_EXTERNAL=1
 ExecStart=/usr/bin/xvfb-run /root/SatoraXagent/venv/bin/python -m src.main
 Restart=on-failure
 RestartSec=30
-Environment=DISPLAY=:99
 
 [Install]
 WantedBy=multi-user.target
@@ -56,7 +58,26 @@ Persistent=true
 WantedBy=timers.target
 EOF
 
-# --- 3. Create debug screenshot server (port 8080) ---
+# --- 3. Create dashboard service (port 5000, independent from bot) ---
+cat > /etc/systemd/system/satora-dashboard.service << 'EOF'
+[Unit]
+Description=SatoraXagent Dashboard
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/root/SatoraXagent
+EnvironmentFile=/root/.env-bot
+Environment=DISPLAY=:99
+ExecStart=/root/SatoraXagent/venv/bin/python -m src.dashboard.app
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# --- 4. Create debug screenshot server (port 8080) ---
 cat > /etc/systemd/system/satora-debug.service << 'EOF'
 [Unit]
 Description=SatoraXagent Debug Screenshot Server
@@ -72,10 +93,12 @@ Restart=on-failure
 WantedBy=multi-user.target
 EOF
 
-# --- 4. Enable and start everything ---
+# --- 5. Enable and start everything ---
 systemctl daemon-reload
 systemctl enable satora-deploy.timer
 systemctl start satora-deploy.timer
+systemctl enable satora-dashboard.service
+systemctl start satora-dashboard.service
 systemctl enable satora-debug.service
 systemctl start satora-debug.service
 
@@ -83,14 +106,16 @@ echo ""
 echo "=== Setup Complete ==="
 echo ""
 echo "Services installed:"
-echo "  - satora-bot      : the Twitter bot (start with: systemctl start satora-bot)"
-echo "  - satora-deploy   : auto-deploy every 2 min (already running)"
-echo "  - satora-debug    : debug screenshots at http://YOUR-IP:8080/"
+echo "  - satora-bot       : the Twitter bot (start with: systemctl start satora-bot)"
+echo "  - satora-dashboard : web dashboard at http://YOUR-IP:5000/"
+echo "  - satora-deploy    : auto-deploy every 2 min (already running)"
+echo "  - satora-debug     : debug screenshots at http://YOUR-IP:8080/"
 echo ""
 echo "Useful commands:"
 echo "  systemctl start satora-bot        # Start the bot"
 echo "  systemctl stop satora-bot         # Stop the bot"
 echo "  systemctl status satora-bot       # Check bot status"
 echo "  journalctl -u satora-bot -f       # Live bot logs"
+echo "  journalctl -u satora-dashboard -f # Dashboard logs"
 echo "  cat data/deploy.log               # Deploy history"
 echo ""

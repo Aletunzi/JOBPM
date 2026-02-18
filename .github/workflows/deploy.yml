@@ -59,6 +59,7 @@ jobs:
           x_user = "${{ secrets.X_USERNAME }}"
           x_email = "${{ secrets.X_EMAIL }}"
           x_pass = "${{ secrets.X_PASSWORD }}"
+          webhook_secret = "${{ secrets.WEBHOOK_SECRET }}"
           branch = "claude/x-verified-followers-agent-6ncTJ"
 
           cloud_init = textwrap.dedent(f"""\
@@ -97,6 +98,7 @@ jobs:
                 X_USERNAME={x_user}
                 X_EMAIL={x_email}
                 X_PASSWORD={x_pass}
+                WEBHOOK_SECRET={webhook_secret}
 
             - path: /root/setup-bot.sh
               permissions: "0755"
@@ -156,15 +158,28 @@ jobs:
               exit(1)
           PYSCRIPT
 
-      - name: Wait and verify
+      - name: Wait for health check
         run: |
           IP=$(cat /tmp/server_ip.txt)
-          echo "Waiting 5 min for cloud-init to finish..."
-          sleep 300
-          echo ""
-          echo "========================================="
-          echo "  DEPLOYMENT COMPLETE"
-          echo "  IP: $IP"
-          echo "  Dashboard: http://$IP:5000/"
-          echo "  Screenshots: http://$IP:8080/"
-          echo "========================================="
+          echo "Waiting for dashboard to come up at http://$IP:5000/api/health ..."
+          for i in $(seq 1 40); do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://$IP:5000/api/health" 2>/dev/null || echo "000")
+            if [ "$STATUS" = "200" ]; then
+              echo ""
+              echo "Dashboard is up! (attempt $i)"
+              HEALTH=$(curl -s "http://$IP:5000/api/health")
+              echo "Health response: $HEALTH"
+              echo ""
+              echo "========================================="
+              echo "  DEPLOYMENT COMPLETE"
+              echo "  IP: $IP"
+              echo "  Dashboard: http://$IP:5000/"
+              echo "  Screenshots: http://$IP:8080/"
+              echo "========================================="
+              exit 0
+            fi
+            echo "  Attempt $i/40 — not ready yet (HTTP $STATUS), waiting 15s..."
+            sleep 15
+          done
+          echo "ERROR: Dashboard did not come up within 10 minutes."
+          exit 1

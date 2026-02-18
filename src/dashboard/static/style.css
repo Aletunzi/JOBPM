@@ -36,6 +36,12 @@ header {
     margin-bottom: 32px;
 }
 
+.header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
 header h1 {
     font-size: 28px;
     font-weight: 700;
@@ -46,6 +52,46 @@ header h1 {
     color: var(--text-muted);
     font-size: 14px;
     margin-top: 4px;
+}
+
+/* Run Now button */
+.btn-run {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 28px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, opacity 0.2s;
+}
+
+.btn-run:hover {
+    background: #1a8cd8;
+}
+
+.btn-run:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-run.running {
+    background: var(--orange);
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.btn-run.success {
+    background: var(--green);
+}
+
+.btn-run.error {
+    background: var(--red);
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
 }
 
 h2 {

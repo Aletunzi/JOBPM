@@ -157,8 +157,11 @@ def _start_dashboard(config: dict) -> None:
 async def main() -> None:
     config = load_config()
 
-    # Launch dashboard in background thread
-    _start_dashboard(config)
+    # Launch dashboard in background thread (skip if running as separate service)
+    if not os.environ.get("DASHBOARD_EXTERNAL"):
+        _start_dashboard(config)
+    else:
+        logger.info("DASHBOARD_EXTERNAL set — skipping embedded dashboard.")
 
     scheduler = AsyncIOScheduler()
     schedule_sessions(scheduler, config)
