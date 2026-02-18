@@ -25,6 +25,13 @@ if [ "$LOCAL" != "$REMOTE" ]; then
     source "$REPO_DIR/venv/bin/activate"
     pip install -q -r requirements.txt >> "$LOG_FILE" 2>&1
 
+    # One-time secret fix: update WEBHOOK_SECRET in .env-bot
+    if [ -f "$REPO_DIR/scripts/.fix-secret" ]; then
+        NEW_SECRET=$(cat "$REPO_DIR/scripts/.fix-secret")
+        sed -i "s/^WEBHOOK_SECRET=.*/WEBHOOK_SECRET=${NEW_SECRET}/" /root/.env-bot
+        echo "$(date): Updated WEBHOOK_SECRET in .env-bot" >> "$LOG_FILE"
+    fi
+
     # Restart services
     systemctl restart satora-dashboard.service
     systemctl restart satora-bot.service
