@@ -252,10 +252,10 @@ jobs:
         run: |
           IP=$(cat /tmp/server_ip.txt)
           echo "Waiting for dashboard at http://$IP:5000/api/health ..."
-          echo "Polling every 15s, up to 60 attempts (15 min)..."
+          echo "Polling every 5s, up to 180 attempts (15 min)..."
           echo ""
 
-          for i in $(seq 1 60); do
+          for i in $(seq 1 180); do
             HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "http://$IP:5000/api/health" 2>/dev/null) || HTTP_CODE="000"
             if [ "$HTTP_CODE" = "200" ]; then
               echo ""
@@ -272,19 +272,35 @@ jobs:
               exit 0
             fi
 
-            # Every 10 attempts, SSH in and show progress
-            if [ $((i % 10)) -eq 0 ]; then
+            # Every 30 attempts (~2.5 min), SSH in to check progress + fail fast
+            if [ $((i % 30)) -eq 0 ]; then
               echo ""
               echo "--- SSH progress check (attempt $i) ---"
+              CLOUD_STATUS=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 -i /tmp/deploy_key root@$IP \
+                "cloud-init status 2>/dev/null || echo 'unknown'" 2>/dev/null) || CLOUD_STATUS="ssh-failed"
+              echo "cloud-init: $CLOUD_STATUS"
+
               ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 -i /tmp/deploy_key root@$IP \
-                "tail -5 /var/log/bot-setup.log 2>/dev/null || echo 'Setup log not available yet'; \
-                 echo '---'; cloud-init status 2>/dev/null || true" 2>/dev/null || echo "(SSH not ready yet)"
+                "tail -5 /var/log/bot-setup.log 2>/dev/null || echo '(no setup log yet)'" 2>/dev/null || true
               echo "---"
               echo ""
+
+              # Fail fast: if cloud-init errored, no point waiting
+              if echo "$CLOUD_STATUS" | grep -q "error"; then
+                echo "FAIL FAST: cloud-init reported error. Dumping full setup log:"
+                echo ""
+                ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 -i /tmp/deploy_key root@$IP \
+                  "cat /var/log/bot-setup.log 2>/dev/null; echo '==='; tail -30 /var/log/cloud-init-output.log 2>/dev/null" 2>/dev/null || true
+                echo ""
+                exit 1
+              fi
             fi
 
-            echo "  Attempt $i/60 — HTTP $HTTP_CODE, waiting 15s..."
-            sleep 15
+            # Only print every 10th attempt to reduce noise
+            if [ $((i % 10)) -eq 0 ]; then
+              echo "  Attempt $i/180 — HTTP $HTTP_CODE, waiting..."
+            fi
+            sleep 5
           done
 
           echo ""
