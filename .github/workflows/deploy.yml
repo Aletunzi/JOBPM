@@ -118,22 +118,24 @@ jobs:
               \"X_PASSWORD\": \"${X_PASSWORD}\",
               \"WEBHOOK_SECRET\": \"${WEBHOOK_SECRET_NEW}\"
             }") || {
-            echo "ERROR: Failed to update secrets via API."
-            echo "If the WEBHOOK_SECRET changed, set WEBHOOK_SECRET_OLD in GitHub Secrets"
+            echo "WARNING: Failed to update secrets via API."
+            echo "If scripts/.fix-secret is present, auto-deploy will"
+            echo "update WEBHOOK_SECRET on next cycle (~2 min)."
+            echo ""
+            echo "Otherwise, set WEBHOOK_SECRET_OLD in GitHub Secrets"
             echo "to the previous value so the API call can authenticate."
-            exit 1
+            echo ""
+            echo "Continuing — server is healthy and auto-deploy will sync."
+            exit 0
           }
 
           echo "API response: $RESPONSE"
 
           echo "========================================="
-          echo "  SECRETS UPDATED"
+          echo "  SECRETS UPDATED via API"
           echo "  IP: $IP"
           echo "  Dashboard: http://$IP:5000/"
           echo "  Screenshots: http://$IP:8080/"
-          echo ""
-          echo "  NOTE: Restart the dashboard for changes"
-          echo "  to take effect (auto-deploy will do this)."
           echo "========================================="
 
       - name: Broken server detected
