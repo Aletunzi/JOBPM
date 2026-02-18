@@ -20,12 +20,25 @@ jobs:
 
       - name: Delete existing servers
         run: |
-          SERVERS=$(curl -s -H "Authorization: Bearer $HETZNER_TOKEN" \
+          echo "Checking for existing servers..."
+          RESPONSE=$(curl -s -w "\n%{http_code}" -H "Authorization: Bearer $HETZNER_TOKEN" \
             https://api.hetzner.cloud/v1/servers)
-
-          echo "$SERVERS" | python3 << 'PYSCRIPT'
+          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+          echo "HTTP status: $HTTP_CODE"
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "ERROR: Hetzner API returned $HTTP_CODE"
+            echo "Response: $BODY"
+            echo "Check that HETZNER_API_TOKEN secret is correct."
+            exit 1
+          fi
+          echo "$BODY" | python3 << 'PYSCRIPT'
           import json, sys, subprocess, os
-          data = json.load(sys.stdin)
+          raw = sys.stdin.read().strip()
+          if not raw:
+              print("No response from API, skipping cleanup.")
+              sys.exit(0)
+          data = json.loads(raw)
           token = os.environ["HETZNER_TOKEN"]
           for s in data.get("servers", []):
               print(f"Deleting server {s['name']} (ID: {s['id']})...")
@@ -35,7 +48,7 @@ jobs:
           if not data.get("servers"):
               print("No existing servers found.")
           PYSCRIPT
-          sleep 10
+          sleep 5
 
       - name: Create server
         run: |
