@@ -99,33 +99,41 @@ jobs:
         env:
           X_EMAIL: ${{ secrets.X_EMAIL }}
           X_PASSWORD: ${{ secrets.X_PASSWORD }}
-          WEBHOOK_SECRET: ${{ secrets.WEBHOOK_SECRET }}
+          WEBHOOK_SECRET_OLD: ${{ secrets.WEBHOOK_SECRET_OLD }}
+          WEBHOOK_SECRET_NEW: ${{ secrets.WEBHOOK_SECRET }}
         run: |
           IP=${{ steps.check_server.outputs.server_ip }}
 
-          echo "Server is healthy — updating secrets via SSH..."
-          echo "${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}" > /tmp/deploy_key
-          chmod 600 /tmp/deploy_key
+          echo "Server is healthy — updating secrets via API..."
 
-          # Write .env-bot content to a temp file, scp it over
-          cat > /tmp/env-bot << EOF
-          X_EMAIL=${X_EMAIL}
-          X_PASSWORD=${X_PASSWORD}
-          WEBHOOK_SECRET=${WEBHOOK_SECRET}
-          EOF
+          # Use the OLD secret to authenticate, send the new values
+          # If WEBHOOK_SECRET_OLD is not set, fall back to the current one
+          AUTH_SECRET="${WEBHOOK_SECRET_OLD:-$WEBHOOK_SECRET_NEW}"
 
-          scp -o StrictHostKeyChecking=no -i /tmp/deploy_key /tmp/env-bot root@$IP:/root/.env-bot
-          ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -i /tmp/deploy_key root@$IP \
-            "systemctl restart satora-dashboard && echo 'Secrets updated, dashboard restarted.'"
+          RESPONSE=$(curl -sf -X POST "http://$IP:5000/api/update-env" \
+            -H "Content-Type: application/json" \
+            -H "X-Webhook-Secret: $AUTH_SECRET" \
+            -d "{
+              \"X_EMAIL\": \"${X_EMAIL}\",
+              \"X_PASSWORD\": \"${X_PASSWORD}\",
+              \"WEBHOOK_SECRET\": \"${WEBHOOK_SECRET_NEW}\"
+            }") || {
+            echo "ERROR: Failed to update secrets via API."
+            echo "If the WEBHOOK_SECRET changed, set WEBHOOK_SECRET_OLD in GitHub Secrets"
+            echo "to the previous value so the API call can authenticate."
+            exit 1
+          }
 
-          rm -f /tmp/deploy_key /tmp/env-bot
+          echo "API response: $RESPONSE"
 
           echo "========================================="
-          echo "  SERVER UPDATED"
+          echo "  SECRETS UPDATED"
           echo "  IP: $IP"
           echo "  Dashboard: http://$IP:5000/"
           echo "  Screenshots: http://$IP:8080/"
-          echo "  Secrets synced from GitHub."
+          echo ""
+          echo "  NOTE: Restart the dashboard for changes"
+          echo "  to take effect (auto-deploy will do this)."
           echo "========================================="
 
       - name: Broken server detected

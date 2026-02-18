@@ -164,6 +164,43 @@ def api_health():
     })
 
 
+@app.route("/api/update-env", methods=["POST"])
+def api_update_env():
+    """Update /root/.env-bot with new values and restart the dashboard.
+
+    Requires current WEBHOOK_SECRET for auth. Accepts JSON body with
+    key-value pairs to write into .env-bot.
+    """
+    if not _check_secret(request):
+        return jsonify({"error": "Invalid or missing WEBHOOK_SECRET"}), 403
+
+    new_vars = request.get_json(silent=True)
+    if not new_vars or not isinstance(new_vars, dict):
+        return jsonify({"error": "Expected JSON object with env vars"}), 400
+
+    env_path = Path("/root/.env-bot")
+    if not env_path.exists():
+        return jsonify({"error": "/root/.env-bot not found"}), 500
+
+    # Read existing env, update with new values
+    existing = {}
+    for line in env_path.read_text().splitlines():
+        line = line.strip()
+        if "=" in line and not line.startswith("#"):
+            key, _, val = line.partition("=")
+            existing[key.strip()] = val.strip()
+
+    existing.update(new_vars)
+
+    # Write back
+    env_path.write_text(
+        "\n".join(f"{k}={v}" for k, v in existing.items()) + "\n"
+    )
+
+    logger.info("Updated .env-bot with keys: %s", list(new_vars.keys()))
+    return jsonify({"message": "Updated. Restart dashboard to apply.", "updated_keys": list(new_vars.keys())}), 200
+
+
 @app.route("/api/run-once", methods=["POST"])
 def api_run_once():
     """Trigger a single follow session in a background subprocess."""
