@@ -1,0 +1,625 @@
+# PM Job Tracker — Company Seed List
+# Fields: name, ats (greenhouse|lever|ashby|adzuna_only), slug, tier (1|2|3),
+#         size (startup|scaleup|mid|large), vertical, geo_primary (US|EU|GLOBAL)
+
+companies:
+  # ── TIER 1 — FAANG / Top Tech ──────────────────────────────────────────────
+  - name: Google
+    ats: greenhouse
+    slug: google
+    tier: 1
+    size: large
+    vertical: saas
+    geo_primary: US
+
+  - name: Meta
+    ats: greenhouse
+    slug: meta
+    tier: 1
+    size: large
+    vertical: saas
+    geo_primary: US
+
+  - name: Stripe
+    ats: greenhouse
+    slug: stripe
+    tier: 1
+    size: large
+    vertical: fintech
+    geo_primary: US
+
+  - name: Airbnb
+    ats: greenhouse
+    slug: airbnb
+    tier: 1
+    size: large
+    vertical: marketplace
+    geo_primary: US
+
+  - name: Notion
+    ats: greenhouse
+    slug: notion
+    tier: 1
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Figma
+    ats: greenhouse
+    slug: figma
+    tier: 1
+    size: large
+    vertical: saas
+    geo_primary: US
+
+  - name: Robinhood
+    ats: greenhouse
+    slug: robinhood
+    tier: 1
+    size: large
+    vertical: fintech
+    geo_primary: US
+
+  - name: Coinbase
+    ats: greenhouse
+    slug: coinbase
+    tier: 1
+    size: large
+    vertical: fintech
+    geo_primary: US
+
+  - name: Dropbox
+    ats: greenhouse
+    slug: dropbox
+    tier: 1
+    size: large
+    vertical: saas
+    geo_primary: US
+
+  - name: HubSpot
+    ats: greenhouse
+    slug: hubspot
+    tier: 1
+    size: large
+    vertical: saas
+    geo_primary: US
+
+  - name: Twilio
+    ats: greenhouse
+    slug: twilio
+    tier: 1
+    size: large
+    vertical: saas
+    geo_primary: US
+
+  - name: Snowflake
+    ats: greenhouse
+    slug: snowflake
+    tier: 1
+    size: large
+    vertical: data
+    geo_primary: US
+
+  - name: Databricks
+    ats: greenhouse
+    slug: databricks
+    tier: 1
+    size: large
+    vertical: data
+    geo_primary: US
+
+  - name: Spotify
+    ats: greenhouse
+    slug: spotify
+    tier: 1
+    size: large
+    vertical: consumer
+    geo_primary: EU
+
+  - name: Booking.com
+    ats: greenhouse
+    slug: bookingcom
+    tier: 1
+    size: large
+    vertical: marketplace
+    geo_primary: EU
+
+  - name: Zalando
+    ats: greenhouse
+    slug: zalando
+    tier: 1
+    size: large
+    vertical: ecommerce
+    geo_primary: EU
+
+  - name: Klarna
+    ats: greenhouse
+    slug: klarna
+    tier: 1
+    size: large
+    vertical: fintech
+    geo_primary: EU
+
+  - name: N26
+    ats: greenhouse
+    slug: n26
+    tier: 1
+    size: scaleup
+    vertical: fintech
+    geo_primary: EU
+
+  - name: Adyen
+    ats: greenhouse
+    slug: adyen
+    tier: 1
+    size: large
+    vertical: fintech
+    geo_primary: EU
+
+  - name: Wise
+    ats: greenhouse
+    slug: wise
+    tier: 1
+    size: large
+    vertical: fintech
+    geo_primary: EU
+
+  # ── TIER 1 — Lever ──────────────────────────────────────────────────────────
+  - name: Vercel
+    ats: lever
+    slug: vercel
+    tier: 1
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Linear
+    ats: lever
+    slug: linear
+    tier: 1
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Airtable
+    ats: lever
+    slug: airtable
+    tier: 1
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Plaid
+    ats: lever
+    slug: plaid
+    tier: 1
+    size: scaleup
+    vertical: fintech
+    geo_primary: US
+
+  - name: Brex
+    ats: lever
+    slug: brex
+    tier: 1
+    size: scaleup
+    vertical: fintech
+    geo_primary: US
+
+  - name: Rippling
+    ats: lever
+    slug: rippling
+    tier: 1
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Scale AI
+    ats: lever
+    slug: scaleai
+    tier: 1
+    size: scaleup
+    vertical: ai
+    geo_primary: US
+
+  - name: Canva
+    ats: lever
+    slug: canva
+    tier: 1
+    size: large
+    vertical: saas
+    geo_primary: GLOBAL
+
+  - name: Monday.com
+    ats: lever
+    slug: mondaydotcom
+    tier: 1
+    size: large
+    vertical: saas
+    geo_primary: EU
+
+  # ── TIER 2 — Greenhouse ─────────────────────────────────────────────────────
+  - name: Intercom
+    ats: greenhouse
+    slug: intercom
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Zendesk
+    ats: greenhouse
+    slug: zendesk
+    tier: 2
+    size: large
+    vertical: saas
+    geo_primary: US
+
+  - name: Amplitude
+    ats: greenhouse
+    slug: amplitude
+    tier: 2
+    size: scaleup
+    vertical: data
+    geo_primary: US
+
+  - name: Mixpanel
+    ats: greenhouse
+    slug: mixpanel
+    tier: 2
+    size: scaleup
+    vertical: data
+    geo_primary: US
+
+  - name: Segment
+    ats: greenhouse
+    slug: segment
+    tier: 2
+    size: scaleup
+    vertical: data
+    geo_primary: US
+
+  - name: Loom
+    ats: greenhouse
+    slug: loom
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Miro
+    ats: greenhouse
+    slug: miro
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Contentful
+    ats: greenhouse
+    slug: contentful
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: EU
+
+  - name: SumUp
+    ats: greenhouse
+    slug: sumup
+    tier: 2
+    size: scaleup
+    vertical: fintech
+    geo_primary: EU
+
+  - name: Pleo
+    ats: greenhouse
+    slug: pleo
+    tier: 2
+    size: scaleup
+    vertical: fintech
+    geo_primary: EU
+
+  - name: Personio
+    ats: greenhouse
+    slug: personio
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: EU
+
+  - name: GetYourGuide
+    ats: greenhouse
+    slug: getyourguide
+    tier: 2
+    size: scaleup
+    vertical: marketplace
+    geo_primary: EU
+
+  - name: Delivery Hero
+    ats: greenhouse
+    slug: deliveryhero
+    tier: 2
+    size: large
+    vertical: marketplace
+    geo_primary: EU
+
+  - name: Signifyd
+    ats: greenhouse
+    slug: signifyd
+    tier: 2
+    size: scaleup
+    vertical: fintech
+    geo_primary: US
+
+  - name: Postman
+    ats: greenhouse
+    slug: postman
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: LaunchDarkly
+    ats: greenhouse
+    slug: launchdarkly
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Grafana Labs
+    ats: greenhouse
+    slug: grafanalabs
+    tier: 2
+    size: scaleup
+    vertical: data
+    geo_primary: GLOBAL
+
+  - name: Samsara
+    ats: greenhouse
+    slug: samsara
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Benchling
+    ats: greenhouse
+    slug: benchling
+    tier: 2
+    size: scaleup
+    vertical: healthtech
+    geo_primary: US
+
+  - name: Navan
+    ats: greenhouse
+    slug: navan
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  # ── TIER 2 — Lever ──────────────────────────────────────────────────────────
+  - name: Lattice
+    ats: lever
+    slug: lattice
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Retool
+    ats: lever
+    slug: retool
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Mercury
+    ats: lever
+    slug: mercury
+    tier: 2
+    size: scaleup
+    vertical: fintech
+    geo_primary: US
+
+  - name: Webflow
+    ats: lever
+    slug: webflow
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Gusto
+    ats: lever
+    slug: gusto
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Faire
+    ats: lever
+    slug: faire
+    tier: 2
+    size: scaleup
+    vertical: marketplace
+    geo_primary: US
+
+  - name: Figma
+    ats: lever
+    slug: figma
+    tier: 1
+    size: large
+    vertical: saas
+    geo_primary: US
+
+  - name: Ironclad
+    ats: lever
+    slug: ironclad
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Deel
+    ats: lever
+    slug: deel
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: GLOBAL
+
+  - name: Remote
+    ats: lever
+    slug: remote
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: GLOBAL
+
+  # ── TIER 2 — Ashby ──────────────────────────────────────────────────────────
+  - name: Ramp
+    ats: ashby
+    slug: ramp
+    tier: 2
+    size: scaleup
+    vertical: fintech
+    geo_primary: US
+
+  - name: Replit
+    ats: ashby
+    slug: replit
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Cursor
+    ats: ashby
+    slug: anysphere
+    tier: 2
+    size: startup
+    vertical: ai
+    geo_primary: US
+
+  - name: Perplexity
+    ats: ashby
+    slug: perplexity-ai
+    tier: 2
+    size: scaleup
+    vertical: ai
+    geo_primary: US
+
+  - name: Mistral AI
+    ats: ashby
+    slug: mistral
+    tier: 2
+    size: scaleup
+    vertical: ai
+    geo_primary: EU
+
+  - name: Synthesia
+    ats: ashby
+    slug: synthesia
+    tier: 2
+    size: scaleup
+    vertical: ai
+    geo_primary: EU
+
+  - name: Photoroom
+    ats: ashby
+    slug: photoroom
+    tier: 2
+    size: scaleup
+    vertical: ai
+    geo_primary: EU
+
+  - name: Pennylane
+    ats: ashby
+    slug: pennylane
+    tier: 2
+    size: scaleup
+    vertical: fintech
+    geo_primary: EU
+
+  - name: Alan
+    ats: ashby
+    slug: alan
+    tier: 2
+    size: scaleup
+    vertical: healthtech
+    geo_primary: EU
+
+  - name: Spendesk
+    ats: ashby
+    slug: spendesk
+    tier: 2
+    size: scaleup
+    vertical: fintech
+    geo_primary: EU
+
+  - name: Swan
+    ats: ashby
+    slug: swan
+    tier: 2
+    size: startup
+    vertical: fintech
+    geo_primary: EU
+
+  - name: Cohere
+    ats: ashby
+    slug: cohere
+    tier: 2
+    size: scaleup
+    vertical: ai
+    geo_primary: US
+
+  - name: Together AI
+    ats: ashby
+    slug: togetherai
+    tier: 2
+    size: startup
+    vertical: ai
+    geo_primary: US
+
+  - name: Anduril
+    ats: ashby
+    slug: anduril
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Watershed
+    ats: ashby
+    slug: watershed
+    tier: 2
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Vanta
+    ats: ashby
+    slug: vanta
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Hex
+    ats: ashby
+    slug: hex
+    tier: 2
+    size: startup
+    vertical: data
+    geo_primary: US
+
+  - name: dbt Labs
+    ats: ashby
+    slug: dbtlabs
+    tier: 2
+    size: scaleup
+    vertical: data
+    geo_primary: US
