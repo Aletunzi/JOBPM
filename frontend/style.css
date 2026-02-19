@@ -12,18 +12,19 @@
 .filter-check input[type="checkbox"] {
   width: 14px;
   height: 14px;
-  accent-color: #46F282;
+  accent-color: #1B2D21;
   cursor: pointer;
 }
 
 .filter-check:hover span {
-  color: #46F282;
+  color: #1B2D21;
+  opacity: 0.7;
 }
 
 /* Job card */
 .job-card {
-  background: #EFEEE6;
-  border: 1px solid #d8d7cd;
+  background: white;
+  border: 1px solid #e5e7eb;
   border-radius: 12px;
   padding: 16px;
   transition: box-shadow 0.15s ease, border-color 0.15s ease;
@@ -34,16 +35,16 @@
 
 .job-card:hover {
   box-shadow: 0 4px 16px rgba(27, 45, 33, 0.1);
-  border-color: #46F282;
+  border-color: #1B2D21;
 }
 
 .job-card.is-new {
-  border-left: 3px solid #46F282;
+  border-left: 3px solid #1B2D21;
 }
 
 /* Card bottom divider */
 .job-card .border-t {
-  border-color: #d8d7cd;
+  border-color: #e5e7eb;
 }
 
 /* Badge */
@@ -87,7 +88,7 @@
   font-weight: 600;
   color: #1B2D21;
   padding: 6px 14px;
-  border: 1.5px solid #46F282;
+  border: 1.5px solid #1B2D21;
   border-radius: 8px;
   transition: background 0.15s ease, color 0.15s ease;
   text-decoration: none;
@@ -95,15 +96,15 @@
 }
 
 .btn-apply:hover {
-  background: #46F282;
-  color: #1B2D21;
-  border-color: #46F282;
+  background: #1B2D21;
+  color: white;
+  border-color: #1B2D21;
 }
 
 /* Skeleton loading */
 .skeleton-card {
   height: 140px;
-  background: linear-gradient(90deg, #e8e7df 25%, #d8d7cd 50%, #e8e7df 75%);
+  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   border-radius: 12px;
@@ -117,6 +118,6 @@
 /* Active filter buttons */
 #btn-new-only.active {
   background: #d4fce4;
-  border-color: #46F282;
+  border-color: #1B2D21;
   color: #1B2D21;
 }
