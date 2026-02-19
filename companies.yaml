@@ -615,3 +615,529 @@ companies:
     size: scaleup
     vertical: data
     geo_primary: US
+
+  # ── TIER 1 — Greenhouse (new) ────────────────────────────────────────────────
+  - name: Shopify
+    ats: greenhouse
+    slug: shopify
+    tier: 1
+    size: large
+    vertical: ecommerce
+    geo_primary: US
+
+  - name: Reddit
+    ats: greenhouse
+    slug: reddit
+    tier: 1
+    size: large
+    vertical: consumer
+    geo_primary: US
+
+  - name: Discord
+    ats: greenhouse
+    slug: discord
+    tier: 1
+    size: large
+    vertical: consumer
+    geo_primary: US
+
+  - name: Pinterest
+    ats: greenhouse
+    slug: pinterest
+    tier: 1
+    size: large
+    vertical: consumer
+    geo_primary: US
+
+  - name: DoorDash
+    ats: greenhouse
+    slug: doordash
+    tier: 1
+    size: large
+    vertical: marketplace
+    geo_primary: US
+
+  - name: Duolingo
+    ats: greenhouse
+    slug: duolingo
+    tier: 1
+    size: large
+    vertical: consumer
+    geo_primary: US
+
+  - name: Cloudflare
+    ats: greenhouse
+    slug: cloudflare
+    tier: 1
+    size: large
+    vertical: saas
+    geo_primary: US
+
+  - name: MongoDB
+    ats: greenhouse
+    slug: mongodb
+    tier: 1
+    size: large
+    vertical: data
+    geo_primary: US
+
+  - name: Asana
+    ats: greenhouse
+    slug: asana
+    tier: 1
+    size: large
+    vertical: saas
+    geo_primary: US
+
+  - name: GitLab
+    ats: greenhouse
+    slug: gitlab
+    tier: 1
+    size: large
+    vertical: saas
+    geo_primary: GLOBAL
+
+  - name: Grammarly
+    ats: greenhouse
+    slug: grammarly
+    tier: 1
+    size: large
+    vertical: saas
+    geo_primary: US
+
+  - name: Okta
+    ats: greenhouse
+    slug: okta
+    tier: 1
+    size: large
+    vertical: saas
+    geo_primary: US
+
+  - name: Nubank
+    ats: greenhouse
+    slug: nubank
+    tier: 1
+    size: large
+    vertical: fintech
+    geo_primary: LATAM
+
+  # ── TIER 2 — Greenhouse (new) ────────────────────────────────────────────────
+  - name: Carta
+    ats: greenhouse
+    slug: carta
+    tier: 2
+    size: scaleup
+    vertical: fintech
+    geo_primary: US
+
+  - name: Confluent
+    ats: greenhouse
+    slug: confluent
+    tier: 2
+    size: scaleup
+    vertical: data
+    geo_primary: US
+
+  - name: Udemy
+    ats: greenhouse
+    slug: udemy
+    tier: 2
+    size: large
+    vertical: saas
+    geo_primary: US
+
+  - name: Mozilla
+    ats: greenhouse
+    slug: mozilla
+    tier: 2
+    size: mid
+    vertical: saas
+    geo_primary: GLOBAL
+
+  - name: Vinted
+    ats: greenhouse
+    slug: vinted
+    tier: 2
+    size: scaleup
+    vertical: marketplace
+    geo_primary: EU
+
+  - name: HelloFresh
+    ats: greenhouse
+    slug: hellofresh
+    tier: 2
+    size: large
+    vertical: ecommerce
+    geo_primary: EU
+
+  - name: BlaBlaCar
+    ats: greenhouse
+    slug: blablacar
+    tier: 2
+    size: scaleup
+    vertical: marketplace
+    geo_primary: EU
+
+  - name: Revolut
+    ats: greenhouse
+    slug: revolut
+    tier: 2
+    size: large
+    vertical: fintech
+    geo_primary: EU
+
+  - name: Monzo
+    ats: greenhouse
+    slug: monzo
+    tier: 2
+    size: scaleup
+    vertical: fintech
+    geo_primary: EU
+
+  - name: Coursera
+    ats: greenhouse
+    slug: coursera
+    tier: 2
+    size: large
+    vertical: saas
+    geo_primary: US
+
+  - name: Squarespace
+    ats: greenhouse
+    slug: squarespace
+    tier: 2
+    size: large
+    vertical: saas
+    geo_primary: US
+
+  # ── TIER 2 — Lever (new) ─────────────────────────────────────────────────────
+  - name: Chime
+    ats: lever
+    slug: chime
+    tier: 2
+    size: scaleup
+    vertical: fintech
+    geo_primary: US
+
+  - name: Strava
+    ats: lever
+    slug: strava
+    tier: 2
+    size: scaleup
+    vertical: consumer
+    geo_primary: US
+
+  - name: Patreon
+    ats: lever
+    slug: patreon
+    tier: 2
+    size: scaleup
+    vertical: marketplace
+    geo_primary: US
+
+  - name: Modern Health
+    ats: lever
+    slug: modernhealth
+    tier: 2
+    size: scaleup
+    vertical: healthtech
+    geo_primary: US
+
+  - name: Wealthsimple
+    ats: lever
+    slug: wealthsimple
+    tier: 2
+    size: scaleup
+    vertical: fintech
+    geo_primary: US
+
+  - name: Gem
+    ats: lever
+    slug: gem
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Masterclass
+    ats: lever
+    slug: masterclass
+    tier: 2
+    size: scaleup
+    vertical: consumer
+    geo_primary: US
+
+  - name: Talkdesk
+    ats: lever
+    slug: talkdesk
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Dutchie
+    ats: lever
+    slug: dutchie
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  # ── TIER 2 — Ashby (new) ─────────────────────────────────────────────────────
+  - name: Glean
+    ats: ashby
+    slug: glean
+    tier: 2
+    size: scaleup
+    vertical: ai
+    geo_primary: US
+
+  - name: Runway
+    ats: ashby
+    slug: runwayml
+    tier: 2
+    size: startup
+    vertical: ai
+    geo_primary: US
+
+  - name: Supabase
+    ats: ashby
+    slug: supabase
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: GLOBAL
+
+  - name: Hugging Face
+    ats: ashby
+    slug: huggingface
+    tier: 2
+    size: scaleup
+    vertical: ai
+    geo_primary: GLOBAL
+
+  - name: Groq
+    ats: ashby
+    slug: groq
+    tier: 2
+    size: startup
+    vertical: ai
+    geo_primary: US
+
+  - name: Harvey
+    ats: ashby
+    slug: harvey
+    tier: 2
+    size: startup
+    vertical: ai
+    geo_primary: US
+
+  - name: Descript
+    ats: ashby
+    slug: descript
+    tier: 2
+    size: scaleup
+    vertical: ai
+    geo_primary: US
+
+  - name: Hightouch
+    ats: ashby
+    slug: hightouch
+    tier: 2
+    size: startup
+    vertical: data
+    geo_primary: US
+
+  - name: Modal
+    ats: ashby
+    slug: modal
+    tier: 2
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Codeium
+    ats: ashby
+    slug: codeium
+    tier: 2
+    size: startup
+    vertical: ai
+    geo_primary: US
+
+  - name: ElevenLabs
+    ats: ashby
+    slug: elevenlabs
+    tier: 2
+    size: scaleup
+    vertical: ai
+    geo_primary: GLOBAL
+
+  - name: Luma AI
+    ats: ashby
+    slug: luma-ai
+    tier: 2
+    size: startup
+    vertical: ai
+    geo_primary: US
+
+  - name: Jasper
+    ats: ashby
+    slug: jasperai
+    tier: 2
+    size: scaleup
+    vertical: ai
+    geo_primary: US
+
+  - name: Dagster
+    ats: ashby
+    slug: dagster
+    tier: 2
+    size: startup
+    vertical: data
+    geo_primary: US
+
+  # ── TIER 2 — SmartRecruiters ─────────────────────────────────────────────────
+  - name: Ericsson
+    ats: smartrecruiters
+    slug: ericsson
+    tier: 2
+    size: large
+    vertical: saas
+    geo_primary: EU
+
+  - name: Nokia
+    ats: smartrecruiters
+    slug: Nokia
+    tier: 2
+    size: large
+    vertical: saas
+    geo_primary: EU
+
+  - name: Philips
+    ats: smartrecruiters
+    slug: Philips
+    tier: 2
+    size: large
+    vertical: healthtech
+    geo_primary: EU
+
+  - name: IBM
+    ats: smartrecruiters
+    slug: IBM
+    tier: 2
+    size: large
+    vertical: saas
+    geo_primary: US
+
+  - name: Dell Technologies
+    ats: smartrecruiters
+    slug: DellTechnologies
+    tier: 2
+    size: large
+    vertical: saas
+    geo_primary: US
+
+  - name: Siemens
+    ats: smartrecruiters
+    slug: Siemens
+    tier: 2
+    size: large
+    vertical: saas
+    geo_primary: EU
+
+  - name: Maersk
+    ats: smartrecruiters
+    slug: maersk
+    tier: 2
+    size: large
+    vertical: saas
+    geo_primary: EU
+
+  - name: Adecco
+    ats: smartrecruiters
+    slug: Adecco
+    tier: 2
+    size: large
+    vertical: saas
+    geo_primary: EU
+
+  # ── TIER 2 — Teamtailor (EU) ─────────────────────────────────────────────────
+  - name: Voi Technology
+    ats: teamtailor
+    slug: voi
+    tier: 2
+    size: scaleup
+    vertical: marketplace
+    geo_primary: EU
+
+  - name: Adevinta
+    ats: teamtailor
+    slug: adevinta
+    tier: 2
+    size: large
+    vertical: marketplace
+    geo_primary: EU
+
+  - name: Schibsted
+    ats: teamtailor
+    slug: schibsted
+    tier: 2
+    size: large
+    vertical: marketplace
+    geo_primary: EU
+
+  - name: Trustpilot
+    ats: teamtailor
+    slug: trustpilot
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Trade Republic
+    ats: teamtailor
+    slug: traderepublic
+    tier: 2
+    size: scaleup
+    vertical: fintech
+    geo_primary: EU
+
+  - name: Factorial HR
+    ats: teamtailor
+    slug: factorial
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Lunar
+    ats: teamtailor
+    slug: lunar
+    tier: 2
+    size: scaleup
+    vertical: fintech
+    geo_primary: EU
+
+  - name: Vivino
+    ats: teamtailor
+    slug: vivino
+    tier: 2
+    size: scaleup
+    vertical: marketplace
+    geo_primary: EU
+
+  - name: Mojang Studios
+    ats: teamtailor
+    slug: mojang
+    tier: 2
+    size: large
+    vertical: consumer
+    geo_primary: EU
+
+  - name: Storytel
+    ats: teamtailor
+    slug: storytel
+    tier: 2
+    size: scaleup
+    vertical: consumer
+    geo_primary: EU

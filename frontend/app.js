@@ -89,13 +89,13 @@ async function loadStats() {
 
 const GEO_LABELS = { EU: "Europe", US: "USA", UK: "UK", REMOTE: "Remote", APAC: "APAC", LATAM: "LATAM", OTHER: "Other" };
 const SENIORITY_COLORS = {
-  JUNIOR: "bg-purple-100 text-purple-700",
-  MID: "bg-gray-100 text-gray-600",
-  SENIOR: "bg-blue-100 text-blue-700",
-  STAFF: "bg-indigo-100 text-indigo-700",
-  LEAD: "bg-orange-100 text-orange-700",
-  LEADERSHIP: "bg-red-100 text-red-700",
-  INTERN: "bg-pink-100 text-pink-700",
+  JUNIOR: "badge-seniority",
+  MID: "badge-seniority",
+  SENIOR: "badge-seniority",
+  STAFF: "badge-seniority",
+  LEAD: "badge-seniority",
+  LEADERSHIP: "badge-seniority",
+  INTERN: "badge-seniority",
 };
 
 function geoBadge(geo) {
@@ -104,7 +104,7 @@ function geoBadge(geo) {
 }
 
 function seniorityBadge(sen) {
-  const cls = SENIORITY_COLORS[sen] || "bg-gray-100 text-gray-500";
+  const cls = SENIORITY_COLORS[sen] || "badge-seniority";
   return `<span class="badge ${cls}">${sen}</span>`;
 }
 
@@ -216,12 +216,9 @@ async function loadJobs() {
     if (items.length === 0) {
       grid.innerHTML = "";
       document.getElementById("empty-state").classList.remove("hidden");
-      document.getElementById("results-count").textContent = "No results";
     } else {
       grid.innerHTML = items.map(renderCard).join("");
       document.getElementById("empty-state").classList.add("hidden");
-      document.getElementById("results-count").textContent =
-        `${items.length} job${items.length !== 1 ? "s" : ""}`;
 
       state.nextCursor = data.next_cursor || null;
       state.hasMore = !!data.next_cursor;
@@ -230,7 +227,6 @@ async function loadJobs() {
   } catch (err) {
     document.getElementById("jobs-grid").innerHTML =
       `<div class="col-span-full text-center py-12 text-red-400 text-sm">Error loading jobs: ${escHtml(err.message)}</div>`;
-    document.getElementById("results-count").textContent = "Error";
   } finally {
     state.loading = false;
     hideLoading();
@@ -249,10 +245,6 @@ async function appendJobs() {
     if (items.length > 0) {
       const grid = document.getElementById("jobs-grid");
       grid.insertAdjacentHTML("beforeend", items.map(renderCard).join(""));
-
-      const total = grid.querySelectorAll(".job-card").length;
-      document.getElementById("results-count").textContent =
-        `${total} job${total !== 1 ? "s" : ""}`;
     }
 
     state.nextCursor = data.next_cursor || null;

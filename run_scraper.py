@@ -124,6 +124,14 @@ async def scrape_company(session, company_data: dict, semaphore: asyncio.Semapho
             from scrapers.ashby import fetch_ashby
             async for job in fetch_ashby(slug, name):
                 jobs.append(job)
+        elif ats == "smartrecruiters":
+            from scrapers.smartrecruiters import fetch_smartrecruiters
+            async for job in fetch_smartrecruiters(slug, name):
+                jobs.append(job)
+        elif ats == "teamtailor":
+            from scrapers.teamtailor import fetch_teamtailor
+            async for job in fetch_teamtailor(slug, name):
+                jobs.append(job)
         else:
             return 0
 
@@ -159,7 +167,7 @@ async def refresh_search_vectors(session):
 async def main():
     from api.database import AsyncSessionLocal
 
-    logger.info("=== PM Job Tracker scrape starting ===")
+    logger.info("=== Fursa scrape starting ===")
     start = datetime.now(timezone.utc)
 
     yaml_path = os.path.join(os.path.dirname(__file__), "companies.yaml")
@@ -208,8 +216,21 @@ async def main():
         except Exception as exc:
             logger.error("Proxycurl error: %s", exc)
 
+        # ── Remotive ──
+        logger.info("--- Phase 4: Remotive ---")
+        try:
+            from scrapers.remotive import fetch_remotive
+            remotive_jobs = []
+            async for job in fetch_remotive():
+                remotive_jobs.append(job)
+            count = await upsert_jobs(session, remotive_jobs)
+            logger.info("  Remotive: %d PM jobs", count)
+            total_jobs += count
+        except Exception as exc:
+            logger.error("Remotive error: %s", exc)
+
         # ── Maintenance ──
-        logger.info("--- Phase 4: Maintenance ---")
+        logger.info("--- Phase 5: Maintenance ---")
         await mark_inactive_jobs(session)
         await refresh_search_vectors(session)
 
