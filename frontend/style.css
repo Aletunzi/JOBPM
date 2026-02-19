@@ -1,0 +1,117 @@
+/* Filter checkboxes */
+.filter-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: #374151;
+  user-select: none;
+}
+
+.filter-check input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  accent-color: #0284c7;
+  cursor: pointer;
+}
+
+.filter-check:hover span {
+  color: #0284c7;
+}
+
+/* Job card */
+.job-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.job-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  border-color: #bfdbfe;
+}
+
+.job-card.is-new {
+  border-left: 3px solid #22c55e;
+}
+
+/* Badge */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.badge-new {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.badge-geo {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.badge-seniority {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.badge-remote {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+/* Apply button */
+.btn-apply {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #0284c7;
+  padding: 6px 14px;
+  border: 1.5px solid #bfdbfe;
+  border-radius: 8px;
+  transition: background 0.15s ease, color 0.15s ease;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn-apply:hover {
+  background: #0284c7;
+  color: white;
+  border-color: #0284c7;
+}
+
+/* Skeleton loading */
+.skeleton-card {
+  height: 140px;
+  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 12px;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Active filter buttons */
+#btn-new-only.active {
+  background: #dcfce7;
+  border-color: #22c55e;
+  color: #15803d;
+}

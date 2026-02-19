@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PM Job Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { 50: '#f0f9ff', 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1' }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="bg-gray-50 min-h-screen font-sans text-gray-800">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
+    <div class="max-w-screen-xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <span class="text-2xl font-bold text-brand-600 tracking-tight">PM Jobs</span>
+        <span class="hidden sm:block text-sm text-gray-400">Daily updated PM opportunities</span>
+      </div>
+      <div id="stats-bar" class="flex items-center gap-4 text-sm text-gray-500">
+        <span id="stat-total" class="flex items-center gap-1">
+          <span class="w-2 h-2 rounded-full bg-green-400 inline-block animate-pulse"></span>
+          Loading...
+        </span>
+        <span id="stat-new" class="bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium text-xs"></span>
+        <span id="stat-scraped" class="hidden sm:block"></span>
+      </div>
+    </div>
+  </header>
+
+  <div class="max-w-screen-xl mx-auto px-4 py-6 flex gap-6">
+
+    <!-- Sidebar filters -->
+    <aside class="w-56 flex-shrink-0 hidden md:block">
+      <div class="bg-white rounded-xl border border-gray-200 p-4 sticky top-20 space-y-5">
+
+        <!-- Keyword search -->
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Search</label>
+          <input id="filter-keyword" type="text" placeholder="e.g. growth, B2B..."
+            class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500" />
+        </div>
+
+        <!-- Geo -->
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Geography</label>
+          <div class="space-y-1.5" id="filter-geo">
+            <label class="filter-check"><input type="checkbox" value="EU"> <span>Europe</span></label>
+            <label class="filter-check"><input type="checkbox" value="UK"> <span>United Kingdom</span></label>
+            <label class="filter-check"><input type="checkbox" value="US"> <span>United States</span></label>
+            <label class="filter-check"><input type="checkbox" value="REMOTE"> <span>Remote</span></label>
+          </div>
+        </div>
+
+        <!-- Seniority -->
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Seniority</label>
+          <div class="space-y-1.5" id="filter-seniority">
+            <label class="filter-check"><input type="checkbox" value="JUNIOR"> <span>Junior</span></label>
+            <label class="filter-check"><input type="checkbox" value="MID"> <span>Mid</span></label>
+            <label class="filter-check"><input type="checkbox" value="SENIOR"> <span>Senior</span></label>
+            <label class="filter-check"><input type="checkbox" value="STAFF"> <span>Staff / Principal</span></label>
+            <label class="filter-check"><input type="checkbox" value="LEAD"> <span>Lead / Group</span></label>
+            <label class="filter-check"><input type="checkbox" value="LEADERSHIP"> <span>Director / VP</span></label>
+          </div>
+        </div>
+
+        <!-- Vertical -->
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Vertical</label>
+          <div class="space-y-1.5" id="filter-vertical">
+            <label class="filter-check"><input type="checkbox" value="ai"> <span>AI / ML</span></label>
+            <label class="filter-check"><input type="checkbox" value="fintech"> <span>Fintech</span></label>
+            <label class="filter-check"><input type="checkbox" value="saas"> <span>SaaS</span></label>
+            <label class="filter-check"><input type="checkbox" value="healthtech"> <span>HealthTech</span></label>
+            <label class="filter-check"><input type="checkbox" value="marketplace"> <span>Marketplace</span></label>
+            <label class="filter-check"><input type="checkbox" value="data"> <span>Data</span></label>
+          </div>
+        </div>
+
+        <!-- Date -->
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Posted within</label>
+          <select id="filter-date" class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500">
+            <option value="ALL">All time</option>
+            <option value="TODAY">Today</option>
+            <option value="7D" selected>Last 7 days</option>
+            <option value="30D">Last 30 days</option>
+          </select>
+        </div>
+
+        <button id="btn-reset" class="w-full text-xs text-gray-400 hover:text-red-500 transition-colors pt-1">Reset filters</button>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="flex-1 min-w-0">
+
+      <!-- Mobile filter bar -->
+      <div class="md:hidden mb-4 flex gap-2 overflow-x-auto pb-1">
+        <input id="filter-keyword-mobile" type="text" placeholder="Search role..."
+          class="flex-1 min-w-0 text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500" />
+        <select id="filter-geo-mobile" class="text-sm border border-gray-200 rounded-lg px-2 py-2 focus:outline-none">
+          <option value="">Any geo</option>
+          <option value="EU">EU</option>
+          <option value="UK">UK</option>
+          <option value="US">US</option>
+          <option value="REMOTE">Remote</option>
+        </select>
+        <select id="filter-date-mobile" class="text-sm border border-gray-200 rounded-lg px-2 py-2 focus:outline-none">
+          <option value="ALL">All</option>
+          <option value="TODAY">Today</option>
+          <option value="7D" selected>7 days</option>
+          <option value="30D">30 days</option>
+        </select>
+      </div>
+
+      <!-- Results count + sort -->
+      <div class="flex items-center justify-between mb-4">
+        <p id="results-count" class="text-sm text-gray-500">Loading jobs...</p>
+        <div class="flex gap-2">
+          <button id="btn-new-only" class="text-xs px-3 py-1.5 rounded-full border border-gray-200 hover:border-green-400 hover:text-green-600 transition-colors">
+            New today only
+          </button>
+        </div>
+      </div>
+
+      <!-- Job cards grid -->
+      <div id="jobs-grid" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
+        <!-- Cards injected by JS -->
+        <div class="skeleton-card col-span-full"></div>
+      </div>
+
+      <!-- Empty state -->
+      <div id="empty-state" class="hidden text-center py-20 text-gray-400">
+        <div class="text-5xl mb-3">&#128269;</div>
+        <p class="text-lg font-medium text-gray-500">No jobs found</p>
+        <p class="text-sm mt-1">Try adjusting your filters</p>
+      </div>
+
+      <!-- Pagination -->
+      <div id="pagination" class="hidden mt-6 flex items-center justify-between">
+        <button id="btn-prev" class="px-4 py-2 text-sm rounded-lg border border-gray-200 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+          &larr; Previous
+        </button>
+        <span id="page-info" class="text-sm text-gray-400"></span>
+        <button id="btn-next" class="px-4 py-2 text-sm rounded-lg border border-gray-200 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+          Next &rarr;
+        </button>
+      </div>
+
+      <!-- Loading spinner -->
+      <div id="loading" class="hidden flex justify-center py-12">
+        <div class="w-8 h-8 border-4 border-brand-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
