@@ -3,14 +3,32 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PM Job Tracker</title>
+  <title>Fursa</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
+          fontFamily: {
+            sans: ["Inter Tight", "sans-serif"],
+          },
           colors: {
-            brand: { 50: '#f0f9ff', 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1' }
+            brand: { 50: '#e8fef0', 500: '#46F282', 600: '#46F282', 700: '#2dd668' },
+            gray: {
+              50:  '#f7f8f7',
+              100: '#eeeeed',
+              200: '#d8dbd9',
+              300: '#c1c7c3',
+              400: '#7d9187',
+              500: '#5a6a62',
+              600: '#3a4d42',
+              700: '#2a3930',
+              800: '#1f2e24',
+              900: '#1B2D21',
+            }
           }
         }
       }
@@ -18,21 +36,20 @@
   </script>
   <link rel="stylesheet" href="style.css" />
 </head>
-<body class="bg-gray-50 min-h-screen font-sans text-gray-800">
+<body class="bg-white min-h-screen font-sans text-gray-900">
 
   <!-- Header -->
   <header class="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
     <div class="max-w-screen-xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
       <div class="flex items-center gap-3">
-        <span class="text-2xl font-bold text-brand-600 tracking-tight">PM Jobs</span>
-        <span class="hidden sm:block text-sm text-gray-400">Daily updated PM opportunities</span>
+        <span class="text-2xl font-bold text-brand-600 tracking-tight">Fursa</span>
       </div>
       <div id="stats-bar" class="flex items-center gap-4 text-sm text-gray-500">
         <span id="stat-total" class="flex items-center gap-1">
-          <span class="w-2 h-2 rounded-full bg-green-400 inline-block animate-pulse"></span>
+          <span class="w-2 h-2 rounded-full bg-brand-500 inline-block animate-pulse"></span>
           Loading...
         </span>
-        <span id="stat-new" class="bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium text-xs"></span>
+        <span id="stat-new" class="bg-brand-50 text-gray-700 px-2 py-0.5 rounded-full font-medium text-xs"></span>
         <span id="stat-scraped" class="hidden sm:block"></span>
       </div>
     </div>
@@ -146,14 +163,11 @@
         </select>
       </div>
 
-      <!-- Results count + sort -->
-      <div class="flex items-center justify-between mb-4">
-        <p id="results-count" class="text-sm text-gray-500">Loading jobs...</p>
-        <div class="flex gap-2">
-          <button id="btn-new-only" class="text-xs px-3 py-1.5 rounded-full border border-gray-200 hover:border-green-400 hover:text-green-600 transition-colors">
-            New today only
-          </button>
-        </div>
+      <!-- New today filter -->
+      <div class="flex items-center justify-end mb-4">
+        <button id="btn-new-only" class="text-xs px-3 py-1.5 rounded-full border border-gray-200 hover:border-brand-500 hover:text-gray-900 transition-colors">
+          New today only
+        </button>
       </div>
 
       <!-- Job cards grid -->
