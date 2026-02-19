@@ -66,6 +66,24 @@ UK_KEYWORDS = {
     "wales", "great britain",
 }
 
+APAC_KEYWORDS = {
+    "australia", "sydney", "melbourne", "brisbane", "perth", "adelaide",
+    "new zealand", "auckland", "singapore", "india", "mumbai", "bangalore",
+    "bengaluru", "delhi", "hyderabad", "pune", "chennai", "japan", "tokyo",
+    "osaka", "south korea", "seoul", "china", "beijing", "shanghai",
+    "guangzhou", "shenzhen", "hong kong", "taiwan", "taipei", "thailand",
+    "bangkok", "vietnam", "ho chi minh", "hanoi", "indonesia", "jakarta",
+    "malaysia", "kuala lumpur", "philippines", "manila", "apac", "asia pacific",
+}
+
+LATAM_KEYWORDS = {
+    "brazil", "são paulo", "sao paulo", "rio de janeiro", "bogota", "bogotá",
+    "colombia", "argentina", "buenos aires", "chile", "santiago", "peru",
+    "lima", "mexico", "ciudad de mexico", "venezuela", "ecuador", "quito",
+    "costa rica", "uruguay", "montevideo", "panama", "latin america", "latam",
+    "south america",
+}
+
 
 def infer_geo(location_raw: Optional[str]) -> str:
     if not location_raw:
@@ -80,6 +98,10 @@ def infer_geo(location_raw: Optional[str]) -> str:
         return "EU"
     if any(kw in loc for kw in US_STATES) or any(kw in loc for kw in US_CITIES):
         return "US"
+    if any(kw in loc for kw in APAC_KEYWORDS):
+        return "APAC"
+    if any(kw in loc for kw in LATAM_KEYWORDS):
+        return "LATAM"
     return "OTHER"
 
 

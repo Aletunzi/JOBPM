@@ -11,11 +11,27 @@ logger = logging.getLogger(__name__)
 HEADERS = {"User-Agent": "PMJobTracker/1.0 (job aggregator, contact: hello@pmjobtracker.dev)"}
 
 SEARCH_CONFIGS = [
+    # Europe
     {"country": "gb", "geo_hint": "UK"},
     {"country": "de", "geo_hint": "EU"},
     {"country": "nl", "geo_hint": "EU"},
     {"country": "fr", "geo_hint": "EU"},
+    {"country": "it", "geo_hint": "EU"},
+    {"country": "pl", "geo_hint": "EU"},
+    {"country": "at", "geo_hint": "EU"},
+    # North America
     {"country": "us", "geo_hint": "US"},
+    {"country": "ca", "geo_hint": "US"},
+    # APAC
+    {"country": "au", "geo_hint": "APAC"},
+    {"country": "sg", "geo_hint": "APAC"},
+    {"country": "in", "geo_hint": "APAC"},
+    {"country": "nz", "geo_hint": "APAC"},
+    # LATAM
+    {"country": "br", "geo_hint": "LATAM"},
+    {"country": "mx", "geo_hint": "LATAM"},
+    # Africa
+    {"country": "za", "geo_hint": "OTHER"},
 ]
 
 KEYWORDS = ["product manager", "product management"]

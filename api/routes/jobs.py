@@ -49,12 +49,14 @@ async def list_jobs(
     tier: Optional[str] = Query(None, description="Comma-separated: 1,2,3"),
     date: Optional[str] = Query(None, description="TODAY | 7D | 30D | ALL (default ALL)"),
     keyword: Optional[str] = Query(None, description="Full-text search on title"),
+    city: Optional[str] = Query(None, description="City substring match on location_raw"),
+    country: Optional[str] = Query(None, description="Country substring match on location_raw"),
     cursor: Optional[str] = Query(None, description="Cursor for pagination (first_seen ISO timestamp)"),
     limit: int = Query(25, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
     _key: str = Depends(require_api_key),
 ):
-    cache_key = f"jobs:{geo}:{seniority}:{vertical}:{tier}:{date}:{keyword}:{cursor}:{limit}"
+    cache_key = f"jobs:{geo}:{seniority}:{vertical}:{tier}:{date}:{keyword}:{city}:{country}:{cursor}:{limit}"
     cached = cache_get(cache_key)
     if cached:
         return cached
@@ -82,6 +84,12 @@ async def list_jobs(
         conditions.append(
             Job.search_vector.op("@@")(func.plainto_tsquery("english", keyword.strip()))
         )
+
+    if city and city.strip():
+        conditions.append(Job.location_raw.ilike(f"%{city.strip()}%"))
+
+    if country and country.strip():
+        conditions.append(Job.location_raw.ilike(f"%{country.strip()}%"))
 
     if cursor:
         try:
