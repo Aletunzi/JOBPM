@@ -108,16 +108,6 @@ function seniorityBadge(sen) {
   return `<span class="badge ${cls}">${sen}</span>`;
 }
 
-function sourceBadge(source) {
-  const colors = {
-    greenhouse: "bg-green-50 text-green-600",
-    lever: "bg-yellow-50 text-yellow-700",
-    ashby: "bg-violet-50 text-violet-600",
-    adzuna: "bg-cyan-50 text-cyan-700",
-    proxycurl: "bg-blue-50 text-blue-600",
-  };
-  return `<span class="badge ${colors[source] || "bg-gray-50 text-gray-500"}">${source}</span>`;
-}
 
 function timeSince(isoString) {
   const diff = Date.now() - new Date(isoString).getTime();
@@ -145,7 +135,6 @@ function renderCard(job) {
       <div class="flex flex-wrap items-center gap-1.5">
         ${geoBadge(job.geo_region)}
         ${seniorityBadge(job.seniority)}
-        ${sourceBadge(job.source)}
       </div>
       <div class="flex items-center justify-between text-xs text-gray-400 pt-1 border-t border-gray-100">
         <span>${job.location_raw ? escHtml(job.location_raw) : "—"}</span>

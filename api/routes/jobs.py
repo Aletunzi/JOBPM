@@ -18,11 +18,13 @@ GEO_VALUES = {"EU", "US", "UK", "REMOTE", "APAC", "LATAM", "OTHER"}
 SENIORITY_VALUES = {"JUNIOR", "MID", "SENIOR", "STAFF", "LEAD", "LEADERSHIP", "INTERN"}
 
 
-def _is_new(first_seen: datetime) -> bool:
-    cutoff = datetime.now(timezone.utc) - timedelta(hours=24)
-    if first_seen.tzinfo is None:
-        first_seen = first_seen.replace(tzinfo=timezone.utc)
-    return first_seen >= cutoff
+def _is_new(posted_date: Optional[datetime]) -> bool:
+    if not posted_date:
+        return False
+    cutoff = datetime.now(timezone.utc) - timedelta(days=2)
+    if posted_date.tzinfo is None:
+        posted_date = posted_date.replace(tzinfo=timezone.utc)
+    return posted_date >= cutoff
 
 
 def _job_to_out(job: Job) -> JobOut:
@@ -36,7 +38,7 @@ def _job_to_out(job: Job) -> JobOut:
         url=job.url,
         posted_date=job.posted_date,
         first_seen=job.first_seen,
-        is_new=_is_new(job.first_seen),
+        is_new=_is_new(job.posted_date),
         source=job.source,
     )
 
