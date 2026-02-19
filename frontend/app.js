@@ -7,17 +7,18 @@
 
 const API_KEY = window.__API_KEY__ || "dev-insecure-key";
 const API_BASE = "";   // same origin; update to full URL when Lovable takes over
-const PAGE_SIZE = 25;
+const FETCH_SIZE = 50;
 
 // ── State ─────────────────────────────────────────────────────────────────────
 
 const state = {
-  cursor: null,
-  prevCursors: [],
-  page: 1,
+  nextCursor: null,
+  hasMore: false,
   newOnly: false,
   loading: false,
 };
+
+let scrollObserver = null;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -26,29 +27,33 @@ function getChecked(containerId) {
     .map(el => el.value);
 }
 
-function buildParams() {
-  const geo = getChecked("filter-geo");
+function buildParams(cursor = null) {
+  const continent = document.getElementById("filter-continent").value;
   const seniority = getChecked("filter-seniority");
   const vertical = getChecked("filter-vertical");
   const keyword = document.getElementById("filter-keyword").value.trim();
+  const city = document.getElementById("filter-city").value.trim();
+  const country = document.getElementById("filter-country").value.trim();
   const date = document.getElementById("filter-date").value;
 
   // mobile overrides (if sidebar hidden)
-  const geoMobile = document.getElementById("filter-geo-mobile").value;
+  const continentMobile = document.getElementById("filter-continent-mobile").value;
   const dateMobile = document.getElementById("filter-date-mobile").value;
   const keywordMobile = document.getElementById("filter-keyword-mobile").value.trim();
 
   const p = new URLSearchParams();
-  const geoFinal = geo.length ? geo.join(",") : geoMobile || null;
+  const geoFinal = continent || continentMobile || null;
   if (geoFinal) p.set("geo", geoFinal);
   if (seniority.length) p.set("seniority", seniority.join(","));
   if (vertical.length) p.set("vertical", vertical.join(","));
   const kw = keyword || keywordMobile;
   if (kw) p.set("keyword", kw);
+  if (city) p.set("city", city);
+  if (country) p.set("country", country);
   const dateFinal = date !== "ALL" ? date : (dateMobile !== "ALL" ? dateMobile : null);
   if (dateFinal) p.set("date", dateFinal);
-  p.set("limit", PAGE_SIZE);
-  if (state.cursor) p.set("cursor", state.cursor);
+  p.set("limit", FETCH_SIZE);
+  if (cursor) p.set("cursor", cursor);
   return p;
 }
 
@@ -82,7 +87,7 @@ async function loadStats() {
 
 // ── Rendering ─────────────────────────────────────────────────────────────────
 
-const GEO_LABELS = { EU: "Europe", US: "USA", UK: "UK", REMOTE: "Remote", APAC: "APAC", OTHER: "Other" };
+const GEO_LABELS = { EU: "Europe", US: "USA", UK: "UK", REMOTE: "Remote", APAC: "APAC", LATAM: "LATAM", OTHER: "Other" };
 const SENIORITY_COLORS = {
   JUNIOR: "bg-purple-100 text-purple-700",
   MID: "bg-gray-100 text-gray-600",
@@ -162,11 +167,35 @@ function showLoading() {
   document.getElementById("loading").classList.remove("hidden");
   document.getElementById("jobs-grid").innerHTML = "";
   document.getElementById("empty-state").classList.add("hidden");
-  document.getElementById("pagination").classList.add("hidden");
 }
 
 function hideLoading() {
   document.getElementById("loading").classList.add("hidden");
+}
+
+function showLoadingMore() {
+  document.getElementById("loading-more").classList.remove("hidden");
+}
+
+function hideLoadingMore() {
+  document.getElementById("loading-more").classList.add("hidden");
+}
+
+// ── Scroll observer ────────────────────────────────────────────────────────────
+
+function setupScrollObserver() {
+  if (scrollObserver) scrollObserver.disconnect();
+  const sentinel = document.getElementById("scroll-sentinel");
+  if (!sentinel) return;
+  scrollObserver = new IntersectionObserver(
+    (entries) => {
+      if (entries[0].isIntersecting && state.hasMore && !state.loading) {
+        appendJobs();
+      }
+    },
+    { rootMargin: "300px" }
+  );
+  scrollObserver.observe(sentinel);
 }
 
 // ── Fetch & render jobs ────────────────────────────────────────────────────────
@@ -174,15 +203,17 @@ function hideLoading() {
 async function loadJobs() {
   if (state.loading) return;
   state.loading = true;
+  state.nextCursor = null;
+  state.hasMore = false;
   showLoading();
 
   try {
     let data;
     if (state.newOnly) {
-      const geo = getChecked("filter-geo").join(",") || null;
+      const continent = document.getElementById("filter-continent").value;
       const seniority = getChecked("filter-seniority").join(",") || null;
       const p = new URLSearchParams();
-      if (geo) p.set("geo", geo);
+      if (continent) p.set("geo", continent);
       if (seniority) p.set("seniority", seniority);
       p.set("limit", 100);
       data = await apiFetch("/api/jobs/new", p);
@@ -201,18 +232,11 @@ async function loadJobs() {
       grid.innerHTML = items.map(renderCard).join("");
       document.getElementById("empty-state").classList.add("hidden");
       document.getElementById("results-count").textContent =
-        `${items.length} job${items.length !== 1 ? "s" : ""} · Page ${state.page}`;
+        `${items.length} job${items.length !== 1 ? "s" : ""}`;
 
-      // Pagination
-      const nextCursor = data.next_cursor;
-      const pagination = document.getElementById("pagination");
-      pagination.classList.remove("hidden");
-      document.getElementById("btn-prev").disabled = state.page <= 1;
-      document.getElementById("btn-next").disabled = !nextCursor;
-      document.getElementById("page-info").textContent = `Page ${state.page}`;
-
-      // Store next cursor for forward navigation
-      pagination._nextCursor = nextCursor;
+      state.nextCursor = data.next_cursor || null;
+      state.hasMore = !!data.next_cursor;
+      setupScrollObserver();
     }
   } catch (err) {
     document.getElementById("jobs-grid").innerHTML =
@@ -224,27 +248,38 @@ async function loadJobs() {
   }
 }
 
-// ── Pagination ─────────────────────────────────────────────────────────────────
+async function appendJobs() {
+  if (state.loading || !state.nextCursor) return;
+  state.loading = true;
+  showLoadingMore();
 
-document.getElementById("btn-next").addEventListener("click", () => {
-  const nextCursor = document.getElementById("pagination")._nextCursor;
-  if (nextCursor) {
-    state.prevCursors.push(state.cursor);
-    state.cursor = nextCursor;
-    state.page++;
-    loadJobs();
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
-});
+  try {
+    const data = await apiFetch("/api/jobs", buildParams(state.nextCursor));
+    const items = data.items || [];
 
-document.getElementById("btn-prev").addEventListener("click", () => {
-  if (state.prevCursors.length > 0) {
-    state.cursor = state.prevCursors.pop();
-    state.page--;
-    loadJobs();
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (items.length > 0) {
+      const grid = document.getElementById("jobs-grid");
+      grid.insertAdjacentHTML("beforeend", items.map(renderCard).join(""));
+
+      const total = grid.querySelectorAll(".job-card").length;
+      document.getElementById("results-count").textContent =
+        `${total} job${total !== 1 ? "s" : ""}`;
+    }
+
+    state.nextCursor = data.next_cursor || null;
+    state.hasMore = !!data.next_cursor;
+
+    if (!state.hasMore && scrollObserver) {
+      scrollObserver.disconnect();
+    }
+  } catch (err) {
+    // silently fail on append — user can scroll up and retry
+    console.error("Failed to load more jobs:", err);
+  } finally {
+    state.loading = false;
+    hideLoadingMore();
   }
-});
+}
 
 // ── New only toggle ────────────────────────────────────────────────────────────
 
@@ -263,30 +298,33 @@ function debounce(fn, ms = 400) {
 }
 
 function resetAndLoad() {
-  state.cursor = null;
-  state.prevCursors = [];
-  state.page = 1;
+  state.nextCursor = null;
+  state.hasMore = false;
   loadJobs();
 }
 
 // Checkbox filters
-["filter-geo", "filter-seniority", "filter-vertical"].forEach(id => {
+["filter-seniority", "filter-vertical"].forEach(id => {
   document.getElementById(id).addEventListener("change", resetAndLoad);
 });
 
 // Select filters
-["filter-date", "filter-geo-mobile", "filter-date-mobile"].forEach(id => {
+["filter-continent", "filter-date", "filter-continent-mobile", "filter-date-mobile"].forEach(id => {
   document.getElementById(id).addEventListener("change", resetAndLoad);
 });
 
-// Keyword with debounce
-document.getElementById("filter-keyword").addEventListener("input", () => debounce(resetAndLoad));
-document.getElementById("filter-keyword-mobile").addEventListener("input", () => debounce(resetAndLoad));
+// Text inputs with debounce
+["filter-keyword", "filter-keyword-mobile", "filter-city", "filter-country"].forEach(id => {
+  document.getElementById(id).addEventListener("input", () => debounce(resetAndLoad));
+});
 
 // Reset button
 document.getElementById("btn-reset").addEventListener("click", () => {
   document.querySelectorAll(".filter-check input").forEach(el => el.checked = false);
   document.getElementById("filter-keyword").value = "";
+  document.getElementById("filter-city").value = "";
+  document.getElementById("filter-country").value = "";
+  document.getElementById("filter-continent").value = "";
   document.getElementById("filter-date").value = "7D";
   state.newOnly = false;
   document.getElementById("btn-new-only").classList.remove("active");
