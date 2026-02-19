@@ -52,6 +52,11 @@ async def trigger_scrape(_key: str = Depends(require_api_key)):
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(exc))
 
 
+@app.get("/health", tags=["system"], include_in_schema=False)
+async def health_check():
+    return {"status": "ok"}
+
+
 # Serve frontend AFTER /api routes are registered so API takes priority
 frontend_dir = Path(__file__).parent.parent / "frontend"
 if frontend_dir.exists():
