@@ -2,9 +2,10 @@ import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 
 from api.auth import require_api_key
 from api.cache import cache_clear
@@ -60,4 +61,11 @@ async def health_check():
 # Serve frontend AFTER /api routes are registered so API takes priority
 frontend_dir = Path(__file__).parent.parent / "frontend"
 if frontend_dir.exists():
+    templates = Jinja2Templates(directory=str(frontend_dir))
+
+    @app.get("/", include_in_schema=False)
+    async def serve_frontend(request: Request):
+        api_key = os.environ.get("API_KEY", "dev-insecure-key")
+        return templates.TemplateResponse("index.html", {"request": request, "api_key": api_key})
+
     app.mount("/", StaticFiles(directory=str(frontend_dir), html=True), name="frontend")

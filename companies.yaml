@@ -447,14 +447,6 @@ companies:
     vertical: marketplace
     geo_primary: US
 
-  - name: Figma
-    ats: lever
-    slug: figma
-    tier: 1
-    size: large
-    vertical: saas
-    geo_primary: US
-
   - name: Ironclad
     ats: lever
     slug: ironclad
