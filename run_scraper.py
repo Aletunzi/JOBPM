@@ -104,7 +104,7 @@ async def ensure_company(session, company_data: dict):
 
 
 async def scrape_company(session, company_data: dict, semaphore: asyncio.Semaphore):
-    ats = company_data["ats"]
+    ats = company_data.get("ats", "multi")  # default: probe greenhouse/lever/ashby
     name = company_data["name"]
     slug = company_data.get("slug", "")
 
@@ -112,32 +112,56 @@ async def scrape_company(session, company_data: dict, semaphore: asyncio.Semapho
         company_obj = await ensure_company(session, company_data)
         jobs = []
 
-        if ats == "greenhouse":
+        if ats == "multi":
+            from scrapers.greenhouse import fetch_greenhouse
+            from scrapers.lever import fetch_lever
+            from scrapers.ashby import fetch_ashby
+
+            async def _collect(gen):
+                return [j async for j in gen]
+
+            results = await asyncio.gather(
+                _collect(fetch_greenhouse(slug, name)),
+                _collect(fetch_lever(slug, name)),
+                _collect(fetch_ashby(slug, name)),
+                return_exceptions=True,
+            )
+            for r in results:
+                if isinstance(r, list):
+                    jobs.extend(r)
+            ats_label = "MULTI"
+
+        elif ats == "greenhouse":
             from scrapers.greenhouse import fetch_greenhouse
             async for job in fetch_greenhouse(slug, name):
                 jobs.append(job)
+            ats_label = "GREENHOUSE"
         elif ats == "lever":
             from scrapers.lever import fetch_lever
             async for job in fetch_lever(slug, name):
                 jobs.append(job)
+            ats_label = "LEVER"
         elif ats == "ashby":
             from scrapers.ashby import fetch_ashby
             async for job in fetch_ashby(slug, name):
                 jobs.append(job)
+            ats_label = "ASHBY"
         elif ats == "smartrecruiters":
             from scrapers.smartrecruiters import fetch_smartrecruiters
             async for job in fetch_smartrecruiters(slug, name):
                 jobs.append(job)
+            ats_label = "SMARTRECRUITERS"
         elif ats == "teamtailor":
             from scrapers.teamtailor import fetch_teamtailor
             async for job in fetch_teamtailor(slug, name):
                 jobs.append(job)
+            ats_label = "TEAMTAILOR"
         else:
             return 0
 
         count = await upsert_jobs(session, jobs, company_id=company_obj.id)
         if count:
-            logger.info("  %s (%s): %d PM jobs", name, ats.upper(), count)
+            logger.info("  %s (%s): %d PM jobs", name, ats_label, count)
         return count
 
 
