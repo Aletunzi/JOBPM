@@ -31,6 +31,7 @@ function buildParams(cursor = null) {
   const continent = document.getElementById("filter-continent").value;
   const seniority = getChecked("filter-seniority");
   const vertical = getChecked("filter-vertical");
+  const workType = getChecked("filter-work-type");
   const keyword = document.getElementById("filter-keyword").value.trim();
   const city = document.getElementById("filter-city").value.trim();
   const country = document.getElementById("filter-country").value.trim();
@@ -46,6 +47,7 @@ function buildParams(cursor = null) {
   if (geoFinal) p.set("geo", geoFinal);
   if (seniority.length) p.set("seniority", seniority.join(","));
   if (vertical.length) p.set("vertical", vertical.join(","));
+  if (workType.length) p.set("work_type", workType.join(","));
   const kw = keyword || keywordMobile;
   if (kw) p.set("keyword", kw);
   if (city) p.set("city", city);
@@ -87,25 +89,42 @@ async function loadStats() {
 
 // ── Rendering ─────────────────────────────────────────────────────────────────
 
-const GEO_LABELS = { EU: "Europe", US: "USA", UK: "UK", REMOTE: "Remote", APAC: "APAC", LATAM: "LATAM", OTHER: "Other" };
-const SENIORITY_COLORS = {
-  JUNIOR: "badge-seniority",
-  MID: "badge-seniority",
-  SENIOR: "badge-seniority",
-  STAFF: "badge-seniority",
-  LEAD: "badge-seniority",
-  LEADERSHIP: "badge-seniority",
-  INTERN: "badge-seniority",
+// City name normalisation — maps non-English variants to English
+const CITY_NAME_EN = {
+  "münchen": "Munich", "muenchen": "Munich",
+  "köln": "Cologne", "koeln": "Cologne",
+  "düsseldorf": "Dusseldorf", "nürnberg": "Nuremberg", "nuernberg": "Nuremberg",
+  "frankfurt am main": "Frankfurt",
+  "wien": "Vienna",
+  "zürich": "Zurich", "zuerich": "Zurich",
+  "genève": "Geneva", "geneve": "Geneva", "genf": "Geneva",
+  "milano": "Milan", "roma": "Rome", "firenze": "Florence",
+  "torino": "Turin", "napoli": "Naples", "venezia": "Venice",
+  "berlino": "Berlin", "amburgo": "Hamburg",
+  "varsavia": "Warsaw", "praga": "Prague",
+  "barcellona": "Barcelona", "siviglia": "Seville",
+  "lisbona": "Lisbon",
+  "bruxelles": "Brussels", "brüssel": "Brussels", "brussel": "Brussels",
+  "københavn": "Copenhagen", "kobenhavn": "Copenhagen", "copenhague": "Copenhagen",
+  "göteborg": "Gothenburg", "goteborg": "Gothenburg",
+  "stoccolma": "Stockholm",
+  "mosca": "Moscow", "moskau": "Moscow", "moscou": "Moscow", "moscú": "Moscow",
 };
 
-function geoBadge(geo) {
-  const cls = geo === "REMOTE" ? "badge badge-remote" : "badge badge-geo";
-  return `<span class="${cls}">${GEO_LABELS[geo] || geo}</span>`;
-}
-
-function seniorityBadge(sen) {
-  const cls = SENIORITY_COLORS[sen] || "badge-seniority";
-  return `<span class="badge ${cls}">${sen}</span>`;
+function normalizeLocationCity(raw) {
+  if (!raw) return null;
+  const lower = raw.toLowerCase().trim();
+  const cityPart = lower.split(",")[0].trim();
+  if (CITY_NAME_EN[cityPart]) {
+    const rest = raw.includes(",") ? raw.substring(raw.indexOf(",")) : "";
+    return CITY_NAME_EN[cityPart] + rest;
+  }
+  for (const [nonEn, en] of Object.entries(CITY_NAME_EN)) {
+    if (lower.includes(nonEn)) {
+      return raw.replace(new RegExp(nonEn, "i"), en);
+    }
+  }
+  return raw;
 }
 
 
@@ -132,12 +151,8 @@ function renderCard(job) {
           Apply &#8599;
         </a>
       </div>
-      <div class="flex flex-wrap items-center gap-1.5">
-        ${geoBadge(job.geo_region)}
-        ${seniorityBadge(job.seniority)}
-      </div>
       <div class="flex items-center justify-between text-xs text-gray-400 pt-1 border-t border-gray-100">
-        <span>${job.location_raw ? escHtml(job.location_raw) : "—"}</span>
+        <span>${escHtml(normalizeLocationCity(job.location_raw) || "—")}</span>
         <span>${timeSince(job.first_seen)}</span>
       </div>
     </div>
@@ -285,7 +300,7 @@ function resetAndLoad() {
 }
 
 // Checkbox filters
-["filter-seniority", "filter-vertical"].forEach(id => {
+["filter-seniority", "filter-vertical", "filter-work-type"].forEach(id => {
   document.getElementById(id).addEventListener("change", resetAndLoad);
 });
 

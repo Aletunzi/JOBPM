@@ -3,7 +3,7 @@ from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import select, and_, func, text
+from sqlalchemy import select, and_, or_, func, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.auth import require_api_key
@@ -43,6 +43,29 @@ def _job_to_out(job: Job) -> JobOut:
     )
 
 
+WORK_TYPE_VALUES = {"REMOTE", "HYBRID", "ONSITE"}
+
+
+def _work_type_conditions(wt_list: list[str]):
+    """Build OR conditions for work type filter inferred from location_raw and geo_region."""
+    conds = []
+    for wt in wt_list:
+        if wt == "REMOTE":
+            conds.append(or_(
+                Job.geo_region == "REMOTE",
+                Job.location_raw.ilike("%remote%"),
+            ))
+        elif wt == "HYBRID":
+            conds.append(Job.location_raw.ilike("%hybrid%"))
+        elif wt == "ONSITE":
+            conds.append(and_(
+                Job.geo_region != "REMOTE",
+                or_(Job.location_raw == None, ~Job.location_raw.ilike("%remote%")),
+                or_(Job.location_raw == None, ~Job.location_raw.ilike("%hybrid%")),
+            ))
+    return or_(*conds) if conds else None
+
+
 @router.get("", response_model=JobsResponse)
 async def list_jobs(
     geo: Optional[str] = Query(None, description="Comma-separated: EU,US,REMOTE,..."),
@@ -53,12 +76,13 @@ async def list_jobs(
     keyword: Optional[str] = Query(None, description="Full-text search on title"),
     city: Optional[str] = Query(None, description="City substring match on location_raw"),
     country: Optional[str] = Query(None, description="Country substring match on location_raw"),
+    work_type: Optional[str] = Query(None, description="Comma-separated: REMOTE,HYBRID,ONSITE"),
     cursor: Optional[str] = Query(None, description="Cursor for pagination (first_seen ISO timestamp)"),
     limit: int = Query(25, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
     _key: str = Depends(require_api_key),
 ):
-    cache_key = f"jobs:{geo}:{seniority}:{vertical}:{tier}:{date}:{keyword}:{city}:{country}:{cursor}:{limit}"
+    cache_key = f"jobs:{geo}:{seniority}:{vertical}:{tier}:{date}:{keyword}:{city}:{country}:{work_type}:{cursor}:{limit}"
     cached = cache_get(cache_key)
     if cached:
         return cached
@@ -92,6 +116,12 @@ async def list_jobs(
 
     if country and country.strip():
         conditions.append(Job.location_raw.ilike(f"%{country.strip()}%"))
+
+    if work_type:
+        wt_list = [w.strip().upper() for w in work_type.split(",") if w.strip().upper() in WORK_TYPE_VALUES]
+        wt_cond = _work_type_conditions(wt_list)
+        if wt_cond is not None:
+            conditions.append(wt_cond)
 
     if cursor:
         try:

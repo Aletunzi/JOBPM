@@ -97,9 +97,19 @@
           </select>
         </div>
 
+        <!-- Work type -->
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Location</label>
+          <div class="space-y-1.5" id="filter-work-type">
+            <label class="filter-check"><input type="checkbox" value="REMOTE"> <span>Remote</span></label>
+            <label class="filter-check"><input type="checkbox" value="HYBRID"> <span>Hybrid</span></label>
+            <label class="filter-check"><input type="checkbox" value="ONSITE"> <span>On-site</span></label>
+          </div>
+        </div>
+
         <!-- Seniority -->
         <div>
-          <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Seniority</label>
+          <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Experience</label>
           <div class="space-y-1.5" id="filter-seniority">
             <label class="filter-check"><input type="checkbox" value="JUNIOR"> <span>Junior</span></label>
             <label class="filter-check"><input type="checkbox" value="MID"> <span>Mid</span></label>
@@ -125,12 +135,12 @@
 
         <!-- Date -->
         <div>
-          <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Posted within</label>
+          <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Date posted</label>
           <select id="filter-date" class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500">
-            <option value="ALL">All time</option>
-            <option value="TODAY">Today</option>
-            <option value="7D" selected>Last 7 days</option>
-            <option value="30D">Last 30 days</option>
+            <option value="TODAY">Past 24 hours</option>
+            <option value="7D" selected>Past week</option>
+            <option value="30D">Past month</option>
+            <option value="ALL">Anytime</option>
           </select>
         </div>
 
@@ -156,10 +166,10 @@
           <option value="OTHER">Other</option>
         </select>
         <select id="filter-date-mobile" class="text-sm border border-gray-200 rounded-lg px-2 py-2 focus:outline-none">
-          <option value="ALL">All</option>
-          <option value="TODAY">Today</option>
-          <option value="7D" selected>7 days</option>
-          <option value="30D">30 days</option>
+          <option value="TODAY">24h</option>
+          <option value="7D" selected>Week</option>
+          <option value="30D">Month</option>
+          <option value="ALL">Anytime</option>
         </select>
       </div>
 
