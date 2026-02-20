@@ -134,7 +134,7 @@ function renderCard(job) {
       </div>
       <div class="flex items-center justify-between text-xs text-gray-400 pt-1 border-t border-gray-100">
         <span>${escHtml(normalizeLocationCity(job.location_raw) || "—")}</span>
-        <span>${timeSince(job.first_seen)}</span>
+        <span>${timeSince(job.posted_date || job.first_seen)}</span>
       </div>
     </div>
   `;
