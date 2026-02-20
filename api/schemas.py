@@ -40,6 +40,17 @@ class StatsOut(BaseModel):
     last_scraped: Optional[datetime]
 
 
+class AdminStatsOut(BaseModel):
+    total_jobs: int           # all records ever scraped (active + inactive)
+    total_active: int         # currently active
+    new_24h: int              # added in last 24h
+    last_run: Optional[datetime]   # max first_seen — proxy for last scraper run
+    runs_per_day: int         # from GitHub Actions cron config
+    by_source: dict[str, int]     # count by scraper source (all records)
+    by_geo: dict[str, int]        # count by geo_region (active only)
+    top_locations: list[dict]     # [{name, count}] top 20 location_raw values (active)
+
+
 class JobsResponse(BaseModel):
     items: list[JobOut]
     next_cursor: Optional[str]
