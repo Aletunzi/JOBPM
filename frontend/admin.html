@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fursa – Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ["Inter Tight", "sans-serif"] },
+          colors: {
+            brand: { 50: '#e8fef0', 500: '#1B2D21', 600: '#1B2D21', 700: '#0f1a13' },
+            gray: {
+              50: '#f7f8f7', 100: '#eeeeed', 200: '#d8dbd9', 300: '#c1c7c3',
+              400: '#7d9187', 500: '#5a6a62', 600: '#3a4d42', 700: '#2a3930',
+              800: '#1f2e24', 900: '#1B2D21',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="bg-gray-50 min-h-screen font-sans text-gray-900">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
+    <div class="max-w-screen-xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+      <span class="text-2xl font-bold text-brand-600 tracking-tight">Fursa</span>
+      <a href="/" class="text-sm text-gray-500 hover:text-gray-900 transition-colors">← Back to jobs</a>
+    </div>
+  </header>
+
+  <div class="max-w-screen-xl mx-auto px-4 py-6">
+
+    <h1 class="text-lg font-bold text-gray-900 mb-5">Admin Overview</h1>
+
+    <!-- Loading -->
+    <div id="admin-loading" class="flex justify-center py-20">
+      <div class="w-8 h-8 border-4 border-brand-500 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+
+    <!-- Content -->
+    <div id="admin-content" class="hidden space-y-4">
+
+      <!-- Row 1: Scraper + DB -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+        <div class="bg-white border border-gray-200 rounded-xl p-5">
+          <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Scraper Status</h2>
+          <div id="card-scraper" class="space-y-2.5"></div>
+        </div>
+
+        <div class="bg-white border border-gray-200 rounded-xl p-5">
+          <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Database</h2>
+          <div id="card-database" class="space-y-2.5"></div>
+        </div>
+
+      </div>
+
+      <!-- Row 2: By Source (full width) -->
+      <div class="bg-white border border-gray-200 rounded-xl p-5">
+        <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">By Source</h2>
+        <div id="card-source" class="divide-y divide-gray-50"></div>
+      </div>
+
+      <!-- Row 3: By Region + Top Locations -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+        <div class="bg-white border border-gray-200 rounded-xl p-5">
+          <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">By Region</h2>
+          <div id="card-geo" class="divide-y divide-gray-50"></div>
+        </div>
+
+        <div class="bg-white border border-gray-200 rounded-xl p-5">
+          <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Top Locations</h2>
+          <div id="card-locations" class="divide-y divide-gray-50"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Error -->
+    <div id="admin-error" class="hidden text-center py-20 text-red-400 text-sm"></div>
+
+  </div>
+
+  <script>window.__API_KEY__ = "{{ api_key }}";</script>
+  <script>
+    const API_KEY = window.__API_KEY__ || "dev-insecure-key";
+
+    const SOURCE_LABELS = {
+      greenhouse: "Greenhouse", lever: "Lever", ashby: "Ashby",
+      adzuna: "Adzuna", remotive: "Remotive",
+      smartrecruiters: "SmartRecruiters", teamtailor: "Teamtailor",
+      workday: "Workday", proxycurl: "Proxycurl",
+    };
+
+    const GEO_LABELS = {
+      REMOTE: "Remote", US: "USA & Canada", EU: "Europe",
+      UK: "United Kingdom", APAC: "Asia Pacific",
+      LATAM: "Latin America", OTHER: "Other",
+    };
+
+    // ── Helpers ────────────────────────────────────────────────────────────────
+
+    function timeSince(iso) {
+      if (!iso) return "—";
+      const diff = Date.now() - new Date(iso).getTime();
+      const m = Math.floor(diff / 60000);
+      const h = Math.floor(m / 60);
+      const d = Math.floor(h / 24);
+      if (d > 0) return `${d}d ago`;
+      if (h > 0) return `${h}h ago`;
+      return m > 0 ? `${m}m ago` : "just now";
+    }
+
+    function fmtDatetime(iso) {
+      if (!iso) return "—";
+      return new Date(iso).toLocaleString("en-GB", {
+        day: "numeric", month: "short", year: "numeric",
+        hour: "2-digit", minute: "2-digit", timeZoneName: "short",
+      });
+    }
+
+    function esc(str) {
+      return String(str || "")
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    // ── Render helpers ─────────────────────────────────────────────────────────
+
+    function statRow(label, value, note) {
+      return `
+        <div class="flex items-baseline justify-between gap-2">
+          <span class="text-sm text-gray-500">${label}</span>
+          <span class="text-sm font-semibold text-gray-900 text-right">
+            ${value}${note ? `<span class="text-xs font-normal text-gray-400 ml-1">${note}</span>` : ""}
+          </span>
+        </div>`;
+    }
+
+    function barRow(label, count, maxCount, total) {
+      const barPct  = maxCount > 0 ? (count / maxCount * 100).toFixed(1) : 0;
+      const sharePct = total > 0 ? (count / total * 100).toFixed(1) : "0.0";
+      return `
+        <div class="flex items-center gap-3 py-2">
+          <span class="text-sm text-gray-700 shrink-0" style="min-width:140px">${esc(label)}</span>
+          <div class="flex-1 bg-gray-100 rounded-full h-1.5">
+            <div class="bg-brand-500 rounded-full h-1.5" style="width:${barPct}%"></div>
+          </div>
+          <span class="text-sm font-medium text-gray-900 shrink-0 text-right" style="min-width:48px">${count.toLocaleString()}</span>
+          <span class="text-xs text-gray-400 shrink-0 text-right" style="min-width:38px">${sharePct}%</span>
+        </div>`;
+    }
+
+    function locRow(name, count) {
+      return `
+        <div class="flex items-center justify-between gap-3 py-2">
+          <span class="text-sm text-gray-700 truncate">${esc(name)}</span>
+          <span class="text-sm font-medium text-gray-900 shrink-0">${count.toLocaleString()}</span>
+        </div>`;
+    }
+
+    // ── Load ───────────────────────────────────────────────────────────────────
+
+    async function loadAdmin() {
+      try {
+        const res = await fetch("/api/stats/admin", { headers: { "X-API-Key": API_KEY } });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const d = await res.json();
+
+        // Scraper Status
+        document.getElementById("card-scraper").innerHTML = [
+          statRow("Last run",          timeSince(d.last_run)),
+          statRow("Exact time",        fmtDatetime(d.last_run)),
+          statRow("Schedule",          "Daily at 07:00 UTC", `(${d.runs_per_day}&times; / day)`),
+          statRow("Added in last 24 h", `+${d.new_24h.toLocaleString()}`),
+        ].join("");
+
+        // Database
+        const inactive = d.total_jobs - d.total_active;
+        document.getElementById("card-database").innerHTML = [
+          statRow("Total records",     d.total_jobs.toLocaleString()),
+          statRow("Active",            d.total_active.toLocaleString()),
+          statRow("Inactive / expired", inactive.toLocaleString()),
+          statRow("Added in last 24 h", `+${d.new_24h.toLocaleString()}`),
+        ].join("");
+
+        // By Source
+        const srcEntries = Object.entries(d.by_source).sort((a, b) => b[1] - a[1]);
+        const srcTotal   = srcEntries.reduce((s, [, v]) => s + v, 0);
+        const srcMax     = srcEntries[0]?.[1] || 1;
+        document.getElementById("card-source").innerHTML =
+          srcEntries.map(([src, cnt]) =>
+            barRow(SOURCE_LABELS[src] || src, cnt, srcMax, srcTotal)
+          ).join("");
+
+        // By Region
+        const geoEntries = Object.entries(d.by_geo).sort((a, b) => b[1] - a[1]);
+        const geoTotal   = geoEntries.reduce((s, [, v]) => s + v, 0);
+        const geoMax     = geoEntries[0]?.[1] || 1;
+        document.getElementById("card-geo").innerHTML =
+          geoEntries.map(([geo, cnt]) =>
+            barRow(GEO_LABELS[geo] || geo, cnt, geoMax, geoTotal)
+          ).join("");
+
+        // Top Locations
+        document.getElementById("card-locations").innerHTML =
+          d.top_locations.map(loc => locRow(loc.name, loc.count)).join("");
+
+        document.getElementById("admin-loading").classList.add("hidden");
+        document.getElementById("admin-content").classList.remove("hidden");
+
+      } catch (err) {
+        document.getElementById("admin-loading").classList.add("hidden");
+        const el = document.getElementById("admin-error");
+        el.textContent = `Failed to load admin stats: ${err.message}`;
+        el.classList.remove("hidden");
+      }
+    }
+
+    loadAdmin();
+  </script>
+</body>
+</html>

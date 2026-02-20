@@ -68,4 +68,9 @@ if frontend_dir.exists():
         api_key = os.environ.get("API_KEY", "dev-insecure-key")
         return templates.TemplateResponse("index.html", {"request": request, "api_key": api_key})
 
+    @app.get("/admin", include_in_schema=False)
+    async def serve_admin(request: Request):
+        api_key = os.environ.get("API_KEY", "dev-insecure-key")
+        return templates.TemplateResponse("admin.html", {"request": request, "api_key": api_key})
+
     app.mount("/", StaticFiles(directory=str(frontend_dir), html=True), name="frontend")
