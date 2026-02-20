@@ -45,11 +45,6 @@
         <span class="text-2xl font-bold text-brand-600 tracking-tight">Fursa</span>
       </div>
       <div id="stats-bar" class="flex items-center gap-4 text-sm text-gray-500">
-        <span id="stat-total" class="flex items-center gap-1">
-          <span class="w-2 h-2 rounded-full bg-brand-500 inline-block animate-pulse"></span>
-          Loading...
-        </span>
-        <span id="stat-new" class="bg-brand-50 text-gray-700 px-2 py-0.5 rounded-full font-medium text-xs"></span>
         <span id="stat-scraped" class="hidden sm:block"></span>
       </div>
     </div>
@@ -62,6 +57,9 @@
 
       <!-- Search -->
       <input id="filter-keyword" type="text" placeholder="Search roles…" class="fp-input" style="min-width:180px" />
+
+      <!-- City / Country free text -->
+      <input id="filter-city" type="text" placeholder="City or country…" class="fp-input" style="min-width:150px" />
 
       <!-- Date posted -->
       <div class="fp-wrap" id="fp-date">
@@ -106,29 +104,8 @@
         </div>
       </div>
 
-      <!-- Continent -->
-      <div class="fp-wrap" id="fp-continent">
-        <button class="fp-btn" id="fpbtn-continent" type="button">
-          <span id="fplbl-continent">Continent</span>
-          <svg class="fp-chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
-        </button>
-        <div class="fp-panel" id="fpp-continent">
-          <label class="dp-option"><input type="radio" name="continent" value="" checked> All regions</label>
-          <label class="dp-option"><input type="radio" name="continent" value="EU"> Europe</label>
-          <label class="dp-option"><input type="radio" name="continent" value="UK"> United Kingdom</label>
-          <label class="dp-option"><input type="radio" name="continent" value="US"> United States / Canada</label>
-          <label class="dp-option"><input type="radio" name="continent" value="APAC"> Asia Pacific</label>
-          <label class="dp-option"><input type="radio" name="continent" value="LATAM"> Latin America</label>
-          <label class="dp-option"><input type="radio" name="continent" value="OTHER"> Other</label>
-        </div>
-      </div>
-
-      <!-- City / Country free text -->
-      <input id="filter-city" type="text" placeholder="City or country…" class="fp-input" style="min-width:150px" />
-
       <!-- Right side controls -->
       <div class="fp-right">
-        <button id="btn-new-only" type="button" class="fp-btn">New today only</button>
         <button id="btn-reset" type="button" class="fp-reset">Reset</button>
       </div>
     </div>
