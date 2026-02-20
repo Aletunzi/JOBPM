@@ -41,7 +41,7 @@ class StatsOut(BaseModel):
 
 
 class AdminStatsOut(BaseModel):
-    total_jobs: int           # all records ever scraped (active + inactive)
+    total_jobs: int           # active job count (inactive/expired excluded)
     total_active: int         # currently active
     new_24h: int              # added in last 24h
     last_run: Optional[datetime]   # max first_seen — proxy for last scraper run
