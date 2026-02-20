@@ -14,7 +14,6 @@ const FETCH_SIZE = 50;
 const state = {
   nextCursor: null,
   hasMore: false,
-  newOnly: false,
   loading: false,
 };
 
@@ -31,15 +30,13 @@ function getRadioValue(name) {
 }
 
 function buildParams(cursor = null) {
-  const keyword = document.getElementById("filter-keyword").value.trim();
-  const city    = document.getElementById("filter-city").value.trim();
-  const continent = getRadioValue("continent");
+  const keyword   = document.getElementById("filter-keyword").value.trim();
+  const city      = document.getElementById("filter-city").value.trim();
   const dateVal   = getRadioValue("date") || "7D";
   const seniority = getCheckedByName("seniority");
   const workType  = getCheckedByName("work_type");
 
   const p = new URLSearchParams();
-  if (continent)        p.set("geo",       continent);
   if (seniority.length) p.set("seniority", seniority.join(","));
   if (workType.length)  p.set("work_type", workType.join(","));
   if (keyword)          p.set("keyword",   keyword);
@@ -62,20 +59,13 @@ async function apiFetch(endpoint, params = null) {
 async function loadStats() {
   try {
     const stats = await apiFetch("/api/stats");
-    document.getElementById("stat-total").innerHTML =
-      `<span class="w-2 h-2 rounded-full bg-green-400 inline-block"></span> ${stats.total_active.toLocaleString()} active jobs`;
-    if (stats.new_today > 0) {
-      document.getElementById("stat-new").textContent = `+${stats.new_today} new today`;
-    }
     if (stats.last_scraped) {
       const d = new Date(stats.last_scraped);
       document.getElementById("stat-scraped").textContent =
         `Last updated: ${d.toLocaleDateString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}`;
       document.getElementById("stat-scraped").classList.remove("hidden");
     }
-  } catch {
-    document.getElementById("stat-total").textContent = "—";
-  }
+  } catch { /* stats are decorative */ }
 }
 
 // ── Rendering ─────────────────────────────────────────────────────────────────
@@ -178,7 +168,7 @@ function hideLoadingMore() {
 
 // ── Dropdown filter pills ──────────────────────────────────────────────────────
 
-const FP_PANELS = ["date", "worktype", "seniority", "continent"];
+const FP_PANELS = ["date", "worktype", "seniority"];
 
 function closePanels(except) {
   FP_PANELS.forEach(name => {
@@ -211,39 +201,22 @@ FP_PANELS.forEach(name => {
 const DATE_LABELS = {
   "7D": "Past week", "TODAY": "Past 24 hours", "30D": "Past month", "ALL": "Anytime",
 };
-const CONTINENT_LABELS = {
-  "": "Continent", "EU": "Europe", "UK": "United Kingdom",
-  "US": "USA / Canada", "APAC": "Asia Pacific", "LATAM": "Latin America", "OTHER": "Other",
-};
 
 function updatePillLabels() {
   // Date
   const dateVal = getRadioValue("date") || "7D";
-  const dateLbl = document.getElementById("fplbl-date");
-  const dateBtn = document.getElementById("fpbtn-date");
-  dateLbl.textContent = DATE_LABELS[dateVal] || "Date posted";
-  dateBtn.classList.toggle("active", dateVal !== "7D");
-
-  // Continent
-  const contVal = getRadioValue("continent");
-  const contLbl = document.getElementById("fplbl-continent");
-  const contBtn = document.getElementById("fpbtn-continent");
-  contLbl.textContent = contVal ? CONTINENT_LABELS[contVal] : "Continent";
-  contBtn.classList.toggle("active", !!contVal);
+  document.getElementById("fplbl-date").textContent = DATE_LABELS[dateVal] || "Date posted";
+  document.getElementById("fpbtn-date").classList.toggle("active", dateVal !== "7D");
 
   // Location (work type)
   const wtCount = getCheckedByName("work_type").length;
-  const wtLbl = document.getElementById("fplbl-worktype");
-  const wtBtn = document.getElementById("fpbtn-worktype");
-  wtLbl.textContent = wtCount > 0 ? `Location (${wtCount})` : "Location";
-  wtBtn.classList.toggle("active", wtCount > 0);
+  document.getElementById("fplbl-worktype").textContent = wtCount > 0 ? `Location (${wtCount})` : "Location";
+  document.getElementById("fpbtn-worktype").classList.toggle("active", wtCount > 0);
 
   // Experience
   const senCount = getCheckedByName("seniority").length;
-  const senLbl = document.getElementById("fplbl-seniority");
-  const senBtn = document.getElementById("fpbtn-seniority");
-  senLbl.textContent = senCount > 0 ? `Experience (${senCount})` : "Experience";
-  senBtn.classList.toggle("active", senCount > 0);
+  document.getElementById("fplbl-seniority").textContent = senCount > 0 ? `Experience (${senCount})` : "Experience";
+  document.getElementById("fpbtn-seniority").classList.toggle("active", senCount > 0);
 }
 
 // ── Scroll observer ────────────────────────────────────────────────────────────
@@ -273,18 +246,7 @@ async function loadJobs() {
   showLoading();
 
   try {
-    let data;
-    if (state.newOnly) {
-      const continent = getRadioValue("continent");
-      const seniority = getCheckedByName("seniority").join(",") || null;
-      const p = new URLSearchParams();
-      if (continent) p.set("geo", continent);
-      if (seniority) p.set("seniority", seniority);
-      p.set("limit", 100);
-      data = await apiFetch("/api/jobs/new", p);
-    } else {
-      data = await apiFetch("/api/jobs", buildParams());
-    }
+    const data = await apiFetch("/api/jobs", buildParams());
 
     const grid = document.getElementById("jobs-grid");
     const items = data.items || [];
@@ -353,10 +315,9 @@ function resetAndLoad() {
 // Radio/checkbox filter changes
 document.addEventListener("change", (e) => {
   const name = e.target.name;
-  if (["date", "continent", "seniority", "work_type"].includes(name)) {
+  if (["date", "seniority", "work_type"].includes(name)) {
     updatePillLabels();
     resetAndLoad();
-    // Auto-close panel after selecting a radio (single selection)
     if (e.target.type === "radio") closePanels();
   }
 });
@@ -366,24 +327,13 @@ document.addEventListener("change", (e) => {
   document.getElementById(id)?.addEventListener("input", () => debounce(resetAndLoad));
 });
 
-// New today only toggle
-document.getElementById("btn-new-only").addEventListener("click", () => {
-  state.newOnly = !state.newOnly;
-  document.getElementById("btn-new-only").classList.toggle("active", state.newOnly);
-  resetAndLoad();
-});
-
 // Reset button
 document.getElementById("btn-reset").addEventListener("click", () => {
   document.querySelectorAll('input[name="seniority"], input[name="work_type"]').forEach(el => el.checked = false);
-  const allRegions = document.querySelector('input[name="continent"][value=""]');
-  if (allRegions) allRegions.checked = true;
   const defaultDate = document.querySelector('input[name="date"][value="7D"]');
   if (defaultDate) defaultDate.checked = true;
   document.getElementById("filter-keyword").value = "";
   document.getElementById("filter-city").value = "";
-  state.newOnly = false;
-  document.getElementById("btn-new-only").classList.remove("active");
   closePanels();
   updatePillLabels();
   resetAndLoad();
