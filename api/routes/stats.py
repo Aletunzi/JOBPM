@@ -1,3 +1,4 @@
+from collections import defaultdict
 from datetime import datetime, timezone, timedelta
 from fastapi import APIRouter, Depends
 from sqlalchemy import select, func, and_
@@ -8,6 +9,17 @@ from api.cache import cache_get, cache_set
 from api.database import get_db
 from api.models import Job, ApiUsage
 from api.schemas import StatsOut, AdminStatsOut
+from scrapers.normalizer import infer_continent, extract_country
+
+# All scraper sources the platform is configured to use
+KNOWN_SOURCES = [
+    "greenhouse", "lever", "ashby", "adzuna",
+    "remotive", "smartrecruiters", "teamtailor", "proxycurl",
+]
+
+# GitHub Actions cron (must match .github/workflows/daily_scrape.yml)
+SCRAPER_CRON = "0 7 * * *"
+SCRAPER_RUNS_PER_DAY = 1
 
 router = APIRouter(prefix="/api/stats", tags=["stats"])
 
@@ -72,7 +84,7 @@ async def get_admin_stats(
     now = datetime.now(timezone.utc)
     cutoff_24h = now - timedelta(hours=24)
 
-    # Total jobs (all, including inactive)
+    # ── Counts ─────────────────────────────────────────────────────────────────
     total_jobs = await db.scalar(select(func.count()).select_from(Job))
     total_active = await db.scalar(select(func.count()).where(Job.is_active == True))
     new_24h = await db.scalar(
@@ -82,41 +94,55 @@ async def get_admin_stats(
     # Last scraper run: most recently scraped job
     last_run = await db.scalar(select(func.max(Job.first_seen)))
 
-    # By source (all records, not just active)
+    # ── By Source (all records; all KNOWN_SOURCES present, 0 if missing) ──────
     src_rows = await db.execute(
         select(Job.source, func.count().label("cnt"))
         .group_by(Job.source)
-        .order_by(func.count().desc())
     )
-    by_source = {row.source: row.cnt for row in src_rows}
+    by_source: dict[str, int] = {src: 0 for src in KNOWN_SOURCES}
+    for row in src_rows:
+        by_source[row.source] = row.cnt  # include unknown sources too
 
-    # By geo region (active only)
-    geo_rows = await db.execute(
-        select(Job.geo_region, func.count().label("cnt"))
+    # ── By Continent (active only, via Python inference on grouped rows) ───────
+    loc_geo_rows = await db.execute(
+        select(Job.location_raw, Job.geo_region, func.count().label("cnt"))
         .where(Job.is_active == True)
-        .group_by(Job.geo_region)
-        .order_by(func.count().desc())
+        .group_by(Job.location_raw, Job.geo_region)
     )
-    by_geo = {row.geo_region: row.cnt for row in geo_rows}
+    continent_counts: dict[str, int] = defaultdict(int)
+    for row in loc_geo_rows:
+        continent = infer_continent(row.location_raw, row.geo_region or "OTHER")
+        continent_counts[continent] += row.cnt
 
-    # Top locations by raw string (active, non-null, top 20)
+    # ── Top Locations at country level (active only) ───────────────────────────
+    # Re-use the same grouped rows already fetched above for continent,
+    # but we need to re-query since the cursor was consumed. Use a fresh query.
     loc_rows = await db.execute(
-        select(Job.location_raw, func.count().label("cnt"))
-        .where(Job.is_active == True, Job.location_raw.isnot(None))
-        .group_by(Job.location_raw)
-        .order_by(func.count().desc())
-        .limit(20)
+        select(Job.location_raw, Job.geo_region, func.count().label("cnt"))
+        .where(Job.is_active == True)
+        .group_by(Job.location_raw, Job.geo_region)
     )
-    top_locations = [{"name": row.location_raw, "count": row.cnt} for row in loc_rows]
+    country_counts: dict[str, int] = defaultdict(int)
+    for row in loc_rows:
+        country = extract_country(row.location_raw, row.geo_region or "OTHER")
+        if country and country != "Remote":
+            country_counts[country] += row.cnt
+
+    top_locations = sorted(
+        [{"name": k, "count": v} for k, v in country_counts.items()],
+        key=lambda x: x["count"],
+        reverse=True,
+    )[:20]
 
     result = AdminStatsOut(
         total_jobs=total_jobs or 0,
         total_active=total_active or 0,
         new_24h=new_24h or 0,
         last_run=last_run,
-        runs_per_day=1,
+        runs_per_day=SCRAPER_RUNS_PER_DAY,
+        schedule_cron=SCRAPER_CRON,
         by_source=by_source,
-        by_geo=by_geo,
+        by_continent=dict(continent_counts),
         top_locations=top_locations,
     )
     cache_set("admin_stats", result)

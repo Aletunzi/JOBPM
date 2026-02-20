@@ -74,7 +74,7 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
         <div class="bg-white border border-gray-200 rounded-xl p-5">
-          <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">By Region</h2>
+          <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">By Continent</h2>
           <div id="card-geo" class="divide-y divide-gray-50"></div>
         </div>
 
@@ -96,17 +96,21 @@
     const API_KEY = window.__API_KEY__ || "dev-insecure-key";
 
     const SOURCE_LABELS = {
-      greenhouse: "Greenhouse", lever: "Lever", ashby: "Ashby",
-      adzuna: "Adzuna", remotive: "Remotive",
-      smartrecruiters: "SmartRecruiters", teamtailor: "Teamtailor",
-      workday: "Workday", proxycurl: "Proxycurl",
+      greenhouse:      "Greenhouse",
+      lever:           "Lever",
+      ashby:           "Ashby",
+      adzuna:          "Adzuna",
+      remotive:        "Remotive",
+      smartrecruiters: "SmartRecruiters",
+      teamtailor:      "Teamtailor",
+      proxycurl:       "Proxycurl",
     };
 
-    const GEO_LABELS = {
-      REMOTE: "Remote", US: "USA & Canada", EU: "Europe",
-      UK: "United Kingdom", APAC: "Asia Pacific",
-      LATAM: "Latin America", OTHER: "Other",
-    };
+    // Display order for continents
+    const CONTINENT_ORDER = [
+      "North America", "Europe", "Asia", "South America",
+      "Oceania", "Africa", "Remote", "Antarctica", "Other",
+    ];
 
     // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -135,6 +139,18 @@
         .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
     }
 
+    function parseCronHuman(cron) {
+      // "0 7 * * *" → "Daily at 07:00 UTC"
+      if (!cron) return cron;
+      const parts = cron.split(" ");
+      if (parts.length === 5 && parts[2] === "*" && parts[3] === "*" && parts[4] === "*") {
+        const h = parts[1].padStart(2, "0");
+        const m = parts[0].padStart(2, "0");
+        return `Daily at ${h}:${m} UTC`;
+      }
+      return cron;
+    }
+
     // ── Render helpers ─────────────────────────────────────────────────────────
 
     function statRow(label, value, note) {
@@ -147,12 +163,21 @@
         </div>`;
     }
 
-    function barRow(label, count, maxCount, total) {
-      const barPct  = maxCount > 0 ? (count / maxCount * 100).toFixed(1) : 0;
-      const sharePct = total > 0 ? (count / total * 100).toFixed(1) : "0.0";
+    function heroStat(number, label) {
       return `
-        <div class="flex items-center gap-3 py-2">
-          <span class="text-sm text-gray-700 shrink-0" style="min-width:140px">${esc(label)}</span>
+        <div class="flex items-end gap-2 mb-4 pb-4 border-b border-gray-100">
+          <span class="text-4xl font-bold text-brand-600 leading-none">${esc(String(number))}</span>
+          <span class="text-sm text-gray-400 pb-0.5">${esc(label)}</span>
+        </div>`;
+    }
+
+    function barRow(label, count, maxCount, total) {
+      const barPct   = maxCount > 0 ? (count / maxCount * 100).toFixed(1) : 0;
+      const sharePct = total > 0 ? (count / total * 100).toFixed(1) : "0.0";
+      const dimmed   = count === 0 ? " opacity-40" : "";
+      return `
+        <div class="flex items-center gap-3 py-2${dimmed}">
+          <span class="text-sm text-gray-700 shrink-0" style="min-width:150px">${esc(label)}</span>
           <div class="flex-1 bg-gray-100 rounded-full h-1.5">
             <div class="bg-brand-500 rounded-full h-1.5" style="width:${barPct}%"></div>
           </div>
@@ -177,44 +202,51 @@
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const d = await res.json();
 
-        // Scraper Status
-        document.getElementById("card-scraper").innerHTML = [
-          statRow("Last run",          timeSince(d.last_run)),
-          statRow("Exact time",        fmtDatetime(d.last_run)),
-          statRow("Schedule",          "Daily at 07:00 UTC", `(${d.runs_per_day}&times; / day)`),
-          statRow("Added in last 24 h", `+${d.new_24h.toLocaleString()}`),
-        ].join("");
+        // Scraper Status — schedule is the hero stat
+        document.getElementById("card-scraper").innerHTML =
+          heroStat(`${d.runs_per_day}×`, "runs / day") +
+          [
+            statRow("Schedule",           parseCronHuman(d.schedule_cron)),
+            statRow("Last run",           timeSince(d.last_run)),
+            statRow("Last run (exact)",   fmtDatetime(d.last_run)),
+            statRow("Added in last 24 h", `+${d.new_24h.toLocaleString()}`),
+          ].join("");
 
         // Database
         const inactive = d.total_jobs - d.total_active;
         document.getElementById("card-database").innerHTML = [
-          statRow("Total records",     d.total_jobs.toLocaleString()),
-          statRow("Active",            d.total_active.toLocaleString()),
+          statRow("Total records",      d.total_jobs.toLocaleString()),
+          statRow("Active",             d.total_active.toLocaleString()),
           statRow("Inactive / expired", inactive.toLocaleString()),
           statRow("Added in last 24 h", `+${d.new_24h.toLocaleString()}`),
         ].join("");
 
-        // By Source
+        // By Source — backend always sends all known sources
         const srcEntries = Object.entries(d.by_source).sort((a, b) => b[1] - a[1]);
         const srcTotal   = srcEntries.reduce((s, [, v]) => s + v, 0);
-        const srcMax     = srcEntries[0]?.[1] || 1;
+        const srcMax     = Math.max(...srcEntries.map(([, v]) => v), 1);
         document.getElementById("card-source").innerHTML =
           srcEntries.map(([src, cnt]) =>
             barRow(SOURCE_LABELS[src] || src, cnt, srcMax, srcTotal)
           ).join("");
 
-        // By Region
-        const geoEntries = Object.entries(d.by_geo).sort((a, b) => b[1] - a[1]);
-        const geoTotal   = geoEntries.reduce((s, [, v]) => s + v, 0);
-        const geoMax     = geoEntries[0]?.[1] || 1;
+        // By Continent — use fixed display order, show 0 for missing
+        const contData   = d.by_continent || {};
+        const contTotal  = Object.values(contData).reduce((s, v) => s + v, 0);
+        const contMax    = Math.max(...Object.values(contData), 1);
+        const contRows   = CONTINENT_ORDER
+          .map(name => [name, contData[name] || 0])
+          .filter(([, v], i) => v > 0 || i < 7); // always show main 7
         document.getElementById("card-geo").innerHTML =
-          geoEntries.map(([geo, cnt]) =>
-            barRow(GEO_LABELS[geo] || geo, cnt, geoMax, geoTotal)
+          contRows.map(([name, cnt]) =>
+            barRow(name, cnt, contMax, contTotal)
           ).join("");
 
-        // Top Locations
+        // Top Locations (countries from backend)
         document.getElementById("card-locations").innerHTML =
-          d.top_locations.map(loc => locRow(loc.name, loc.count)).join("");
+          d.top_locations.length
+            ? d.top_locations.map(loc => locRow(loc.name, loc.count)).join("")
+            : `<p class="text-sm text-gray-400 py-4 text-center">No data yet</p>`;
 
         document.getElementById("admin-loading").classList.add("hidden");
         document.getElementById("admin-content").classList.remove("hidden");
