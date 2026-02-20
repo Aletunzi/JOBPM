@@ -18,8 +18,8 @@ KNOWN_SOURCES = [
 ]
 
 # GitHub Actions cron (must match .github/workflows/daily_scrape.yml)
-SCRAPER_CRON = "0 7 * * *"
-SCRAPER_RUNS_PER_DAY = 1
+SCRAPER_CRON = "0 8,12,17 * * *"
+SCRAPER_RUNS_PER_DAY = 3
 
 router = APIRouter(prefix="/api/stats", tags=["stats"])
 
@@ -85,8 +85,9 @@ async def get_admin_stats(
     cutoff_24h = now - timedelta(hours=24)
 
     # ── Counts ─────────────────────────────────────────────────────────────────
-    total_jobs = await db.scalar(select(func.count()).select_from(Job))
+    # total_jobs = active only (expired/inactive excluded by design)
     total_active = await db.scalar(select(func.count()).where(Job.is_active == True))
+    total_jobs = total_active
     new_24h = await db.scalar(
         select(func.count()).where(Job.first_seen >= cutoff_24h)
     )
