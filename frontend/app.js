@@ -22,38 +22,29 @@ let scrollObserver = null;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function getChecked(containerId) {
-  return [...document.querySelectorAll(`#${containerId} input:checked`)]
-    .map(el => el.value);
+function getCheckedByName(name) {
+  return [...document.querySelectorAll(`input[name="${name}"]:checked`)].map(el => el.value);
+}
+
+function getRadioValue(name) {
+  return document.querySelector(`input[name="${name}"]:checked`)?.value || "";
 }
 
 function buildParams(cursor = null) {
-  const continent = document.getElementById("filter-continent").value;
-  const seniority = getChecked("filter-seniority");
-  const vertical = getChecked("filter-vertical");
-  const workType = getChecked("filter-work-type");
   const keyword = document.getElementById("filter-keyword").value.trim();
-  const city = document.getElementById("filter-city").value.trim();
-  const country = document.getElementById("filter-country").value.trim();
-  const date = document.getElementById("filter-date").value;
-
-  // mobile overrides (if sidebar hidden)
-  const continentMobile = document.getElementById("filter-continent-mobile").value;
-  const dateMobile = document.getElementById("filter-date-mobile").value;
-  const keywordMobile = document.getElementById("filter-keyword-mobile").value.trim();
+  const city    = document.getElementById("filter-city").value.trim();
+  const continent = getRadioValue("continent");
+  const dateVal   = getRadioValue("date") || "7D";
+  const seniority = getCheckedByName("seniority");
+  const workType  = getCheckedByName("work_type");
 
   const p = new URLSearchParams();
-  const geoFinal = continent || continentMobile || null;
-  if (geoFinal) p.set("geo", geoFinal);
+  if (continent)        p.set("geo",       continent);
   if (seniority.length) p.set("seniority", seniority.join(","));
-  if (vertical.length) p.set("vertical", vertical.join(","));
-  if (workType.length) p.set("work_type", workType.join(","));
-  const kw = keyword || keywordMobile;
-  if (kw) p.set("keyword", kw);
-  if (city) p.set("city", city);
-  if (country) p.set("country", country);
-  const dateFinal = date !== "ALL" ? date : (dateMobile !== "ALL" ? dateMobile : null);
-  if (dateFinal) p.set("date", dateFinal);
+  if (workType.length)  p.set("work_type", workType.join(","));
+  if (keyword)          p.set("keyword",   keyword);
+  if (city)             p.set("city",      city);
+  if (dateVal && dateVal !== "ALL") p.set("date", dateVal);
   p.set("limit", FETCH_SIZE);
   if (cursor) p.set("cursor", cursor);
   return p;
@@ -91,24 +82,25 @@ async function loadStats() {
 
 // City name normalisation — maps non-English variants to English
 const CITY_NAME_EN = {
-  "münchen": "Munich", "muenchen": "Munich",
-  "köln": "Cologne", "koeln": "Cologne",
-  "düsseldorf": "Dusseldorf", "nürnberg": "Nuremberg", "nuernberg": "Nuremberg",
+  "münchen": "Munich",     "muenchen": "Munich",
+  "köln": "Cologne",       "koeln": "Cologne",
+  "düsseldorf": "Dusseldorf",
+  "nürnberg": "Nuremberg", "nuernberg": "Nuremberg",
   "frankfurt am main": "Frankfurt",
   "wien": "Vienna",
-  "zürich": "Zurich", "zuerich": "Zurich",
-  "genève": "Geneva", "geneve": "Geneva", "genf": "Geneva",
-  "milano": "Milan", "roma": "Rome", "firenze": "Florence",
-  "torino": "Turin", "napoli": "Naples", "venezia": "Venice",
-  "berlino": "Berlin", "amburgo": "Hamburg",
-  "varsavia": "Warsaw", "praga": "Prague",
+  "zürich": "Zurich",      "zuerich": "Zurich",
+  "genève": "Geneva",      "geneve": "Geneva",      "genf": "Geneva",
+  "milano": "Milan",       "roma": "Rome",          "firenze": "Florence",
+  "torino": "Turin",       "napoli": "Naples",      "venezia": "Venice",
+  "berlino": "Berlin",     "amburgo": "Hamburg",
+  "varsavia": "Warsaw",    "praga": "Prague",
   "barcellona": "Barcelona", "siviglia": "Seville",
   "lisbona": "Lisbon",
-  "bruxelles": "Brussels", "brüssel": "Brussels", "brussel": "Brussels",
+  "bruxelles": "Brussels", "brüssel": "Brussels",   "brussel": "Brussels",
   "københavn": "Copenhagen", "kobenhavn": "Copenhagen", "copenhague": "Copenhagen",
-  "göteborg": "Gothenburg", "goteborg": "Gothenburg",
+  "göteborg": "Gothenburg",  "goteborg": "Gothenburg",
   "stoccolma": "Stockholm",
-  "mosca": "Moscow", "moskau": "Moscow", "moscou": "Moscow", "moscú": "Moscow",
+  "mosca": "Moscow",       "moskau": "Moscow",      "moscou": "Moscow",  "moscú": "Moscow",
 };
 
 function normalizeLocationCity(raw) {
@@ -126,7 +118,6 @@ function normalizeLocationCity(raw) {
   }
   return raw;
 }
-
 
 function timeSince(isoString) {
   const diff = Date.now() - new Date(isoString).getTime();
@@ -185,6 +176,76 @@ function hideLoadingMore() {
   document.getElementById("loading-more").classList.add("hidden");
 }
 
+// ── Dropdown filter pills ──────────────────────────────────────────────────────
+
+const FP_PANELS = ["date", "worktype", "seniority", "continent"];
+
+function closePanels(except) {
+  FP_PANELS.forEach(name => {
+    if (name !== except) document.getElementById(`fpp-${name}`)?.classList.remove("open");
+  });
+}
+
+function togglePanel(name) {
+  const panel = document.getElementById(`fpp-${name}`);
+  const isOpen = panel.classList.contains("open");
+  closePanels();
+  if (!isOpen) panel.classList.add("open");
+}
+
+// Close when clicking outside a fp-wrap
+document.addEventListener("click", (e) => {
+  if (!e.target.closest(".fp-wrap")) closePanels();
+});
+
+// Pill toggle buttons
+FP_PANELS.forEach(name => {
+  document.getElementById(`fpbtn-${name}`)?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    togglePanel(name);
+  });
+});
+
+// ── Pill label updates ────────────────────────────────────────────────────────
+
+const DATE_LABELS = {
+  "7D": "Past week", "TODAY": "Past 24 hours", "30D": "Past month", "ALL": "Anytime",
+};
+const CONTINENT_LABELS = {
+  "": "Continent", "EU": "Europe", "UK": "United Kingdom",
+  "US": "USA / Canada", "APAC": "Asia Pacific", "LATAM": "Latin America", "OTHER": "Other",
+};
+
+function updatePillLabels() {
+  // Date
+  const dateVal = getRadioValue("date") || "7D";
+  const dateLbl = document.getElementById("fplbl-date");
+  const dateBtn = document.getElementById("fpbtn-date");
+  dateLbl.textContent = DATE_LABELS[dateVal] || "Date posted";
+  dateBtn.classList.toggle("active", dateVal !== "7D");
+
+  // Continent
+  const contVal = getRadioValue("continent");
+  const contLbl = document.getElementById("fplbl-continent");
+  const contBtn = document.getElementById("fpbtn-continent");
+  contLbl.textContent = contVal ? CONTINENT_LABELS[contVal] : "Continent";
+  contBtn.classList.toggle("active", !!contVal);
+
+  // Location (work type)
+  const wtCount = getCheckedByName("work_type").length;
+  const wtLbl = document.getElementById("fplbl-worktype");
+  const wtBtn = document.getElementById("fpbtn-worktype");
+  wtLbl.textContent = wtCount > 0 ? `Location (${wtCount})` : "Location";
+  wtBtn.classList.toggle("active", wtCount > 0);
+
+  // Experience
+  const senCount = getCheckedByName("seniority").length;
+  const senLbl = document.getElementById("fplbl-seniority");
+  const senBtn = document.getElementById("fpbtn-seniority");
+  senLbl.textContent = senCount > 0 ? `Experience (${senCount})` : "Experience";
+  senBtn.classList.toggle("active", senCount > 0);
+}
+
 // ── Scroll observer ────────────────────────────────────────────────────────────
 
 function setupScrollObserver() {
@@ -214,8 +275,8 @@ async function loadJobs() {
   try {
     let data;
     if (state.newOnly) {
-      const continent = document.getElementById("filter-continent").value;
-      const seniority = getChecked("filter-seniority").join(",") || null;
+      const continent = getRadioValue("continent");
+      const seniority = getCheckedByName("seniority").join(",") || null;
       const p = new URLSearchParams();
       if (continent) p.set("geo", continent);
       if (seniority) p.set("seniority", seniority);
@@ -234,7 +295,6 @@ async function loadJobs() {
     } else {
       grid.innerHTML = items.map(renderCard).join("");
       document.getElementById("empty-state").classList.add("hidden");
-
       state.nextCursor = data.next_cursor || null;
       state.hasMore = !!data.next_cursor;
       setupScrollObserver();
@@ -269,7 +329,6 @@ async function appendJobs() {
       scrollObserver.disconnect();
     }
   } catch (err) {
-    // silently fail on append — user can scroll up and retry
     console.error("Failed to load more jobs:", err);
   } finally {
     state.loading = false;
@@ -277,15 +336,7 @@ async function appendJobs() {
   }
 }
 
-// ── New only toggle ────────────────────────────────────────────────────────────
-
-document.getElementById("btn-new-only").addEventListener("click", () => {
-  state.newOnly = !state.newOnly;
-  document.getElementById("btn-new-only").classList.toggle("active", state.newOnly);
-  resetAndLoad();
-});
-
-// ── Filters ───────────────────────────────────────────────────────────────────
+// ── Event listeners ───────────────────────────────────────────────────────────
 
 let debounceTimer;
 function debounce(fn, ms = 400) {
@@ -299,35 +350,47 @@ function resetAndLoad() {
   loadJobs();
 }
 
-// Checkbox filters
-["filter-seniority", "filter-vertical", "filter-work-type"].forEach(id => {
-  document.getElementById(id).addEventListener("change", resetAndLoad);
+// Radio/checkbox filter changes
+document.addEventListener("change", (e) => {
+  const name = e.target.name;
+  if (["date", "continent", "seniority", "work_type"].includes(name)) {
+    updatePillLabels();
+    resetAndLoad();
+    // Auto-close panel after selecting a radio (single selection)
+    if (e.target.type === "radio") closePanels();
+  }
 });
 
-// Select filters
-["filter-continent", "filter-date", "filter-continent-mobile", "filter-date-mobile"].forEach(id => {
-  document.getElementById(id).addEventListener("change", resetAndLoad);
+// Text input filters with debounce
+["filter-keyword", "filter-city"].forEach(id => {
+  document.getElementById(id)?.addEventListener("input", () => debounce(resetAndLoad));
 });
 
-// Text inputs with debounce
-["filter-keyword", "filter-keyword-mobile", "filter-city", "filter-country"].forEach(id => {
-  document.getElementById(id).addEventListener("input", () => debounce(resetAndLoad));
+// New today only toggle
+document.getElementById("btn-new-only").addEventListener("click", () => {
+  state.newOnly = !state.newOnly;
+  document.getElementById("btn-new-only").classList.toggle("active", state.newOnly);
+  resetAndLoad();
 });
 
 // Reset button
 document.getElementById("btn-reset").addEventListener("click", () => {
-  document.querySelectorAll(".filter-check input").forEach(el => el.checked = false);
+  document.querySelectorAll('input[name="seniority"], input[name="work_type"]').forEach(el => el.checked = false);
+  const allRegions = document.querySelector('input[name="continent"][value=""]');
+  if (allRegions) allRegions.checked = true;
+  const defaultDate = document.querySelector('input[name="date"][value="7D"]');
+  if (defaultDate) defaultDate.checked = true;
   document.getElementById("filter-keyword").value = "";
   document.getElementById("filter-city").value = "";
-  document.getElementById("filter-country").value = "";
-  document.getElementById("filter-continent").value = "";
-  document.getElementById("filter-date").value = "7D";
   state.newOnly = false;
   document.getElementById("btn-new-only").classList.remove("active");
+  closePanels();
+  updatePillLabels();
   resetAndLoad();
 });
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 
+updatePillLabels();
 loadStats();
 loadJobs();
