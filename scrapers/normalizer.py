@@ -343,6 +343,11 @@ PM_TITLE_KEYWORDS = {
     "senior pm", "principal pm", "product lead", "vp product", "vp of product",
     "head of product", "chief product", "cpo", "product owner",
     "technical product", "growth pm", "platform pm", "ai pm",
+    # Additional titles that don't contain "manager"
+    "director of product", "product director",
+    "associate pm", "group pm",
+    "product strategy", "digital product",
+    "consumer pm", "enterprise pm",
 }
 
 PM_EXCLUDE_KEYWORDS = {
