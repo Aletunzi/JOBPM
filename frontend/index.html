@@ -55,157 +55,108 @@
     </div>
   </header>
 
-  <div class="max-w-screen-xl mx-auto px-4 py-6 flex gap-6">
+  <div class="max-w-screen-xl mx-auto px-4 py-5">
 
-    <!-- Sidebar filters -->
-    <aside class="w-56 flex-shrink-0 hidden md:block">
-      <div class="bg-white rounded-xl border border-gray-200 p-4 sticky top-20 space-y-5">
+    <!-- ── Filter bar (LinkedIn-style) ───────────────────────────────────── -->
+    <div class="filter-bar mb-5">
 
-        <!-- Keyword search -->
-        <div>
-          <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Search</label>
-          <input id="filter-keyword" type="text" placeholder="e.g. growth, B2B..."
-            class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500" />
-        </div>
+      <!-- Search -->
+      <input id="filter-keyword" type="text" placeholder="Search roles…" class="fp-input" style="min-width:180px" />
 
-        <!-- City -->
-        <div>
-          <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">City</label>
-          <input id="filter-city" type="text" placeholder="e.g. Berlin, Sydney..."
-            class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500" />
-        </div>
-
-        <!-- Country -->
-        <div>
-          <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Country</label>
-          <input id="filter-country" type="text" placeholder="e.g. Germany, India..."
-            class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500" />
-        </div>
-
-        <!-- Continent -->
-        <div>
-          <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Continent</label>
-          <select id="filter-continent" class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500">
-            <option value="">All continents</option>
-            <option value="EU">Europe</option>
-            <option value="UK">United Kingdom</option>
-            <option value="US">United States / Canada</option>
-            <option value="APAC">Asia Pacific</option>
-            <option value="LATAM">Latin America</option>
-            <option value="REMOTE">Remote</option>
-            <option value="OTHER">Other</option>
-          </select>
-        </div>
-
-        <!-- Work type -->
-        <div>
-          <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Location</label>
-          <div class="space-y-1.5" id="filter-work-type">
-            <label class="filter-check"><input type="checkbox" value="REMOTE"> <span>Remote</span></label>
-            <label class="filter-check"><input type="checkbox" value="HYBRID"> <span>Hybrid</span></label>
-            <label class="filter-check"><input type="checkbox" value="ONSITE"> <span>On-site</span></label>
-          </div>
-        </div>
-
-        <!-- Seniority -->
-        <div>
-          <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Experience</label>
-          <div class="space-y-1.5" id="filter-seniority">
-            <label class="filter-check"><input type="checkbox" value="JUNIOR"> <span>Junior</span></label>
-            <label class="filter-check"><input type="checkbox" value="MID"> <span>Mid</span></label>
-            <label class="filter-check"><input type="checkbox" value="SENIOR"> <span>Senior</span></label>
-            <label class="filter-check"><input type="checkbox" value="STAFF"> <span>Staff / Principal</span></label>
-            <label class="filter-check"><input type="checkbox" value="LEAD"> <span>Lead / Group</span></label>
-            <label class="filter-check"><input type="checkbox" value="LEADERSHIP"> <span>Director / VP</span></label>
-          </div>
-        </div>
-
-        <!-- Vertical -->
-        <div>
-          <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Vertical</label>
-          <div class="space-y-1.5" id="filter-vertical">
-            <label class="filter-check"><input type="checkbox" value="ai"> <span>AI / ML</span></label>
-            <label class="filter-check"><input type="checkbox" value="fintech"> <span>Fintech</span></label>
-            <label class="filter-check"><input type="checkbox" value="saas"> <span>SaaS</span></label>
-            <label class="filter-check"><input type="checkbox" value="healthtech"> <span>HealthTech</span></label>
-            <label class="filter-check"><input type="checkbox" value="marketplace"> <span>Marketplace</span></label>
-            <label class="filter-check"><input type="checkbox" value="data"> <span>Data</span></label>
-          </div>
-        </div>
-
-        <!-- Date -->
-        <div>
-          <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Date posted</label>
-          <select id="filter-date" class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500">
-            <option value="TODAY">Past 24 hours</option>
-            <option value="7D" selected>Past week</option>
-            <option value="30D">Past month</option>
-            <option value="ALL">Anytime</option>
-          </select>
-        </div>
-
-        <button id="btn-reset" class="w-full text-xs text-gray-400 hover:text-red-500 transition-colors pt-1">Reset filters</button>
-      </div>
-    </aside>
-
-    <!-- Main content -->
-    <main class="flex-1 min-w-0">
-
-      <!-- Mobile filter bar -->
-      <div class="md:hidden mb-4 flex gap-2 overflow-x-auto pb-1">
-        <input id="filter-keyword-mobile" type="text" placeholder="Search role..."
-          class="flex-1 min-w-0 text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500" />
-        <select id="filter-continent-mobile" class="text-sm border border-gray-200 rounded-lg px-2 py-2 focus:outline-none">
-          <option value="">Any</option>
-          <option value="EU">EU</option>
-          <option value="UK">UK</option>
-          <option value="US">US</option>
-          <option value="APAC">APAC</option>
-          <option value="LATAM">LATAM</option>
-          <option value="REMOTE">Remote</option>
-          <option value="OTHER">Other</option>
-        </select>
-        <select id="filter-date-mobile" class="text-sm border border-gray-200 rounded-lg px-2 py-2 focus:outline-none">
-          <option value="TODAY">24h</option>
-          <option value="7D" selected>Week</option>
-          <option value="30D">Month</option>
-          <option value="ALL">Anytime</option>
-        </select>
-      </div>
-
-      <!-- New today filter -->
-      <div class="flex items-center justify-end mb-4">
-        <button id="btn-new-only" class="text-xs px-3 py-1.5 rounded-full border border-gray-200 hover:border-brand-500 hover:text-gray-900 transition-colors">
-          New today only
+      <!-- Date posted -->
+      <div class="fp-wrap" id="fp-date">
+        <button class="fp-btn" id="fpbtn-date" type="button">
+          <span id="fplbl-date">Date posted</span>
+          <svg class="fp-chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
         </button>
+        <div class="fp-panel" id="fpp-date">
+          <label class="dp-option"><input type="radio" name="date" value="7D" checked> Past week</label>
+          <label class="dp-option"><input type="radio" name="date" value="TODAY"> Past 24 hours</label>
+          <label class="dp-option"><input type="radio" name="date" value="30D"> Past month</label>
+          <label class="dp-option"><input type="radio" name="date" value="ALL"> Anytime</label>
+        </div>
       </div>
 
-      <!-- Job cards grid -->
-      <div id="jobs-grid" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
-        <!-- Cards injected by JS -->
-        <div class="skeleton-card col-span-full"></div>
+      <!-- Location (work type) -->
+      <div class="fp-wrap" id="fp-worktype">
+        <button class="fp-btn" id="fpbtn-worktype" type="button">
+          <span id="fplbl-worktype">Location</span>
+          <svg class="fp-chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+        </button>
+        <div class="fp-panel" id="fpp-worktype">
+          <label class="dp-option"><input type="checkbox" name="work_type" value="REMOTE"> Remote</label>
+          <label class="dp-option"><input type="checkbox" name="work_type" value="HYBRID"> Hybrid</label>
+          <label class="dp-option"><input type="checkbox" name="work_type" value="ONSITE"> On-site</label>
+        </div>
       </div>
 
-      <!-- Empty state -->
-      <div id="empty-state" class="hidden text-center py-20 text-gray-400">
-        <div class="text-5xl mb-3">&#128269;</div>
-        <p class="text-lg font-medium text-gray-500">No jobs found</p>
-        <p class="text-sm mt-1">Try adjusting your filters</p>
+      <!-- Experience -->
+      <div class="fp-wrap" id="fp-seniority">
+        <button class="fp-btn" id="fpbtn-seniority" type="button">
+          <span id="fplbl-seniority">Experience</span>
+          <svg class="fp-chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+        </button>
+        <div class="fp-panel" id="fpp-seniority">
+          <label class="dp-option"><input type="checkbox" name="seniority" value="JUNIOR"> Junior</label>
+          <label class="dp-option"><input type="checkbox" name="seniority" value="MID"> Mid</label>
+          <label class="dp-option"><input type="checkbox" name="seniority" value="SENIOR"> Senior</label>
+          <label class="dp-option"><input type="checkbox" name="seniority" value="STAFF"> Staff / Principal</label>
+          <label class="dp-option"><input type="checkbox" name="seniority" value="LEAD"> Lead / Group</label>
+          <label class="dp-option"><input type="checkbox" name="seniority" value="LEADERSHIP"> Director / VP</label>
+        </div>
       </div>
 
-      <!-- Infinite scroll sentinel -->
-      <div id="scroll-sentinel" class="h-4"></div>
-
-      <!-- Loading spinner (initial load) -->
-      <div id="loading" class="hidden flex justify-center py-12">
-        <div class="w-8 h-8 border-4 border-brand-500 border-t-transparent rounded-full animate-spin"></div>
+      <!-- Continent -->
+      <div class="fp-wrap" id="fp-continent">
+        <button class="fp-btn" id="fpbtn-continent" type="button">
+          <span id="fplbl-continent">Continent</span>
+          <svg class="fp-chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+        </button>
+        <div class="fp-panel" id="fpp-continent">
+          <label class="dp-option"><input type="radio" name="continent" value="" checked> All regions</label>
+          <label class="dp-option"><input type="radio" name="continent" value="EU"> Europe</label>
+          <label class="dp-option"><input type="radio" name="continent" value="UK"> United Kingdom</label>
+          <label class="dp-option"><input type="radio" name="continent" value="US"> United States / Canada</label>
+          <label class="dp-option"><input type="radio" name="continent" value="APAC"> Asia Pacific</label>
+          <label class="dp-option"><input type="radio" name="continent" value="LATAM"> Latin America</label>
+          <label class="dp-option"><input type="radio" name="continent" value="OTHER"> Other</label>
+        </div>
       </div>
 
-      <!-- Loading more spinner (scroll append) -->
-      <div id="loading-more" class="hidden flex justify-center py-6">
-        <div class="w-6 h-6 border-4 border-brand-500 border-t-transparent rounded-full animate-spin"></div>
+      <!-- City / Country free text -->
+      <input id="filter-city" type="text" placeholder="City or country…" class="fp-input" style="min-width:150px" />
+
+      <!-- Right side controls -->
+      <div class="fp-right">
+        <button id="btn-new-only" type="button" class="fp-btn">New today only</button>
+        <button id="btn-reset" type="button" class="fp-reset">Reset</button>
       </div>
-    </main>
+    </div>
+
+    <!-- ── Job cards grid (full width, 3 cols) ────────────────────────────── -->
+    <div id="jobs-grid" class="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+      <div class="skeleton-card col-span-full"></div>
+    </div>
+
+    <!-- Empty state -->
+    <div id="empty-state" class="hidden text-center py-20 text-gray-400">
+      <div class="text-5xl mb-3">&#128269;</div>
+      <p class="text-lg font-medium text-gray-500">No jobs found</p>
+      <p class="text-sm mt-1">Try adjusting your filters</p>
+    </div>
+
+    <!-- Infinite scroll sentinel -->
+    <div id="scroll-sentinel" class="h-4"></div>
+
+    <!-- Loading spinner (initial load) -->
+    <div id="loading" class="hidden flex justify-center py-12">
+      <div class="w-8 h-8 border-4 border-brand-500 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+
+    <!-- Loading more spinner (scroll append) -->
+    <div id="loading-more" class="hidden flex justify-center py-6">
+      <div class="w-6 h-6 border-4 border-brand-500 border-t-transparent rounded-full animate-spin"></div>
+    </div>
   </div>
 
   <script>window.__API_KEY__ = "{{ api_key }}";</script>
