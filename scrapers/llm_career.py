@@ -55,7 +55,7 @@ _h2t.body_width = 0
 _h2t.ignore_emphasis = True
 
 MAX_MARKDOWN_CHARS = 15000  # ~3500 tokens
-MAX_PAGES = 5               # max pagination depth
+MAX_PAGES = 20              # max pagination depth
 
 
 async def _fetch_page(http: httpx.AsyncClient, url: str) -> httpx.Response:
