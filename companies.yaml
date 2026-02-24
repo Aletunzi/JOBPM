@@ -3169,3 +3169,4329 @@ companies:
     size: mid
     vertical: logistics
     geo_primary: US
+
+  - name: Stability AI
+    slug: stability-ai
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Midjourney
+    slug: midjourney
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Cerebras Systems
+    slug: cerebras-systems
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: SambaNova Systems
+    slug: sambanova-systems
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Cradle AI
+    slug: cradle-ai
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Poolside AI
+    slug: poolside-ai
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Magic AI
+    slug: magic-ai
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Imbue
+    slug: imbue
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Contextual AI
+    slug: contextual-ai
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Reka AI
+    slug: reka-ai
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Galileo AI
+    slug: galileo-ai
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Unstructured
+    slug: unstructured
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: LangChain
+    slug: langchain
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Pinecone
+    slug: pinecone
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Weaviate
+    slug: weaviate
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Qdrant
+    slug: qdrant
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Chroma
+    slug: chroma
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Mosaic ML
+    slug: mosaic-ml
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Determined AI
+    slug: determined-ai
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Labelbox
+    slug: labelbox
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Snorkel AI
+    slug: snorkel-ai
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Cleanlab
+    slug: cleanlab
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Arthur AI
+    slug: arthur-ai
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Arize AI
+    slug: arize-ai
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: WhyLabs
+    slug: whylabs
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Tecton
+    slug: tecton
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Baseten
+    slug: baseten
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: BentoML
+    slug: bentoml
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Banana Dev
+    slug: banana-dev
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Fireworks AI
+    slug: fireworks-ai
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Salesforce
+    slug: salesforce
+    tier: 1
+    size: large
+    vertical: saas
+    geo_primary: US
+
+  - name: SAP
+    slug: sap
+    tier: 1
+    size: large
+    vertical: saas
+    geo_primary: EU
+
+  - name: Oracle
+    slug: oracle
+    tier: 1
+    size: large
+    vertical: saas
+    geo_primary: US
+
+  - name: VMware
+    slug: vmware
+    tier: 1
+    size: large
+    vertical: saas
+    geo_primary: US
+
+  - name: Cisco
+    slug: cisco
+    tier: 1
+    size: large
+    vertical: saas
+    geo_primary: US
+
+  - name: Adobe
+    slug: adobe
+    tier: 1
+    size: large
+    vertical: saas
+    geo_primary: US
+
+  - name: Intuit
+    slug: intuit
+    tier: 1
+    size: large
+    vertical: saas
+    geo_primary: US
+
+  - name: Autodesk
+    slug: autodesk
+    tier: 1
+    size: large
+    vertical: saas
+    geo_primary: US
+
+  - name: Palo Alto Networks
+    slug: palo-alto-networks
+    tier: 1
+    size: large
+    vertical: saas
+    geo_primary: US
+
+  - name: Fortinet
+    slug: fortinet
+    tier: 1
+    size: large
+    vertical: saas
+    geo_primary: US
+
+  - name: Arista Networks
+    slug: arista-networks
+    tier: 2
+    size: large
+    vertical: saas
+    geo_primary: US
+
+  - name: NetApp
+    slug: netapp
+    tier: 2
+    size: large
+    vertical: saas
+    geo_primary: US
+
+  - name: F5 Networks
+    slug: f5-networks
+    tier: 2
+    size: large
+    vertical: saas
+    geo_primary: US
+
+  - name: Akamai
+    slug: akamai
+    tier: 2
+    size: large
+    vertical: saas
+    geo_primary: US
+
+  - name: Twistlock
+    slug: twistlock
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: HashiCorp
+    slug: hashicorp
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Kong
+    slug: kong
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Postscript
+    slug: postscript
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Contentstack
+    slug: contentstack
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Sanity
+    slug: sanity
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Strapi
+    slug: strapi
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Storyblok
+    slug: storyblok
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Hygraph
+    slug: hygraph
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Kontent.ai
+    slug: kontentai
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Builder.io
+    slug: builderio
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Plasmic
+    slug: plasmic
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Uniform
+    slug: uniform
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Netlify CMS
+    slug: netlify-cms
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Prismic
+    slug: prismic
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Sitecore
+    slug: sitecore
+    tier: 2
+    size: mid
+    vertical: saas
+    geo_primary: EU
+
+  - name: JetBrains
+    slug: jetbrains
+    tier: 2
+    size: mid
+    vertical: saas
+    geo_primary: EU
+
+  - name: GitHub
+    slug: github
+    tier: 1
+    size: large
+    vertical: saas
+    geo_primary: US
+
+  - name: Sourcegraph
+    slug: sourcegraph
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Gitpod
+    slug: gitpod
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Railway
+    slug: railway
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Render
+    slug: render
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Fly.io
+    slug: flyio
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Deno
+    slug: deno
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Bun
+    slug: bun
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Turso
+    slug: turso
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Xata
+    slug: xata
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Tinybird
+    slug: tinybird
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: ClickHouse
+    slug: clickhouse
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: StarTree
+    slug: startree
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Imply
+    slug: imply
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Materialize
+    slug: materialize
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: ReadySet
+    slug: readyset
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: CockroachDB
+    slug: cockroachdb
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: TigerBeetle
+    slug: tigerbeetle
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: QuestDB
+    slug: questdb
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: TimescaleDB
+    slug: timescaledb
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: InfluxData
+    slug: influxdata
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Grafbase
+    slug: grafbase
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Hasura
+    slug: hasura
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Apollo GraphQL
+    slug: apollo-graphql
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Stellate
+    slug: stellate
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Stytch
+    slug: stytch
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Clerk
+    slug: clerk
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: WorkOS
+    slug: workos
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: FusionAuth
+    slug: fusionauth
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Ory
+    slug: ory
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Permit.io
+    slug: permitio
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Fivetran
+    slug: fivetran
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Census
+    slug: census
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Polytomic
+    slug: polytomic
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Monte Carlo
+    slug: monte-carlo
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Bigeye
+    slug: bigeye
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Sifflet
+    slug: sifflet
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Atlan
+    slug: atlan
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Alation
+    slug: alation
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Select Star
+    slug: select-star
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Secoda
+    slug: secoda
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Immuta
+    slug: immuta
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: BigPanda
+    slug: bigpanda
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Sigma Computing
+    slug: sigma-computing
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Preset
+    slug: preset
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Lightdash
+    slug: lightdash
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Cube Dev
+    slug: cube-dev
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: GoodData
+    slug: gooddata
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Sisense
+    slug: sisense
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Mode Analytics
+    slug: mode-analytics
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Looker
+    slug: looker
+    tier: 2
+    size: mid
+    vertical: saas
+    geo_primary: US
+
+  - name: Tableau
+    slug: tableau
+    tier: 2
+    size: large
+    vertical: saas
+    geo_primary: US
+
+  - name: Domo
+    slug: domo
+    tier: 2
+    size: mid
+    vertical: saas
+    geo_primary: US
+
+  - name: Wiz
+    slug: wiz
+    tier: 1
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Lacework
+    slug: lacework
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Orca Security
+    slug: orca-security
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Aqua Security
+    slug: aqua-security
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Sysdig
+    slug: sysdig
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Cato Networks
+    slug: cato-networks
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Netskope
+    slug: netskope
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Illumio
+    slug: illumio
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Abnormal Security
+    slug: abnormal-security
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Material Security
+    slug: material-security
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Sublime Security
+    slug: sublime-security
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Tines
+    slug: tines
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Torq
+    slug: torq
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Panther Labs
+    slug: panther-labs
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Hunters
+    slug: hunters
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Cyera
+    slug: cyera
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Dig Security
+    slug: dig-security
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Normalyze
+    slug: normalyze
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Polar Security
+    slug: polar-security
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Island
+    slug: island
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Talon Cyber Security
+    slug: talon-cyber-security
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Pentera
+    slug: pentera
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: SafeBreach
+    slug: safebreach
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: XM Cyber
+    slug: xm-cyber
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Recorded Future
+    slug: recorded-future
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: ThreatConnect
+    slug: threatconnect
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Securonix
+    slug: securonix
+    tier: 2
+    size: mid
+    vertical: saas
+    geo_primary: US
+
+  - name: Exabeam
+    slug: exabeam
+    tier: 2
+    size: mid
+    vertical: saas
+    geo_primary: US
+
+  - name: Sumo Logic
+    slug: sumo-logic
+    tier: 2
+    size: mid
+    vertical: saas
+    geo_primary: US
+
+  - name: Cybereason
+    slug: cybereason
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Tink
+    slug: tink
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: EU
+
+  - name: TrueLayer
+    slug: truelayer
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: EU
+
+  - name: Yapily
+    slug: yapily
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: EU
+
+  - name: Belvo
+    slug: belvo
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: GLOBAL
+
+  - name: MX Technologies
+    slug: mx-technologies
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: US
+
+  - name: Finicity
+    slug: finicity
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: US
+
+  - name: Thought Machine
+    slug: thought-machine
+    tier: 2
+    size: scaleup
+    vertical: fintech
+    geo_primary: EU
+
+  - name: 10x Banking
+    slug: 10x-banking
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: EU
+
+  - name: Finastra
+    slug: finastra
+    tier: 2
+    size: large
+    vertical: fintech
+    geo_primary: EU
+
+  - name: Temenos
+    slug: temenos
+    tier: 2
+    size: large
+    vertical: fintech
+    geo_primary: EU
+
+  - name: FIS
+    slug: fis
+    tier: 1
+    size: large
+    vertical: fintech
+    geo_primary: US
+
+  - name: Fiserv
+    slug: fiserv
+    tier: 1
+    size: large
+    vertical: fintech
+    geo_primary: US
+
+  - name: Global Payments
+    slug: global-payments
+    tier: 1
+    size: large
+    vertical: fintech
+    geo_primary: US
+
+  - name: Worldpay
+    slug: worldpay
+    tier: 1
+    size: large
+    vertical: fintech
+    geo_primary: US
+
+  - name: Nuvemshop
+    slug: nuvemshop
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: GLOBAL
+
+  - name: Ualá
+    slug: ual
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: GLOBAL
+
+  - name: Stori
+    slug: stori
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: GLOBAL
+
+  - name: Clara
+    slug: clara
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: GLOBAL
+
+  - name: Tribal Credit
+    slug: tribal-credit
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: GLOBAL
+
+  - name: Kuda Bank
+    slug: kuda-bank
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: GLOBAL
+
+  - name: FairMoney
+    slug: fairmoney
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: GLOBAL
+
+  - name: TymeBank
+    slug: tymebank
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: GLOBAL
+
+  - name: Carbon
+    slug: carbon
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: GLOBAL
+
+  - name: OPay
+    slug: opay
+    tier: 2
+    size: scaleup
+    vertical: fintech
+    geo_primary: GLOBAL
+
+  - name: PalmPay
+    slug: palmpay
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: GLOBAL
+
+  - name: Chipper Cash
+    slug: chipper-cash
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: GLOBAL
+
+  - name: Wave Mobile Money
+    slug: wave-mobile-money
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: GLOBAL
+
+  - name: M-Pesa
+    slug: m-pesa
+    tier: 2
+    size: mid
+    vertical: fintech
+    geo_primary: GLOBAL
+
+  - name: Ebury
+    slug: ebury
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: EU
+
+  - name: Currencycloud
+    slug: currencycloud
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: EU
+
+  - name: Banking Circle
+    slug: banking-circle
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: EU
+
+  - name: Modulr
+    slug: modulr
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: EU
+
+  - name: Solaris
+    slug: solaris
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: EU
+
+  - name: Solarisbank
+    slug: solarisbank
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: EU
+
+  - name: Tide
+    slug: tide
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: EU
+
+  - name: Anna Money
+    slug: anna-money
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: EU
+
+  - name: Zopa
+    slug: zopa
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: EU
+
+  - name: OakNorth
+    slug: oaknorth
+    tier: 2
+    size: scaleup
+    vertical: fintech
+    geo_primary: EU
+
+  - name: Atom Bank
+    slug: atom-bank
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: EU
+
+  - name: Tandem Bank
+    slug: tandem-bank
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: EU
+
+  - name: Shopware
+    slug: shopware
+    tier: 3
+    size: startup
+    vertical: ecommerce
+    geo_primary: EU
+
+  - name: Spryker
+    slug: spryker
+    tier: 3
+    size: startup
+    vertical: ecommerce
+    geo_primary: EU
+
+  - name: Mirakl
+    slug: mirakl
+    tier: 2
+    size: scaleup
+    vertical: ecommerce
+    geo_primary: EU
+
+  - name: Saleor
+    slug: saleor
+    tier: 3
+    size: startup
+    vertical: ecommerce
+    geo_primary: EU
+
+  - name: Medusa
+    slug: medusa
+    tier: 3
+    size: startup
+    vertical: ecommerce
+    geo_primary: EU
+
+  - name: Centra
+    slug: centra
+    tier: 3
+    size: startup
+    vertical: ecommerce
+    geo_primary: EU
+
+  - name: Akeneo
+    slug: akeneo
+    tier: 3
+    size: startup
+    vertical: ecommerce
+    geo_primary: EU
+
+  - name: Pimcore
+    slug: pimcore
+    tier: 3
+    size: startup
+    vertical: ecommerce
+    geo_primary: EU
+
+  - name: Algolia
+    slug: algolia
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Typesense
+    slug: typesense
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Meilisearch
+    slug: meilisearch
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Coveo
+    slug: coveo
+    tier: 2
+    size: mid
+    vertical: saas
+    geo_primary: US
+
+  - name: Constructor.io
+    slug: constructorio
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Nosto
+    slug: nosto
+    tier: 3
+    size: startup
+    vertical: ecommerce
+    geo_primary: EU
+
+  - name: Dynamic Yield
+    slug: dynamic-yield
+    tier: 3
+    size: startup
+    vertical: ecommerce
+    geo_primary: US
+
+  - name: Bloomreach
+    slug: bloomreach
+    tier: 2
+    size: scaleup
+    vertical: ecommerce
+    geo_primary: EU
+
+  - name: Yotpo
+    slug: yotpo
+    tier: 2
+    size: scaleup
+    vertical: ecommerce
+    geo_primary: US
+
+  - name: Bazaarvoice
+    slug: bazaarvoice
+    tier: 2
+    size: mid
+    vertical: ecommerce
+    geo_primary: US
+
+  - name: Salsify
+    slug: salsify
+    tier: 2
+    size: scaleup
+    vertical: ecommerce
+    geo_primary: US
+
+  - name: Syndigo
+    slug: syndigo
+    tier: 2
+    size: mid
+    vertical: ecommerce
+    geo_primary: US
+
+  - name: CommerceIQ
+    slug: commerceiq
+    tier: 3
+    size: startup
+    vertical: ecommerce
+    geo_primary: US
+
+  - name: Feedvisor
+    slug: feedvisor
+    tier: 3
+    size: startup
+    vertical: ecommerce
+    geo_primary: US
+
+  - name: Jungle Scout
+    slug: jungle-scout
+    tier: 3
+    size: startup
+    vertical: ecommerce
+    geo_primary: US
+
+  - name: Helium 10
+    slug: helium-10
+    tier: 3
+    size: startup
+    vertical: ecommerce
+    geo_primary: US
+
+  - name: Poshmark
+    slug: poshmark
+    tier: 2
+    size: mid
+    vertical: ecommerce
+    geo_primary: US
+
+  - name: ThredUp
+    slug: thredup
+    tier: 2
+    size: mid
+    vertical: ecommerce
+    geo_primary: US
+
+  - name: The RealReal
+    slug: the-realreal
+    tier: 2
+    size: mid
+    vertical: ecommerce
+    geo_primary: US
+
+  - name: StockX
+    slug: stockx
+    tier: 2
+    size: scaleup
+    vertical: ecommerce
+    geo_primary: US
+
+  - name: GOAT
+    slug: goat
+    tier: 2
+    size: scaleup
+    vertical: ecommerce
+    geo_primary: US
+
+  - name: Mercari
+    slug: mercari
+    tier: 2
+    size: mid
+    vertical: ecommerce
+    geo_primary: GLOBAL
+
+  - name: Greenhouse
+    slug: greenhouse
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Lever
+    slug: lever
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Ashby
+    slug: ashby
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Gem HR
+    slug: gem-hr
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Wellfound
+    slug: wellfound
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Hired
+    slug: hired
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Turing
+    slug: turing
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Toptal
+    slug: toptal
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Andela
+    slug: andela
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: GLOBAL
+
+  - name: BambooHR
+    slug: bamboohr
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Namely
+    slug: namely
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Paylocity
+    slug: paylocity
+    tier: 2
+    size: mid
+    vertical: saas
+    geo_primary: US
+
+  - name: Paycom
+    slug: paycom
+    tier: 2
+    size: mid
+    vertical: saas
+    geo_primary: US
+
+  - name: Ceridian
+    slug: ceridian
+    tier: 2
+    size: large
+    vertical: saas
+    geo_primary: US
+
+  - name: UKG
+    slug: ukg
+    tier: 1
+    size: large
+    vertical: saas
+    geo_primary: US
+
+  - name: ADP
+    slug: adp
+    tier: 1
+    size: large
+    vertical: saas
+    geo_primary: US
+
+  - name: Paychex
+    slug: paychex
+    tier: 1
+    size: large
+    vertical: saas
+    geo_primary: US
+
+  - name: Cornerstone OnDemand
+    slug: cornerstone-ondemand
+    tier: 2
+    size: mid
+    vertical: saas
+    geo_primary: US
+
+  - name: Cornerstone
+    slug: cornerstone
+    tier: 2
+    size: mid
+    vertical: saas
+    geo_primary: US
+
+  - name: Docebo
+    slug: docebo
+    tier: 2
+    size: mid
+    vertical: saas
+    geo_primary: US
+
+  - name: Absorb LMS
+    slug: absorb-lms
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: 360Learning
+    slug: 360learning
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Degreed
+    slug: degreed
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: EdCast
+    slug: edcast
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Ro
+    slug: ro
+    tier: 2
+    size: scaleup
+    vertical: healthtech
+    geo_primary: US
+
+  - name: Cerebral
+    slug: cerebral
+    tier: 3
+    size: startup
+    vertical: healthtech
+    geo_primary: US
+
+  - name: Devoted Health
+    slug: devoted-health
+    tier: 2
+    size: scaleup
+    vertical: healthtech
+    geo_primary: US
+
+  - name: Cityblock Health
+    slug: cityblock-health
+    tier: 2
+    size: scaleup
+    vertical: healthtech
+    geo_primary: US
+
+  - name: Aledade
+    slug: aledade
+    tier: 2
+    size: scaleup
+    vertical: healthtech
+    geo_primary: US
+
+  - name: Olive AI
+    slug: olive-ai
+    tier: 2
+    size: scaleup
+    vertical: healthtech
+    geo_primary: US
+
+  - name: Viz.ai
+    slug: vizai
+    tier: 3
+    size: startup
+    vertical: healthtech
+    geo_primary: US
+
+  - name: PathAI
+    slug: pathai
+    tier: 3
+    size: startup
+    vertical: healthtech
+    geo_primary: US
+
+  - name: Recursion Pharmaceuticals
+    slug: recursion-pharmaceuticals
+    tier: 2
+    size: scaleup
+    vertical: healthtech
+    geo_primary: US
+
+  - name: Insitro
+    slug: insitro
+    tier: 3
+    size: startup
+    vertical: healthtech
+    geo_primary: US
+
+  - name: BenevolentAI
+    slug: benevolentai
+    tier: 3
+    size: startup
+    vertical: healthtech
+    geo_primary: EU
+
+  - name: Exscientia
+    slug: exscientia
+    tier: 3
+    size: startup
+    vertical: healthtech
+    geo_primary: EU
+
+  - name: Babylon Health
+    slug: babylon-health
+    tier: 2
+    size: scaleup
+    vertical: healthtech
+    geo_primary: EU
+
+  - name: Kry
+    slug: kry
+    tier: 3
+    size: startup
+    vertical: healthtech
+    geo_primary: EU
+
+  - name: Docplanner
+    slug: docplanner
+    tier: 2
+    size: scaleup
+    vertical: healthtech
+    geo_primary: EU
+
+  - name: Jameda
+    slug: jameda
+    tier: 3
+    size: startup
+    vertical: healthtech
+    geo_primary: EU
+
+  - name: Zocdoc
+    slug: zocdoc
+    tier: 2
+    size: scaleup
+    vertical: healthtech
+    geo_primary: US
+
+  - name: GoodRx
+    slug: goodrx
+    tier: 2
+    size: mid
+    vertical: healthtech
+    geo_primary: US
+
+  - name: CareRev
+    slug: carerev
+    tier: 3
+    size: startup
+    vertical: healthtech
+    geo_primary: US
+
+  - name: Trusted Health
+    slug: trusted-health
+    tier: 3
+    size: startup
+    vertical: healthtech
+    geo_primary: US
+
+  - name: Wheel
+    slug: wheel
+    tier: 3
+    size: startup
+    vertical: healthtech
+    geo_primary: US
+
+  - name: Hims
+    slug: hims
+    tier: 2
+    size: scaleup
+    vertical: healthtech
+    geo_primary: US
+
+  - name: Nurx
+    slug: nurx
+    tier: 3
+    size: startup
+    vertical: healthtech
+    geo_primary: US
+
+  - name: Alto Pharmacy
+    slug: alto-pharmacy
+    tier: 3
+    size: startup
+    vertical: healthtech
+    geo_primary: US
+
+  - name: Capsule Pharmacy
+    slug: capsule-pharmacy
+    tier: 3
+    size: startup
+    vertical: healthtech
+    geo_primary: US
+
+  - name: Truepill
+    slug: truepill
+    tier: 3
+    size: startup
+    vertical: healthtech
+    geo_primary: US
+
+  - name: Sempre Health
+    slug: sempre-health
+    tier: 3
+    size: startup
+    vertical: healthtech
+    geo_primary: US
+
+  - name: Cedar
+    slug: cedar
+    tier: 3
+    size: startup
+    vertical: healthtech
+    geo_primary: US
+
+  - name: Waystar
+    slug: waystar
+    tier: 2
+    size: mid
+    vertical: healthtech
+    geo_primary: US
+
+  - name: Olive
+    slug: olive
+    tier: 3
+    size: startup
+    vertical: healthtech
+    geo_primary: US
+
+  - name: Sennder
+    slug: sennder
+    tier: 2
+    size: scaleup
+    vertical: logistics
+    geo_primary: EU
+
+  - name: InstaFreight
+    slug: instafreight
+    tier: 3
+    size: startup
+    vertical: logistics
+    geo_primary: EU
+
+  - name: Transporeon
+    slug: transporeon
+    tier: 2
+    size: mid
+    vertical: logistics
+    geo_primary: EU
+
+  - name: Forto
+    slug: forto
+    tier: 2
+    size: scaleup
+    vertical: logistics
+    geo_primary: EU
+
+  - name: Zencargo
+    slug: zencargo
+    tier: 3
+    size: startup
+    vertical: logistics
+    geo_primary: EU
+
+  - name: Beacon
+    slug: beacon
+    tier: 3
+    size: startup
+    vertical: logistics
+    geo_primary: US
+
+  - name: FreightPop
+    slug: freightpop
+    tier: 3
+    size: startup
+    vertical: logistics
+    geo_primary: US
+
+  - name: Loadsmart
+    slug: loadsmart
+    tier: 3
+    size: startup
+    vertical: logistics
+    geo_primary: US
+
+  - name: Transfix
+    slug: transfix
+    tier: 3
+    size: startup
+    vertical: logistics
+    geo_primary: US
+
+  - name: NEXT Trucking
+    slug: next-trucking
+    tier: 3
+    size: startup
+    vertical: logistics
+    geo_primary: US
+
+  - name: KeepTruckin
+    slug: keeptruckin
+    tier: 2
+    size: scaleup
+    vertical: logistics
+    geo_primary: US
+
+  - name: Locus Robotics
+    slug: locus-robotics
+    tier: 2
+    size: scaleup
+    vertical: logistics
+    geo_primary: US
+
+  - name: 6 River Systems
+    slug: 6-river-systems
+    tier: 3
+    size: startup
+    vertical: logistics
+    geo_primary: US
+
+  - name: Fetch Robotics
+    slug: fetch-robotics
+    tier: 3
+    size: startup
+    vertical: logistics
+    geo_primary: US
+
+  - name: Nuro
+    slug: nuro
+    tier: 2
+    size: scaleup
+    vertical: logistics
+    geo_primary: US
+
+  - name: Gatik
+    slug: gatik
+    tier: 3
+    size: startup
+    vertical: logistics
+    geo_primary: US
+
+  - name: TuSimple
+    slug: tusimple
+    tier: 2
+    size: scaleup
+    vertical: logistics
+    geo_primary: US
+
+  - name: Plus AI
+    slug: plus-ai
+    tier: 3
+    size: startup
+    vertical: logistics
+    geo_primary: US
+
+  - name: Kodiak Robotics
+    slug: kodiak-robotics
+    tier: 3
+    size: startup
+    vertical: logistics
+    geo_primary: US
+
+  - name: Waymo
+    slug: waymo
+    tier: 1
+    size: large
+    vertical: logistics
+    geo_primary: US
+
+  - name: Cruise
+    slug: cruise
+    tier: 2
+    size: scaleup
+    vertical: logistics
+    geo_primary: US
+
+  - name: Aurora Innovation
+    slug: aurora-innovation
+    tier: 2
+    size: scaleup
+    vertical: logistics
+    geo_primary: US
+
+  - name: Argo AI
+    slug: argo-ai
+    tier: 2
+    size: scaleup
+    vertical: logistics
+    geo_primary: US
+
+  - name: Motional
+    slug: motional
+    tier: 2
+    size: scaleup
+    vertical: logistics
+    geo_primary: US
+
+  - name: Zoox
+    slug: zoox
+    tier: 2
+    size: scaleup
+    vertical: logistics
+    geo_primary: US
+
+  - name: Bird
+    slug: bird
+    tier: 2
+    size: scaleup
+    vertical: logistics
+    geo_primary: US
+
+  - name: Tier Mobility
+    slug: tier-mobility
+    tier: 2
+    size: scaleup
+    vertical: logistics
+    geo_primary: EU
+
+  - name: Dott
+    slug: dott
+    tier: 3
+    size: startup
+    vertical: logistics
+    geo_primary: EU
+
+  - name: Cooltra
+    slug: cooltra
+    tier: 3
+    size: startup
+    vertical: logistics
+    geo_primary: EU
+
+  - name: FREE NOW
+    slug: free-now
+    tier: 2
+    size: scaleup
+    vertical: logistics
+    geo_primary: EU
+
+  - name: Loft
+    slug: loft
+    tier: 2
+    size: scaleup
+    vertical: proptech
+    geo_primary: GLOBAL
+
+  - name: Pacaso
+    slug: pacaso
+    tier: 3
+    size: startup
+    vertical: proptech
+    geo_primary: US
+
+  - name: Arrived Homes
+    slug: arrived-homes
+    tier: 3
+    size: startup
+    vertical: proptech
+    geo_primary: US
+
+  - name: Fundrise
+    slug: fundrise
+    tier: 2
+    size: scaleup
+    vertical: proptech
+    geo_primary: US
+
+  - name: Roofstock
+    slug: roofstock
+    tier: 3
+    size: startup
+    vertical: proptech
+    geo_primary: US
+
+  - name: Divvy Homes
+    slug: divvy-homes
+    tier: 3
+    size: startup
+    vertical: proptech
+    geo_primary: US
+
+  - name: Better.com
+    slug: bettercom
+    tier: 2
+    size: scaleup
+    vertical: proptech
+    geo_primary: US
+
+  - name: Blend
+    slug: blend
+    tier: 2
+    size: scaleup
+    vertical: proptech
+    geo_primary: US
+
+  - name: Snapdocs
+    slug: snapdocs
+    tier: 3
+    size: startup
+    vertical: proptech
+    geo_primary: US
+
+  - name: States Title
+    slug: states-title
+    tier: 3
+    size: startup
+    vertical: proptech
+    geo_primary: US
+
+  - name: Qualia
+    slug: qualia
+    tier: 3
+    size: startup
+    vertical: proptech
+    geo_primary: US
+
+  - name: Habi
+    slug: habi
+    tier: 3
+    size: startup
+    vertical: proptech
+    geo_primary: GLOBAL
+
+  - name: Casavo
+    slug: casavo
+    tier: 3
+    size: startup
+    vertical: proptech
+    geo_primary: EU
+
+  - name: Habyt
+    slug: habyt
+    tier: 3
+    size: startup
+    vertical: proptech
+    geo_primary: EU
+
+  - name: Spotahome
+    slug: spotahome
+    tier: 3
+    size: startup
+    vertical: proptech
+    geo_primary: EU
+
+  - name: HousingAnywhere
+    slug: housinganywhere
+    tier: 3
+    size: startup
+    vertical: proptech
+    geo_primary: EU
+
+  - name: Homeday
+    slug: homeday
+    tier: 3
+    size: startup
+    vertical: proptech
+    geo_primary: EU
+
+  - name: McMakler
+    slug: mcmakler
+    tier: 3
+    size: startup
+    vertical: proptech
+    geo_primary: EU
+
+  - name: PurpleBricks
+    slug: purplebricks
+    tier: 3
+    size: startup
+    vertical: proptech
+    geo_primary: EU
+
+  - name: Nested
+    slug: nested
+    tier: 3
+    size: startup
+    vertical: proptech
+    geo_primary: EU
+
+  - name: Byju's
+    slug: byjus
+    tier: 2
+    size: large
+    vertical: edtech
+    geo_primary: GLOBAL
+
+  - name: Unacademy
+    slug: unacademy
+    tier: 2
+    size: scaleup
+    vertical: edtech
+    geo_primary: GLOBAL
+
+  - name: Vedantu
+    slug: vedantu
+    tier: 3
+    size: startup
+    vertical: edtech
+    geo_primary: GLOBAL
+
+  - name: Eruditus
+    slug: eruditus
+    tier: 2
+    size: scaleup
+    vertical: edtech
+    geo_primary: GLOBAL
+
+  - name: Emeritus
+    slug: emeritus
+    tier: 2
+    size: scaleup
+    vertical: edtech
+    geo_primary: US
+
+  - name: 2U
+    slug: 2u
+    tier: 2
+    size: mid
+    vertical: edtech
+    geo_primary: US
+
+  - name: Chegg
+    slug: chegg
+    tier: 2
+    size: mid
+    vertical: edtech
+    geo_primary: US
+
+  - name: Outlier.org
+    slug: outlierorg
+    tier: 3
+    size: startup
+    vertical: edtech
+    geo_primary: US
+
+  - name: Springboard
+    slug: springboard
+    tier: 3
+    size: startup
+    vertical: edtech
+    geo_primary: US
+
+  - name: Thinkful
+    slug: thinkful
+    tier: 3
+    size: startup
+    vertical: edtech
+    geo_primary: US
+
+  - name: Lambda School
+    slug: lambda-school
+    tier: 3
+    size: startup
+    vertical: edtech
+    geo_primary: US
+
+  - name: Flatiron School
+    slug: flatiron-school
+    tier: 3
+    size: startup
+    vertical: edtech
+    geo_primary: US
+
+  - name: General Assembly
+    slug: general-assembly
+    tier: 2
+    size: mid
+    vertical: edtech
+    geo_primary: US
+
+  - name: Multiverse
+    slug: multiverse
+    tier: 2
+    size: scaleup
+    vertical: edtech
+    geo_primary: EU
+
+  - name: GoStudent
+    slug: gostudent
+    tier: 2
+    size: scaleup
+    vertical: edtech
+    geo_primary: EU
+
+  - name: Preply
+    slug: preply
+    tier: 2
+    size: scaleup
+    vertical: edtech
+    geo_primary: EU
+
+  - name: Busuu
+    slug: busuu
+    tier: 3
+    size: startup
+    vertical: edtech
+    geo_primary: EU
+
+  - name: Babbel
+    slug: babbel
+    tier: 2
+    size: mid
+    vertical: edtech
+    geo_primary: EU
+
+  - name: Lingoda
+    slug: lingoda
+    tier: 3
+    size: startup
+    vertical: edtech
+    geo_primary: EU
+
+  - name: Kahoot
+    slug: kahoot
+    tier: 2
+    size: mid
+    vertical: edtech
+    geo_primary: EU
+
+  - name: The Trade Desk
+    slug: the-trade-desk
+    tier: 1
+    size: large
+    vertical: saas
+    geo_primary: US
+
+  - name: LiveRamp
+    slug: liveramp
+    tier: 2
+    size: mid
+    vertical: saas
+    geo_primary: US
+
+  - name: Lotame
+    slug: lotame
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: PubMatic
+    slug: pubmatic
+    tier: 2
+    size: mid
+    vertical: saas
+    geo_primary: US
+
+  - name: Integral Ad Science
+    slug: integral-ad-science
+    tier: 2
+    size: mid
+    vertical: saas
+    geo_primary: US
+
+  - name: DoubleVerify
+    slug: doubleverify
+    tier: 2
+    size: mid
+    vertical: saas
+    geo_primary: US
+
+  - name: Taboola
+    slug: taboola
+    tier: 2
+    size: mid
+    vertical: saas
+    geo_primary: US
+
+  - name: Outbrain
+    slug: outbrain
+    tier: 2
+    size: mid
+    vertical: saas
+    geo_primary: US
+
+  - name: Criteo
+    slug: criteo
+    tier: 2
+    size: large
+    vertical: saas
+    geo_primary: EU
+
+  - name: RTB House
+    slug: rtb-house
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Moloco
+    slug: moloco
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: AppsFlyer
+    slug: appsflyer
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Branch
+    slug: branch
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Kochava
+    slug: kochava
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Singular
+    slug: singular
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Klaviyo
+    slug: klaviyo
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Omnisend
+    slug: omnisend
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Mailchimp
+    slug: mailchimp
+    tier: 2
+    size: mid
+    vertical: saas
+    geo_primary: US
+
+  - name: SendGrid
+    slug: sendgrid
+    tier: 2
+    size: mid
+    vertical: saas
+    geo_primary: US
+
+  - name: Postmark
+    slug: postmark
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Mailtrap
+    slug: mailtrap
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Sendbird
+    slug: sendbird
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Stream
+    slug: stream
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Ably
+    slug: ably
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Pusher
+    slug: pusher
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Liveblocks
+    slug: liveblocks
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Partytown
+    slug: partytown
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Segment CDP
+    slug: segment-cdp
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Lytics
+    slug: lytics
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: BlueConic
+    slug: blueconic
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Supercell
+    slug: supercell
+    tier: 2
+    size: mid
+    vertical: gaming
+    geo_primary: EU
+
+  - name: Rovio
+    slug: rovio
+    tier: 2
+    size: mid
+    vertical: gaming
+    geo_primary: EU
+
+  - name: King
+    slug: king
+    tier: 2
+    size: large
+    vertical: gaming
+    geo_primary: EU
+
+  - name: Ubisoft
+    slug: ubisoft
+    tier: 1
+    size: large
+    vertical: gaming
+    geo_primary: EU
+
+  - name: Embracer Group
+    slug: embracer-group
+    tier: 2
+    size: large
+    vertical: gaming
+    geo_primary: EU
+
+  - name: CD Projekt Red
+    slug: cd-projekt-red
+    tier: 2
+    size: mid
+    vertical: gaming
+    geo_primary: EU
+
+  - name: Riot Games
+    slug: riot-games
+    tier: 1
+    size: large
+    vertical: gaming
+    geo_primary: US
+
+  - name: Blizzard Entertainment
+    slug: blizzard-entertainment
+    tier: 1
+    size: large
+    vertical: gaming
+    geo_primary: US
+
+  - name: Electronic Arts
+    slug: electronic-arts
+    tier: 1
+    size: large
+    vertical: gaming
+    geo_primary: US
+
+  - name: Take-Two Interactive
+    slug: take-two-interactive
+    tier: 1
+    size: large
+    vertical: gaming
+    geo_primary: US
+
+  - name: Bungie
+    slug: bungie
+    tier: 2
+    size: mid
+    vertical: gaming
+    geo_primary: US
+
+  - name: Valve
+    slug: valve
+    tier: 2
+    size: mid
+    vertical: gaming
+    geo_primary: US
+
+  - name: Naughty Dog
+    slug: naughty-dog
+    tier: 2
+    size: mid
+    vertical: gaming
+    geo_primary: US
+
+  - name: Insomniac Games
+    slug: insomniac-games
+    tier: 2
+    size: mid
+    vertical: gaming
+    geo_primary: US
+
+  - name: Santa Monica Studio
+    slug: santa-monica-studio
+    tier: 2
+    size: mid
+    vertical: gaming
+    geo_primary: US
+
+  - name: miHoYo
+    slug: mihoyo
+    tier: 2
+    size: large
+    vertical: gaming
+    geo_primary: GLOBAL
+
+  - name: NetEase Games
+    slug: netease-games
+    tier: 2
+    size: large
+    vertical: gaming
+    geo_primary: GLOBAL
+
+  - name: Krafton
+    slug: krafton
+    tier: 2
+    size: large
+    vertical: gaming
+    geo_primary: GLOBAL
+
+  - name: Garena
+    slug: garena
+    tier: 2
+    size: large
+    vertical: gaming
+    geo_primary: GLOBAL
+
+  - name: Zynga
+    slug: zynga
+    tier: 2
+    size: mid
+    vertical: gaming
+    geo_primary: US
+
+  - name: Expedia
+    slug: expedia
+    tier: 1
+    size: large
+    vertical: travel
+    geo_primary: US
+
+  - name: TripAdvisor
+    slug: tripadvisor
+    tier: 2
+    size: large
+    vertical: travel
+    geo_primary: US
+
+  - name: Hopper
+    slug: hopper
+    tier: 2
+    size: scaleup
+    vertical: travel
+    geo_primary: US
+
+  - name: Kiwi.com
+    slug: kiwicom
+    tier: 2
+    size: scaleup
+    vertical: travel
+    geo_primary: EU
+
+  - name: Omio
+    slug: omio
+    tier: 2
+    size: scaleup
+    vertical: travel
+    geo_primary: EU
+
+  - name: Trainline
+    slug: trainline
+    tier: 2
+    size: mid
+    vertical: travel
+    geo_primary: EU
+
+  - name: Skyscanner
+    slug: skyscanner
+    tier: 2
+    size: mid
+    vertical: travel
+    geo_primary: EU
+
+  - name: Kayak
+    slug: kayak
+    tier: 2
+    size: mid
+    vertical: travel
+    geo_primary: US
+
+  - name: Trivago
+    slug: trivago
+    tier: 2
+    size: mid
+    vertical: travel
+    geo_primary: EU
+
+  - name: Sonder
+    slug: sonder
+    tier: 2
+    size: scaleup
+    vertical: travel
+    geo_primary: US
+
+  - name: Selina
+    slug: selina
+    tier: 3
+    size: startup
+    vertical: travel
+    geo_primary: GLOBAL
+
+  - name: OYO Rooms
+    slug: oyo-rooms
+    tier: 2
+    size: scaleup
+    vertical: travel
+    geo_primary: GLOBAL
+
+  - name: MakeMyTrip
+    slug: makemytrip
+    tier: 2
+    size: mid
+    vertical: travel
+    geo_primary: GLOBAL
+
+  - name: Klook
+    slug: klook
+    tier: 2
+    size: scaleup
+    vertical: travel
+    geo_primary: GLOBAL
+
+  - name: Musement
+    slug: musement
+    tier: 3
+    size: startup
+    vertical: travel
+    geo_primary: EU
+
+  - name: Civitatis
+    slug: civitatis
+    tier: 3
+    size: startup
+    vertical: travel
+    geo_primary: EU
+
+  - name: Holidu
+    slug: holidu
+    tier: 3
+    size: startup
+    vertical: travel
+    geo_primary: EU
+
+  - name: Hostelworld
+    slug: hostelworld
+    tier: 3
+    size: startup
+    vertical: travel
+    geo_primary: EU
+
+  - name: Culture Trip
+    slug: culture-trip
+    tier: 3
+    size: startup
+    vertical: travel
+    geo_primary: EU
+
+  - name: Tourlane
+    slug: tourlane
+    tier: 3
+    size: startup
+    vertical: travel
+    geo_primary: EU
+
+  - name: Just Eat Takeaway
+    slug: just-eat-takeaway
+    tier: 2
+    size: large
+    vertical: foodtech
+    geo_primary: EU
+
+  - name: Wolt
+    slug: wolt
+    tier: 2
+    size: scaleup
+    vertical: foodtech
+    geo_primary: EU
+
+  - name: Flink
+    slug: flink
+    tier: 2
+    size: scaleup
+    vertical: foodtech
+    geo_primary: EU
+
+  - name: Gorillas
+    slug: gorillas
+    tier: 2
+    size: scaleup
+    vertical: foodtech
+    geo_primary: EU
+
+  - name: Gopuff
+    slug: gopuff
+    tier: 2
+    size: scaleup
+    vertical: foodtech
+    geo_primary: US
+
+  - name: Instacart
+    slug: instacart
+    tier: 1
+    size: large
+    vertical: foodtech
+    geo_primary: US
+
+  - name: Shipt
+    slug: shipt
+    tier: 2
+    size: mid
+    vertical: foodtech
+    geo_primary: US
+
+  - name: Hungryroot
+    slug: hungryroot
+    tier: 3
+    size: startup
+    vertical: foodtech
+    geo_primary: US
+
+  - name: Misfits Market
+    slug: misfits-market
+    tier: 3
+    size: startup
+    vertical: foodtech
+    geo_primary: US
+
+  - name: Imperfect Foods
+    slug: imperfect-foods
+    tier: 3
+    size: startup
+    vertical: foodtech
+    geo_primary: US
+
+  - name: Daily Harvest
+    slug: daily-harvest
+    tier: 3
+    size: startup
+    vertical: foodtech
+    geo_primary: US
+
+  - name: Factor
+    slug: factor
+    tier: 3
+    size: startup
+    vertical: foodtech
+    geo_primary: US
+
+  - name: Freshly
+    slug: freshly
+    tier: 3
+    size: startup
+    vertical: foodtech
+    geo_primary: US
+
+  - name: CookUnity
+    slug: cookunity
+    tier: 3
+    size: startup
+    vertical: foodtech
+    geo_primary: US
+
+  - name: Melio
+    slug: melio
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: US
+
+  - name: Toast
+    slug: toast
+    tier: 2
+    size: mid
+    vertical: foodtech
+    geo_primary: US
+
+  - name: SpotOn
+    slug: spoton
+    tier: 2
+    size: scaleup
+    vertical: foodtech
+    geo_primary: US
+
+  - name: Lightspeed Commerce
+    slug: lightspeed-commerce
+    tier: 2
+    size: mid
+    vertical: foodtech
+    geo_primary: US
+
+  - name: Square for Restaurants
+    slug: square-for-restaurants
+    tier: 2
+    size: mid
+    vertical: foodtech
+    geo_primary: US
+
+  - name: Olo
+    slug: olo
+    tier: 2
+    size: mid
+    vertical: foodtech
+    geo_primary: US
+
+  - name: Clio
+    slug: clio
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Smokeball
+    slug: smokeball
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Relativity
+    slug: relativity
+    tier: 2
+    size: mid
+    vertical: saas
+    geo_primary: US
+
+  - name: Everlaw
+    slug: everlaw
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Disco
+    slug: disco
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Luminance
+    slug: luminance
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Juro
+    slug: juro
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: LegalZoom
+    slug: legalzoom
+    tier: 2
+    size: mid
+    vertical: saas
+    geo_primary: US
+
+  - name: Rocket Lawyer
+    slug: rocket-lawyer
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Themis Solutions
+    slug: themis-solutions
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Procore Technologies
+    slug: procore-technologies
+    tier: 2
+    size: mid
+    vertical: saas
+    geo_primary: US
+
+  - name: PlanGrid
+    slug: plangrid
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Fieldwire
+    slug: fieldwire
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: OpenSpace
+    slug: openspace
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Buildertrend
+    slug: buildertrend
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: CoConstruct
+    slug: coconstruct
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Briq
+    slug: briq
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: ALICE Technologies
+    slug: alice-technologies
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Versatile
+    slug: versatile
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: nPlan
+    slug: nplan
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Climeworks
+    slug: climeworks
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: EU
+
+  - name: CarbonCure
+    slug: carboncure
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Heirloom Carbon
+    slug: heirloom-carbon
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Running Tide
+    slug: running-tide
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Charm Industrial
+    slug: charm-industrial
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Persefoni
+    slug: persefoni
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Sweep
+    slug: sweep
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Normative
+    slug: normative
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Plan A
+    slug: plan-a
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Ecologi
+    slug: ecologi
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Octopus Energy
+    slug: octopus-energy
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Tibber
+    slug: tibber
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: 1Komma5
+    slug: 1komma5
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Enpal
+    slug: enpal
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Sunrun
+    slug: sunrun
+    tier: 2
+    size: mid
+    vertical: saas
+    geo_primary: US
+
+  - name: Sunnova
+    slug: sunnova
+    tier: 2
+    size: mid
+    vertical: saas
+    geo_primary: US
+
+  - name: Span.io
+    slug: spanio
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Palmetto
+    slug: palmetto
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Aurora Solar
+    slug: aurora-solar
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Sense
+    slug: sense
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Vonage
+    slug: vonage
+    tier: 2
+    size: mid
+    vertical: saas
+    geo_primary: US
+
+  - name: Bandwidth
+    slug: bandwidth
+    tier: 2
+    size: mid
+    vertical: saas
+    geo_primary: US
+
+  - name: Plivo
+    slug: plivo
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Telnyx
+    slug: telnyx
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: MessageBird
+    slug: messagebird
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Sinch
+    slug: sinch
+    tier: 2
+    size: mid
+    vertical: saas
+    geo_primary: EU
+
+  - name: Infobip
+    slug: infobip
+    tier: 2
+    size: mid
+    vertical: saas
+    geo_primary: EU
+
+  - name: Nexmo
+    slug: nexmo
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Africa's Talking
+    slug: africas-talking
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: GLOBAL
+
+  - name: Gupshup
+    slug: gupshup
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: GLOBAL
+
+  - name: Boston Dynamics
+    slug: boston-dynamics
+    tier: 2
+    size: mid
+    vertical: saas
+    geo_primary: US
+
+  - name: Agility Robotics
+    slug: agility-robotics
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Sarcos Robotics
+    slug: sarcos-robotics
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Sanctuary AI
+    slug: sanctuary-ai
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Covariant
+    slug: covariant
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Berkshire Grey
+    slug: berkshire-grey
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: RightHand Robotics
+    slug: righthand-robotics
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: GreyOrange
+    slug: greyorange
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: GLOBAL
+
+  - name: Geek+
+    slug: geek
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: GLOBAL
+
+  - name: AutoStore
+    slug: autostore
+    tier: 2
+    size: mid
+    vertical: saas
+    geo_primary: EU
+
+  - name: Chainalysis
+    slug: chainalysis
+    tier: 2
+    size: scaleup
+    vertical: fintech
+    geo_primary: US
+
+  - name: Fireblocks
+    slug: fireblocks
+    tier: 2
+    size: scaleup
+    vertical: fintech
+    geo_primary: US
+
+  - name: Alchemy
+    slug: alchemy
+    tier: 2
+    size: scaleup
+    vertical: fintech
+    geo_primary: US
+
+  - name: Circle
+    slug: circle
+    tier: 2
+    size: scaleup
+    vertical: fintech
+    geo_primary: US
+
+  - name: ConsenSys
+    slug: consensys
+    tier: 2
+    size: scaleup
+    vertical: fintech
+    geo_primary: US
+
+  - name: Dapper Labs
+    slug: dapper-labs
+    tier: 2
+    size: scaleup
+    vertical: fintech
+    geo_primary: US
+
+  - name: Immutable
+    slug: immutable
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: GLOBAL
+
+  - name: Polygon
+    slug: polygon
+    tier: 2
+    size: scaleup
+    vertical: fintech
+    geo_primary: GLOBAL
+
+  - name: Arbitrum
+    slug: arbitrum
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: US
+
+  - name: Optimism
+    slug: optimism
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: US
+
+  - name: Tractable
+    slug: tractable
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: EU
+
+  - name: Zego
+    slug: zego
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: EU
+
+  - name: Marshmallow
+    slug: marshmallow
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: EU
+
+  - name: YuLife
+    slug: yulife
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: EU
+
+  - name: Laka
+    slug: laka
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: EU
+
+  - name: Cuvva
+    slug: cuvva
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: EU
+
+  - name: Clearcover
+    slug: clearcover
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: US
+
+  - name: Kin Insurance
+    slug: kin-insurance
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: US
+
+  - name: Branch Insurance
+    slug: branch-insurance
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: US
+
+  - name: Bestow
+    slug: bestow
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: US
+
+  - name: Coda
+    slug: coda
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Slite
+    slug: slite
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Craft
+    slug: craft
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Taskade
+    slug: taskade
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Heptabase
+    slug: heptabase
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: GLOBAL
+
+  - name: Obsidian
+    slug: obsidian
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Roam Research
+    slug: roam-research
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Mem
+    slug: mem
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Tana
+    slug: tana
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Nuclino
+    slug: nuclino
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Pitch
+    slug: pitch
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Gamma
+    slug: gamma
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Beautiful.ai
+    slug: beautifulai
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Tome
+    slug: tome
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Canva Docs
+    slug: canva-docs
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: GLOBAL
+
+  - name: Whereby
+    slug: whereby
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Around
+    slug: around
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Livekit
+    slug: livekit
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Daily.co
+    slug: dailyco
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Dyte
+    slug: dyte
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: GLOBAL
+
+  - name: Brex Card
+    slug: brex-card
+    tier: 2
+    size: scaleup
+    vertical: fintech
+    geo_primary: US
+
+  - name: Rho
+    slug: rho
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: US
+
+  - name: Airbase
+    slug: airbase
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: US
+
+  - name: Teampay
+    slug: teampay
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: US
+
+  - name: Center
+    slug: center
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: US
+
+  - name: Pave
+    slug: pave
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Figures
+    slug: figures
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Ravio
+    slug: ravio
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Pequity
+    slug: pequity
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Assemble
+    slug: assemble
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: InVision
+    slug: invision
+    tier: 2
+    size: mid
+    vertical: saas
+    geo_primary: US
+
+  - name: Zeplin
+    slug: zeplin
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Abstract
+    slug: abstract
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Spline
+    slug: spline
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Rive
+    slug: rive
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Jitter
+    slug: jitter
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Fable
+    slug: fable
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Linearity
+    slug: linearity
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Vectornator
+    slug: vectornator
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Penpot
+    slug: penpot
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Palantir Technologies
+    slug: palantir-technologies
+    tier: 1
+    size: large
+    vertical: saas
+    geo_primary: US
+
+  - name: Anduril Industries
+    slug: anduril-industries
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Shield AI
+    slug: shield-ai
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Rebellion Defense
+    slug: rebellion-defense
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Second Front Systems
+    slug: second-front-systems
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Govini
+    slug: govini
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Hawkeye 360
+    slug: hawkeye-360
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Spire Global
+    slug: spire-global
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Planet Labs
+    slug: planet-labs
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: BlackSky
+    slug: blacksky
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Particle
+    slug: particle
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Balena
+    slug: balena
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Blues Wireless
+    slug: blues-wireless
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Hologram
+    slug: hologram
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Pantry
+    slug: pantry
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: EMnify
+    slug: emnify
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Losant
+    slug: losant
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Toit
+    slug: toit
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Edge Impulse
+    slug: edge-impulse
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Swim AI
+    slug: swim-ai
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Substack
+    slug: substack
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Beehiiv
+    slug: beehiiv
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Ghost
+    slug: ghost
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: EU
+
+  - name: Buttondown
+    slug: buttondown
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: ConvertKit
+    slug: convertkit
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Podia
+    slug: podia
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Gumroad
+    slug: gumroad
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Kajabi
+    slug: kajabi
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Thinkific
+    slug: thinkific
+    tier: 2
+    size: mid
+    vertical: saas
+    geo_primary: US
+
+  - name: Circle.so
+    slug: circleso
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Tesla
+    slug: tesla
+    tier: 1
+    size: large
+    vertical: logistics
+    geo_primary: US
+
+  - name: Arrival
+    slug: arrival
+    tier: 2
+    size: scaleup
+    vertical: logistics
+    geo_primary: EU
+
+  - name: Northvolt
+    slug: northvolt
+    tier: 2
+    size: scaleup
+    vertical: logistics
+    geo_primary: EU
+
+  - name: QuantumScape
+    slug: quantumscape
+    tier: 2
+    size: scaleup
+    vertical: logistics
+    geo_primary: US
+
+  - name: Solid Power
+    slug: solid-power
+    tier: 3
+    size: startup
+    vertical: logistics
+    geo_primary: US
+
+  - name: Redwood Materials
+    slug: redwood-materials
+    tier: 2
+    size: scaleup
+    vertical: logistics
+    geo_primary: US
+
+  - name: Li-Cycle
+    slug: li-cycle
+    tier: 3
+    size: startup
+    vertical: logistics
+    geo_primary: US
+
+  - name: Polestar
+    slug: polestar
+    tier: 2
+    size: mid
+    vertical: logistics
+    geo_primary: EU
+
+  - name: VinFast
+    slug: vinfast
+    tier: 2
+    size: mid
+    vertical: logistics
+    geo_primary: GLOBAL
+
+  - name: NIO
+    slug: nio
+    tier: 2
+    size: large
+    vertical: logistics
+    geo_primary: GLOBAL
+
+  - name: Farmers Business Network
+    slug: farmers-business-network
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Indigo Agriculture
+    slug: indigo-agriculture
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: US
+
+  - name: Gro Intelligence
+    slug: gro-intelligence
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Arable
+    slug: arable
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: CropX
+    slug: cropx
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Taranis
+    slug: taranis
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Prospera Technologies
+    slug: prospera-technologies
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: AppHarvest
+    slug: appharvest
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Bowery Farming
+    slug: bowery-farming
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Plenty
+    slug: plenty
+    tier: 3
+    size: startup
+    vertical: saas
+    geo_primary: US
+
+  - name: Teladoc Health
+    slug: teladoc-health
+    tier: 2
+    size: large
+    vertical: healthtech
+    geo_primary: US
+
+  - name: Amwell
+    slug: amwell
+    tier: 2
+    size: mid
+    vertical: healthtech
+    geo_primary: US
+
+  - name: MDLive
+    slug: mdlive
+    tier: 3
+    size: startup
+    vertical: healthtech
+    geo_primary: US
+
+  - name: Doctor On Demand
+    slug: doctor-on-demand
+    tier: 3
+    size: startup
+    vertical: healthtech
+    geo_primary: US
+
+  - name: DispatchHealth
+    slug: dispatchhealth
+    tier: 2
+    size: scaleup
+    vertical: healthtech
+    geo_primary: US
+
+  - name: Carbon Health
+    slug: carbon-health
+    tier: 2
+    size: scaleup
+    vertical: healthtech
+    geo_primary: US
+
+  - name: Forward
+    slug: forward
+    tier: 3
+    size: startup
+    vertical: healthtech
+    geo_primary: US
+
+  - name: One Medical
+    slug: one-medical
+    tier: 2
+    size: mid
+    vertical: healthtech
+    geo_primary: US
+
+  - name: Crossover Health
+    slug: crossover-health
+    tier: 3
+    size: startup
+    vertical: healthtech
+    geo_primary: US
+
+  - name: Accolade
+    slug: accolade
+    tier: 2
+    size: mid
+    vertical: healthtech
+    geo_primary: US
+
+  - name: Andela Africa
+    slug: andela-africa
+    tier: 2
+    size: scaleup
+    vertical: saas
+    geo_primary: GLOBAL
+
+  - name: Jumia
+    slug: jumia
+    tier: 2
+    size: mid
+    vertical: ecommerce
+    geo_primary: GLOBAL
+
+  - name: Interswitch
+    slug: interswitch
+    tier: 2
+    size: mid
+    vertical: fintech
+    geo_primary: GLOBAL
+
+  - name: Moniepoint
+    slug: moniepoint
+    tier: 2
+    size: scaleup
+    vertical: fintech
+    geo_primary: GLOBAL
+
+  - name: TeamApt
+    slug: teamapt
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: GLOBAL
+
+  - name: Kavak
+    slug: kavak
+    tier: 2
+    size: scaleup
+    vertical: ecommerce
+    geo_primary: GLOBAL
+
+  - name: Bitso
+    slug: bitso
+    tier: 2
+    size: scaleup
+    vertical: fintech
+    geo_primary: GLOBAL
+
+  - name: Konfio
+    slug: konfio
+    tier: 3
+    size: startup
+    vertical: fintech
+    geo_primary: GLOBAL
+
+  - name: Nuvemshop LATAM
+    slug: nuvemshop-latam
+    tier: 3
+    size: startup
+    vertical: ecommerce
+    geo_primary: GLOBAL
+
+  - name: Loft LATAM
+    slug: loft-latam
+    tier: 3
+    size: startup
+    vertical: proptech
+    geo_primary: GLOBAL
