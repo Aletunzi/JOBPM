@@ -1,4 +1,4 @@
-name: Daily PM Job Scraper
+name: Fursa Scraper
 
 on:
   schedule:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   scrape:
-    name: Scrape PM Jobs (LLM Rolling)
+    name: Fursa Daily Scrape
     runs-on: ubuntu-latest
     timeout-minutes: 45
 
