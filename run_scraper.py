@@ -29,7 +29,7 @@ logger = logging.getLogger("scraper")
 
 CONCURRENCY = 5       # max parallel LLM requests
 MAX_PER_RUN = 200     # max companies per scrape run (rolling window)
-DISCOVERY_BATCH = 100  # max companies per discovery run
+DISCOVERY_BATCH = 250  # max companies per discovery run
 DELAY_BETWEEN = 2     # seconds between LLM requests (rate limiting)
 
 
