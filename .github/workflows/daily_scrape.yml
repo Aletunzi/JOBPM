@@ -2,14 +2,14 @@ name: Daily PM Job Scraper
 
 on:
   schedule:
-    - cron: "0 8,12,17 * * *"  # 09:00, 13:00, 18:00 CET (UTC+1)
+    - cron: "0 7 * * *"  # 07:00 UTC (08:00 CET) — once daily
   workflow_dispatch:        # allow manual trigger from GitHub UI
 
 jobs:
   scrape:
-    name: Scrape PM Jobs
+    name: Scrape PM Jobs (LLM Rolling)
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
 
     steps:
       - name: Checkout code
@@ -28,13 +28,10 @@ jobs:
         run: python run_scraper.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          PROXYCURL_API_KEY: ${{ secrets.PROXYCURL_API_KEY }}
-          PROXYCURL_DAILY_CAP: ${{ secrets.PROXYCURL_DAILY_CAP || 100 }}
-          ADZUNA_APP_ID: ${{ secrets.ADZUNA_APP_ID }}
-          ADZUNA_APP_KEY: ${{ secrets.ADZUNA_APP_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
       - name: Notify on failure
         if: failure()
         run: |
           echo "::error::Scraper failed. Check logs above for details."
-          echo "Tip: Verify DATABASE_URL, PROXYCURL_API_KEY secrets are set correctly."
+          echo "Tip: Verify DATABASE_URL and OPENAI_API_KEY secrets are set correctly."

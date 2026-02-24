@@ -23,13 +23,23 @@ class JobOut(BaseModel):
 class CompanyOut(BaseModel):
     id: UUID
     name: str
-    ats_type: str
+    career_url: Optional[str]
     tier: int
     size: Optional[str]
     vertical: Optional[str]
     geo_primary: Optional[str]
+    is_enabled: bool
+    last_scraped: Optional[datetime]
+    active_jobs: int = 0
 
     model_config = {"from_attributes": True}
+
+
+class CompaniesResponse(BaseModel):
+    items: list[CompanyOut]
+    total: int
+    page: int
+    pages: int
 
 
 class StatsOut(BaseModel):
@@ -41,15 +51,18 @@ class StatsOut(BaseModel):
 
 
 class AdminStatsOut(BaseModel):
-    total_jobs: int           # active job count (inactive/expired excluded)
-    total_active: int         # currently active
-    new_24h: int              # added in last 24h
-    last_run: Optional[datetime]   # max first_seen — proxy for last scraper run
-    runs_per_day: int         # from GitHub Actions cron config
-    schedule_cron: str        # raw cron expression
-    by_source: dict[str, int]     # count by scraper source (all records, all sources listed)
-    by_continent: dict[str, int]  # count by continent (active only), 7 continents + Remote + Other
-    top_locations: list[dict]     # [{name, count}] top countries by active job count
+    total_jobs: int
+    total_active: int
+    new_24h: int
+    last_run: Optional[datetime]
+    runs_per_day: int
+    schedule_cron: str
+    by_source: dict[str, int]
+    by_continent: dict[str, int]
+    top_locations: list[dict]
+    total_companies: int          # total companies in DB
+    companies_with_url: int       # companies with career_url configured
+    companies_due: int            # companies due for scraping today
 
 
 class JobsResponse(BaseModel):
