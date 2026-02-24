@@ -4,6 +4,7 @@ Run with: python run_scraper.py
 Or triggered by GitHub Actions cron.
 
 Architecture:
+  Phase 0: URL Discovery — auto-discover career URLs for companies without one
   Phase 1: LLM Rolling — scrape companies due for refresh via GPT-4o-mini
   Phase 2: Maintenance — mark stale jobs inactive, refresh search vectors
 """
@@ -13,6 +14,7 @@ import logging
 import os
 from datetime import datetime, timedelta, timezone
 
+import httpx
 from dotenv import load_dotenv
 from sqlalchemy import text, select, and_, or_
 from sqlalchemy.dialects.postgresql import insert as pg_insert
@@ -26,8 +28,9 @@ logging.basicConfig(
 logger = logging.getLogger("scraper")
 
 CONCURRENCY = 5       # max parallel LLM requests
-MAX_PER_RUN = 200     # max companies per run (rolling window)
-DELAY_BETWEEN = 2     # seconds between requests (rate limiting)
+MAX_PER_RUN = 200     # max companies per scrape run (rolling window)
+DISCOVERY_BATCH = 100  # max companies per discovery run
+DELAY_BETWEEN = 2     # seconds between LLM requests (rate limiting)
 
 
 # ── Core: upsert jobs ────────────────────────────────────────────────────────
@@ -102,9 +105,23 @@ async def scrape_company(session, company, semaphore: asyncio.Semaphore):
                 logger.info("  %s: %d PM jobs upserted", company.name, count)
             return count
 
+        except httpx.HTTPStatusError as exc:
+            # Self-healing: if career page returns 404/410, reset URL
+            # so Phase 0 can rediscover it next run
+            if exc.response.status_code in (404, 410):
+                logger.warning("  %s: career URL returned %d — resetting for rediscovery",
+                               company.name, exc.response.status_code)
+                company.career_url = None
+                company.page_hash = None
+                await session.commit()
+            else:
+                logger.error("  %s: HTTP %d — %s", company.name, exc.response.status_code, exc)
+            return 0
+
         except Exception as exc:
             logger.error("  %s: error — %s", company.name, exc)
             return 0
+
         finally:
             await asyncio.sleep(DELAY_BETWEEN)
 
@@ -138,16 +155,42 @@ async def refresh_search_vectors(session):
 async def main():
     from api.database import AsyncSessionLocal
     from api.models import Company
+    from scrapers.url_discovery import discover_all
 
-    logger.info("=== Scrape starting (LLM rolling) ===")
+    logger.info("=== Scrape starting ===")
     start = datetime.now(timezone.utc)
 
     async with AsyncSessionLocal() as session:
+
+        # ── Phase 0: URL Discovery ─────────────────────────────────────────
+        logger.info("--- Phase 0: URL Discovery ---")
+        all_enabled = await session.execute(
+            select(Company).where(Company.is_enabled == True)
+        )
+        all_companies = all_enabled.scalars().all()
+
+        missing_url = [c for c in all_companies if not c.career_url]
+        logger.info("Companies without career URL: %d / %d", len(missing_url), len(all_companies))
+
+        if missing_url:
+            discovered = await discover_all(missing_url, max_companies=DISCOVERY_BATCH)
+
+            for company in missing_url:
+                url = discovered.get(company.name)
+                if url:
+                    company.career_url = url
+
+            if discovered:
+                await session.commit()
+                logger.info("Phase 0 done: %d URLs discovered", len(discovered))
+            else:
+                logger.info("Phase 0 done: no new URLs found")
+        else:
+            logger.info("All enabled companies have career URLs.")
+
         # ── Phase 1: LLM Rolling ──────────────────────────────────────────
         logger.info("--- Phase 1: LLM career page scraping ---")
 
-        # Get companies due for scraping: enabled, has URL, and overdue
-        # Use a fixed 5-day default since Column can't be used in timedelta directly
         cutoff_default = datetime.now(timezone.utc) - timedelta(days=5)
         result = await session.execute(
             select(Company)
