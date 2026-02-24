@@ -1,17 +1,20 @@
 """
-PM Job Tracker — Daily scraper orchestrator.
+PM Job Tracker — Daily scraper orchestrator (LLM rolling).
 Run with: python run_scraper.py
 Or triggered by GitHub Actions cron.
+
+Architecture:
+  Phase 1: LLM Rolling — scrape companies due for refresh via GPT-4o-mini
+  Phase 2: Maintenance — mark stale jobs inactive, refresh search vectors
 """
 
 import asyncio
 import logging
 import os
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
-import yaml
 from dotenv import load_dotenv
-from sqlalchemy import text
+from sqlalchemy import text, select, and_, or_
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 load_dotenv()
@@ -22,8 +25,12 @@ logging.basicConfig(
 )
 logger = logging.getLogger("scraper")
 
-CONCURRENCY = 10  # max concurrent ATS requests
+CONCURRENCY = 5       # max parallel LLM requests
+MAX_PER_RUN = 200     # max companies per run (rolling window)
+DELAY_BETWEEN = 2     # seconds between requests (rate limiting)
 
+
+# ── Core: upsert jobs ────────────────────────────────────────────────────────
 
 async def upsert_jobs(session, jobs: list, company_id=None):
     from api.models import Job
@@ -71,103 +78,41 @@ async def upsert_jobs(session, jobs: list, company_id=None):
     return count
 
 
-async def ensure_company(session, company_data: dict):
-    from api.models import Company
-    from sqlalchemy import select
+# ── Scrape a single company via LLM ──────────────────────────────────────────
 
-    ats_type = company_data["ats"]
-    ats_slug = company_data.get("slug")
-
-    result = await session.execute(
-        select(Company).where(
-            Company.ats_type == ats_type,
-            Company.ats_slug == ats_slug,
-        )
-    )
-    company = result.scalar_one_or_none()
-
-    if not company:
-        company = Company(
-            name=company_data["name"],
-            ats_type=ats_type,
-            ats_slug=ats_slug,
-            tier=company_data.get("tier", 3),
-            size=company_data.get("size"),
-            vertical=company_data.get("vertical"),
-            geo_primary=company_data.get("geo_primary"),
-        )
-        session.add(company)
-        await session.commit()
-        await session.refresh(company)
-
-    return company
-
-
-async def scrape_company(session, company_data: dict, semaphore: asyncio.Semaphore):
-    ats = company_data.get("ats", "multi")  # default: probe greenhouse/lever/ashby
-    name = company_data["name"]
-    slug = company_data.get("slug", "")
+async def scrape_company(session, company, semaphore: asyncio.Semaphore):
+    from scrapers.llm_career import fetch_custom
 
     async with semaphore:
-        company_obj = await ensure_company(session, company_data)
-        jobs = []
-
-        if ats == "multi":
-            from scrapers.greenhouse import fetch_greenhouse
-            from scrapers.lever import fetch_lever
-            from scrapers.ashby import fetch_ashby
-
-            async def _collect(gen):
-                return [j async for j in gen]
-
-            results = await asyncio.gather(
-                _collect(fetch_greenhouse(slug, name)),
-                _collect(fetch_lever(slug, name)),
-                _collect(fetch_ashby(slug, name)),
-                return_exceptions=True,
+        try:
+            jobs, new_hash = await fetch_custom(
+                career_url=company.career_url,
+                company_name=company.name,
+                page_hash=company.page_hash,
             )
-            for r in results:
-                if isinstance(r, list):
-                    jobs.extend(r)
-            ats_label = "MULTI"
 
-        elif ats == "greenhouse":
-            from scrapers.greenhouse import fetch_greenhouse
-            async for job in fetch_greenhouse(slug, name):
-                jobs.append(job)
-            ats_label = "GREENHOUSE"
-        elif ats == "lever":
-            from scrapers.lever import fetch_lever
-            async for job in fetch_lever(slug, name):
-                jobs.append(job)
-            ats_label = "LEVER"
-        elif ats == "ashby":
-            from scrapers.ashby import fetch_ashby
-            async for job in fetch_ashby(slug, name):
-                jobs.append(job)
-            ats_label = "ASHBY"
-        elif ats == "smartrecruiters":
-            from scrapers.smartrecruiters import fetch_smartrecruiters
-            async for job in fetch_smartrecruiters(slug, name):
-                jobs.append(job)
-            ats_label = "SMARTRECRUITERS"
-        elif ats == "teamtailor":
-            from scrapers.teamtailor import fetch_teamtailor
-            async for job in fetch_teamtailor(slug, name):
-                jobs.append(job)
-            ats_label = "TEAMTAILOR"
-        else:
+            count = await upsert_jobs(session, jobs, company_id=company.id)
+
+            # Update company scrape metadata
+            company.last_scraped = datetime.now(timezone.utc)
+            company.page_hash = new_hash
+            await session.commit()
+
+            if count:
+                logger.info("  %s: %d PM jobs upserted", company.name, count)
+            return count
+
+        except Exception as exc:
+            logger.error("  %s: error — %s", company.name, exc)
             return 0
+        finally:
+            await asyncio.sleep(DELAY_BETWEEN)
 
-        count = await upsert_jobs(session, jobs, company_id=company_obj.id)
-        if count:
-            logger.info("  %s (%s): %d PM jobs", name, ats_label, count)
-        return count
 
+# ── Maintenance ───────────────────────────────────────────────────────────────
 
 async def mark_inactive_jobs(session):
     """Jobs not seen in last 7 days are marked inactive."""
-    from datetime import timedelta
     cutoff = datetime.now(timezone.utc) - timedelta(days=7)
     await session.execute(
         text("UPDATE jobs SET is_active = false WHERE last_seen < :cutoff AND is_active = true"),
@@ -188,73 +133,54 @@ async def refresh_search_vectors(session):
     await session.commit()
 
 
+# ── Main ──────────────────────────────────────────────────────────────────────
+
 async def main():
     from api.database import AsyncSessionLocal
+    from api.models import Company
 
-    logger.info("=== Fursa scrape starting ===")
+    logger.info("=== Scrape starting (LLM rolling) ===")
     start = datetime.now(timezone.utc)
 
-    yaml_path = os.path.join(os.path.dirname(__file__), "companies.yaml")
-    with open(yaml_path) as f:
-        config = yaml.safe_load(f)
-    companies = config.get("companies", [])
-    logger.info("Loaded %d companies from companies.yaml", len(companies))
-
-    semaphore = asyncio.Semaphore(CONCURRENCY)
-    total_jobs = 0
-
     async with AsyncSessionLocal() as session:
-        # ── ATS scrapers (Greenhouse, Lever, Ashby) ──
-        logger.info("--- Phase 1: ATS scrapers ---")
-        tasks = [scrape_company(session, c, semaphore) for c in companies]
-        results = await asyncio.gather(*tasks, return_exceptions=True)
-        for r in results:
-            if isinstance(r, int):
-                total_jobs += r
-            elif isinstance(r, Exception):
-                logger.error("Scrape task error: %s", r)
+        # ── Phase 1: LLM Rolling ──────────────────────────────────────────
+        logger.info("--- Phase 1: LLM career page scraping ---")
 
-        # ── Adzuna ──
-        logger.info("--- Phase 2: Adzuna ---")
-        try:
-            from scrapers.adzuna import fetch_adzuna
-            adzuna_jobs = []
-            async for job in fetch_adzuna():
-                adzuna_jobs.append(job)
-            count = await upsert_jobs(session, adzuna_jobs)
-            logger.info("  Adzuna: %d PM jobs", count)
-            total_jobs += count
-        except Exception as exc:
-            logger.error("Adzuna error: %s", exc)
+        # Get companies due for scraping: enabled, has URL, and overdue
+        # Use a fixed 5-day default since Column can't be used in timedelta directly
+        cutoff_default = datetime.now(timezone.utc) - timedelta(days=5)
+        result = await session.execute(
+            select(Company)
+            .where(
+                and_(
+                    Company.is_enabled == True,
+                    Company.career_url.is_not(None),
+                    or_(
+                        Company.last_scraped.is_(None),
+                        Company.last_scraped < cutoff_default,
+                    ),
+                )
+            )
+            .order_by(Company.last_scraped.asc().nulls_first())
+            .limit(MAX_PER_RUN)
+        )
+        companies = result.scalars().all()
+        logger.info("Companies due for scraping: %d", len(companies))
 
-        # ── Proxycurl / LinkedIn ──
-        logger.info("--- Phase 3: Proxycurl (LinkedIn) ---")
-        try:
-            from scrapers.proxycurl import fetch_proxycurl
-            proxycurl_jobs = []
-            async for job in fetch_proxycurl(session):
-                proxycurl_jobs.append(job)
-            count = await upsert_jobs(session, proxycurl_jobs)
-            logger.info("  Proxycurl: %d PM jobs", count)
-            total_jobs += count
-        except Exception as exc:
-            logger.error("Proxycurl error: %s", exc)
+        if companies:
+            semaphore = asyncio.Semaphore(CONCURRENCY)
+            tasks = [scrape_company(session, c, semaphore) for c in companies]
+            results = await asyncio.gather(*tasks, return_exceptions=True)
 
-        # ── Remotive ──
-        logger.info("--- Phase 4: Remotive ---")
-        try:
-            from scrapers.remotive import fetch_remotive
-            remotive_jobs = []
-            async for job in fetch_remotive():
-                remotive_jobs.append(job)
-            count = await upsert_jobs(session, remotive_jobs)
-            logger.info("  Remotive: %d PM jobs", count)
-            total_jobs += count
-        except Exception as exc:
-            logger.error("Remotive error: %s", exc)
+            total_jobs = sum(r for r in results if isinstance(r, int))
+            errors = sum(1 for r in results if isinstance(r, Exception))
+            logger.info("Phase 1 done: %d jobs upserted, %d errors", total_jobs, errors)
+        else:
+            total_jobs = 0
+            logger.info("No companies due for scraping today.")
 
-        # ── Maintenance ──
-        logger.info("--- Phase 5: Maintenance ---")
+        # ── Phase 2: Maintenance ──────────────────────────────────────────
+        logger.info("--- Phase 2: Maintenance ---")
         await mark_inactive_jobs(session)
         await refresh_search_vectors(session)
 

@@ -18,17 +18,21 @@ class Company(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = Column(String(255), nullable=False)
-    ats_type = Column(String(50), nullable=False)   # greenhouse | lever | ashby | adzuna_only
-    ats_slug = Column(String(255), nullable=True)
+    career_url = Column(Text, nullable=True)            # URL to scrape (null = not yet configured)
     tier = Column(Integer, nullable=False, default=3)
-    size = Column(String(50), nullable=True)        # startup | scaleup | mid | large
-    vertical = Column(String(50), nullable=True)    # fintech | saas | ai | ...
-    geo_primary = Column(String(20), nullable=True) # US | EU | GLOBAL
+    size = Column(String(50), nullable=True)            # startup | scaleup | mid | large
+    vertical = Column(String(50), nullable=True)        # fintech | saas | ai | ...
+    geo_primary = Column(String(20), nullable=True)     # US | EU | UK | GLOBAL | APAC | LATAM
+
+    is_enabled = Column(Boolean, nullable=False, default=True)
+    last_scraped = Column(DateTime(timezone=True), nullable=True)
+    page_hash = Column(String(64), nullable=True)       # SHA-256 of last fetched page (change detection)
+    scrape_interval_days = Column(Integer, nullable=False, default=5)
 
     jobs = relationship("Job", back_populates="company", lazy="select")
 
     __table_args__ = (
-        UniqueConstraint("ats_type", "ats_slug", name="uq_company_ats"),
+        UniqueConstraint("name", name="uq_company_name"),
     )
 
 
@@ -39,8 +43,8 @@ class Job(Base):
     company_id = Column(UUID(as_uuid=True), ForeignKey("companies.id"), nullable=True)
     company_name = Column(String(255), nullable=False)
 
-    source = Column(String(50), nullable=False)     # greenhouse | lever | ashby | adzuna | proxycurl
-    source_id = Column(String(512), nullable=False) # ID within the source
+    source = Column(String(50), nullable=False)     # custom | adzuna | ...
+    source_id = Column(String(512), nullable=False) # stable ID within the source
 
     title = Column(String(512), nullable=False)
     location_raw = Column(String(255), nullable=True)

@@ -84,6 +84,70 @@
         </div>
 
       </div>
+
+      <!-- Row 4: Companies List -->
+      <div class="bg-white border border-gray-200 rounded-xl p-5">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+          <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+            Companies <span id="companies-count" class="text-gray-300"></span>
+          </h2>
+          <div class="flex flex-wrap items-center gap-2">
+            <input id="co-search" type="text" placeholder="Search by name…"
+              class="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-500 w-44" />
+            <select id="co-vertical"
+              class="text-sm border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-500">
+              <option value="">All verticals</option>
+              <option value="saas">SaaS</option><option value="fintech">Fintech</option>
+              <option value="ai">AI</option><option value="data">Data</option>
+              <option value="devtools">DevTools</option><option value="security">Security</option>
+              <option value="marketplace">Marketplace</option><option value="consumer">Consumer</option>
+              <option value="healthcare">Healthcare</option><option value="hr">HR</option>
+              <option value="ecommerce">E-commerce</option><option value="logistics">Logistics</option>
+            </select>
+            <select id="co-geo"
+              class="text-sm border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-500">
+              <option value="">All geo</option>
+              <option value="US">US</option><option value="EU">EU</option>
+              <option value="UK">UK</option><option value="GLOBAL">Global</option>
+              <option value="APAC">APAC</option><option value="LATAM">LATAM</option>
+            </select>
+            <select id="co-url"
+              class="text-sm border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-500">
+              <option value="">All</option>
+              <option value="true">Has URL</option>
+              <option value="false">No URL</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-gray-100 text-left text-xs text-gray-400 uppercase tracking-wider">
+                <th class="py-2 pr-3">Name</th>
+                <th class="py-2 pr-3">Vertical</th>
+                <th class="py-2 pr-3">Geo</th>
+                <th class="py-2 pr-3">Career URL</th>
+                <th class="py-2 pr-3">Last Scraped</th>
+                <th class="py-2 pr-3 text-right">Jobs</th>
+                <th class="py-2 text-right">Status</th>
+              </tr>
+            </thead>
+            <tbody id="co-tbody" class="divide-y divide-gray-50"></tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+          <button id="co-prev" onclick="coNav(-1)"
+            class="text-sm text-gray-500 hover:text-gray-900 disabled:opacity-30 disabled:cursor-default">← Prev</button>
+          <span id="co-page-info" class="text-xs text-gray-400"></span>
+          <button id="co-next" onclick="coNav(1)"
+            class="text-sm text-gray-500 hover:text-gray-900 disabled:opacity-30 disabled:cursor-default">Next →</button>
+        </div>
+      </div>
+
     </div>
 
     <!-- Error -->
@@ -95,18 +159,8 @@
   <script>
     const API_KEY = window.__API_KEY__ || "dev-insecure-key";
 
-    const SOURCE_LABELS = {
-      greenhouse:      "Greenhouse",
-      lever:           "Lever",
-      ashby:           "Ashby",
-      adzuna:          "Adzuna",
-      remotive:        "Remotive",
-      smartrecruiters: "SmartRecruiters",
-      teamtailor:      "Teamtailor",
-      proxycurl:       "Proxycurl",
-    };
+    const SOURCE_LABELS = { custom: "LLM (Custom)" };
 
-    // Display order for continents
     const CONTINENT_ORDER = [
       "North America", "Europe", "Asia", "South America",
       "Oceania", "Africa", "Remote", "Antarctica", "Other",
@@ -140,7 +194,6 @@
     }
 
     function parseCronHuman(cron) {
-      // "0 8,12,17 * * *" → "08:00 / 12:00 / 17:00 UTC"
       if (!cron) return cron;
       const parts = cron.split(" ");
       if (parts.length === 5 && parts[2] === "*" && parts[3] === "*" && parts[4] === "*") {
@@ -151,6 +204,11 @@
           : hours.join(" / ") + " UTC";
       }
       return cron;
+    }
+
+    function truncUrl(url, max) {
+      if (!url) return "";
+      return url.length > max ? url.slice(0, max) + "…" : url;
     }
 
     // ── Render helpers ─────────────────────────────────────────────────────────
@@ -196,7 +254,7 @@
         </div>`;
     }
 
-    // ── Load ───────────────────────────────────────────────────────────────────
+    // ── Load admin stats ────────────────────────────────────────────────────────
 
     async function loadAdmin() {
       try {
@@ -204,7 +262,7 @@
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const d = await res.json();
 
-        // Scraper Status — schedule is the hero stat
+        // Scraper Status
         document.getElementById("card-scraper").innerHTML =
           heroStat(`${d.runs_per_day}×`, "runs / day") +
           [
@@ -212,6 +270,9 @@
             statRow("Last run",           timeSince(d.last_run)),
             statRow("Last run (exact)",   fmtDatetime(d.last_run)),
             statRow("Added in last 24 h", `+${d.new_24h.toLocaleString()}`),
+            statRow("Companies total",    d.total_companies.toLocaleString()),
+            statRow("With career URL",    d.companies_with_url.toLocaleString()),
+            statRow("Due for scraping",   d.companies_due.toLocaleString()),
           ].join("");
 
         // Database
@@ -220,7 +281,7 @@
           statRow("Added in last 24 h", `+${d.new_24h.toLocaleString()}`),
         ].join("");
 
-        // By Source — backend always sends all known sources
+        // By Source
         const srcEntries = Object.entries(d.by_source).sort((a, b) => b[1] - a[1]);
         const srcTotal   = srcEntries.reduce((s, [, v]) => s + v, 0);
         const srcMax     = Math.max(...srcEntries.map(([, v]) => v), 1);
@@ -229,19 +290,19 @@
             barRow(SOURCE_LABELS[src] || src, cnt, srcMax, srcTotal)
           ).join("");
 
-        // By Continent — use fixed display order, show 0 for missing
+        // By Continent
         const contData   = d.by_continent || {};
         const contTotal  = Object.values(contData).reduce((s, v) => s + v, 0);
         const contMax    = Math.max(...Object.values(contData), 1);
         const contRows   = CONTINENT_ORDER
           .map(name => [name, contData[name] || 0])
-          .filter(([, v], i) => v > 0 || i < 7); // always show main 7
+          .filter(([, v], i) => v > 0 || i < 7);
         document.getElementById("card-geo").innerHTML =
           contRows.map(([name, cnt]) =>
             barRow(name, cnt, contMax, contTotal)
           ).join("");
 
-        // Top Locations (countries from backend)
+        // Top Locations
         document.getElementById("card-locations").innerHTML =
           d.top_locations.length
             ? d.top_locations.map(loc => locRow(loc.name, loc.count)).join("")
@@ -249,6 +310,9 @@
 
         document.getElementById("admin-loading").classList.add("hidden");
         document.getElementById("admin-content").classList.remove("hidden");
+
+        // Load companies table after stats
+        loadCompanies();
 
       } catch (err) {
         document.getElementById("admin-loading").classList.add("hidden");
@@ -258,6 +322,84 @@
       }
     }
 
+    // ── Companies table ──────────────────────────────────────────────────────
+
+    let coPage = 1;
+    const CO_LIMIT = 50;
+    let coDebounce = null;
+
+    function coFilters() {
+      const params = new URLSearchParams();
+      params.set("page", coPage);
+      params.set("limit", CO_LIMIT);
+      const search = document.getElementById("co-search").value.trim();
+      if (search) params.set("search", search);
+      const vertical = document.getElementById("co-vertical").value;
+      if (vertical) params.set("vertical", vertical);
+      const geo = document.getElementById("co-geo").value;
+      if (geo) params.set("geo", geo);
+      const hasUrl = document.getElementById("co-url").value;
+      if (hasUrl) params.set("has_url", hasUrl);
+      return params.toString();
+    }
+
+    async function loadCompanies() {
+      try {
+        const res = await fetch(`/api/companies?${coFilters()}`, { headers: { "X-API-Key": API_KEY } });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const d = await res.json();
+
+        document.getElementById("companies-count").textContent = `(${d.total})`;
+
+        const tbody = document.getElementById("co-tbody");
+        if (d.items.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-gray-400 text-sm">No companies found</td></tr>`;
+        } else {
+          tbody.innerHTML = d.items.map(c => `
+            <tr class="${c.is_enabled ? '' : 'opacity-50'}">
+              <td class="py-2.5 pr-3 font-medium text-gray-900">${esc(c.name)}</td>
+              <td class="py-2.5 pr-3 text-gray-500">${esc(c.vertical || '—')}</td>
+              <td class="py-2.5 pr-3 text-gray-500">${esc(c.geo_primary || '—')}</td>
+              <td class="py-2.5 pr-3 text-gray-500 truncate max-w-[200px]" title="${esc(c.career_url || '')}">
+                ${c.career_url ? `<a href="${esc(c.career_url)}" target="_blank" rel="noopener" class="text-brand-500 hover:underline">${esc(truncUrl(c.career_url, 35))}</a>` : '<span class="text-gray-300">not set</span>'}
+              </td>
+              <td class="py-2.5 pr-3 text-gray-500">${timeSince(c.last_scraped)}</td>
+              <td class="py-2.5 pr-3 text-right tabular-nums font-medium">${c.active_jobs}</td>
+              <td class="py-2.5 text-right">
+                <span class="inline-block px-2 py-0.5 text-xs rounded-full ${c.is_enabled ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-400'}">
+                  ${c.is_enabled ? 'active' : 'disabled'}
+                </span>
+              </td>
+            </tr>
+          `).join("");
+        }
+
+        // Pagination
+        document.getElementById("co-page-info").textContent = `Page ${d.page} of ${d.pages}`;
+        document.getElementById("co-prev").disabled = d.page <= 1;
+        document.getElementById("co-next").disabled = d.page >= d.pages;
+
+      } catch (err) {
+        document.getElementById("co-tbody").innerHTML =
+          `<tr><td colspan="7" class="py-8 text-center text-red-400 text-sm">Error: ${esc(err.message)}</td></tr>`;
+      }
+    }
+
+    function coNav(dir) {
+      coPage = Math.max(1, coPage + dir);
+      loadCompanies();
+    }
+
+    // Filter change handlers
+    document.getElementById("co-search").addEventListener("input", () => {
+      clearTimeout(coDebounce);
+      coDebounce = setTimeout(() => { coPage = 1; loadCompanies(); }, 300);
+    });
+    document.getElementById("co-vertical").addEventListener("change", () => { coPage = 1; loadCompanies(); });
+    document.getElementById("co-geo").addEventListener("change", () => { coPage = 1; loadCompanies(); });
+    document.getElementById("co-url").addEventListener("change", () => { coPage = 1; loadCompanies(); });
+
+    // ── Init ──────────────────────────────────────────────────────────────────
     loadAdmin();
   </script>
 </body>

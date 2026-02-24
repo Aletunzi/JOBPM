@@ -1,25 +1,21 @@
 from collections import defaultdict
 from datetime import datetime, timezone, timedelta
 from fastapi import APIRouter, Depends
-from sqlalchemy import select, func, and_
+from sqlalchemy import select, func, and_, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.auth import require_api_key
 from api.cache import cache_get, cache_set
 from api.database import get_db
-from api.models import Job, ApiUsage
+from api.models import Job, ApiUsage, Company
 from api.schemas import StatsOut, AdminStatsOut
 from scrapers.normalizer import infer_continent, extract_country
 
-# All scraper sources the platform is configured to use
-KNOWN_SOURCES = [
-    "greenhouse", "lever", "ashby", "adzuna",
-    "remotive", "smartrecruiters", "teamtailor", "proxycurl",
-]
+KNOWN_SOURCES = ["custom"]
 
 # GitHub Actions cron (must match .github/workflows/daily_scrape.yml)
-SCRAPER_CRON = "0 8,12,17 * * *"
-SCRAPER_RUNS_PER_DAY = 3
+SCRAPER_CRON = "0 7 * * *"
+SCRAPER_RUNS_PER_DAY = 1
 
 router = APIRouter(prefix="/api/stats", tags=["stats"])
 
@@ -57,16 +53,14 @@ async def get_stats(
     )
     by_seniority = {row.seniority: row.cnt for row in sen_result}
 
-    last_usage = await db.scalar(
-        select(ApiUsage.date).order_by(ApiUsage.date.desc()).limit(1)
-    )
+    last_scraped = await db.scalar(select(func.max(Company.last_scraped)))
 
     result = StatsOut(
         total_active=total_active or 0,
         new_today=new_today or 0,
         by_geo=by_geo,
         by_seniority=by_seniority,
-        last_scraped=last_usage,
+        last_scraped=last_scraped,
     )
     cache_set("stats", result)
     return result
@@ -84,27 +78,23 @@ async def get_admin_stats(
     now = datetime.now(timezone.utc)
     cutoff_24h = now - timedelta(hours=24)
 
-    # ── Counts ─────────────────────────────────────────────────────────────────
-    # total_jobs = active only (expired/inactive excluded by design)
+    # ── Job counts ──────────────────────────────────────────────────────────────
     total_active = await db.scalar(select(func.count()).where(Job.is_active == True))
     total_jobs = total_active
     new_24h = await db.scalar(
         select(func.count()).where(Job.first_seen >= cutoff_24h)
     )
-
-    # Last scraper run: most recently scraped job
     last_run = await db.scalar(select(func.max(Job.first_seen)))
 
-    # ── By Source (all records; all KNOWN_SOURCES present, 0 if missing) ──────
+    # ── By Source ───────────────────────────────────────────────────────────────
     src_rows = await db.execute(
-        select(Job.source, func.count().label("cnt"))
-        .group_by(Job.source)
+        select(Job.source, func.count().label("cnt")).group_by(Job.source)
     )
     by_source: dict[str, int] = {src: 0 for src in KNOWN_SOURCES}
     for row in src_rows:
-        by_source[row.source] = row.cnt  # include unknown sources too
+        by_source[row.source] = row.cnt
 
-    # ── By Continent (active only, via Python inference on grouped rows) ───────
+    # ── By Continent (active only) ───────────────────────────────────────────
     loc_geo_rows = await db.execute(
         select(Job.location_raw, Job.geo_region, func.count().label("cnt"))
         .where(Job.is_active == True)
@@ -115,9 +105,7 @@ async def get_admin_stats(
         continent = infer_continent(row.location_raw, row.geo_region or "OTHER")
         continent_counts[continent] += row.cnt
 
-    # ── Top Locations at country level (active only) ───────────────────────────
-    # Re-use the same grouped rows already fetched above for continent,
-    # but we need to re-query since the cursor was consumed. Use a fresh query.
+    # ── Top Locations (active only) ──────────────────────────────────────────
     loc_rows = await db.execute(
         select(Job.location_raw, Job.geo_region, func.count().label("cnt"))
         .where(Job.is_active == True)
@@ -135,6 +123,26 @@ async def get_admin_stats(
         reverse=True,
     )[:20]
 
+    # ── Company stats ────────────────────────────────────────────────────────
+    total_companies = await db.scalar(select(func.count()).select_from(Company))
+    companies_with_url = await db.scalar(
+        select(func.count()).select_from(Company).where(Company.career_url.is_not(None))
+    )
+    # Due = enabled, has career_url, and (never scraped OR interval elapsed)
+    cutoff_interval = now - timedelta(days=5)
+    companies_due = await db.scalar(
+        select(func.count()).select_from(Company).where(
+            and_(
+                Company.is_enabled == True,
+                Company.career_url.is_not(None),
+                or_(
+                    Company.last_scraped.is_(None),
+                    Company.last_scraped < cutoff_interval,
+                ),
+            )
+        )
+    )
+
     result = AdminStatsOut(
         total_jobs=total_jobs or 0,
         total_active=total_active or 0,
@@ -145,6 +153,9 @@ async def get_admin_stats(
         by_source=by_source,
         by_continent=dict(continent_counts),
         top_locations=top_locations,
+        total_companies=total_companies or 0,
+        companies_with_url=companies_with_url or 0,
+        companies_due=companies_due or 0,
     )
     cache_set("admin_stats", result)
     return result
