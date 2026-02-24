@@ -3,10 +3,12 @@ Auto-discover career page URLs for companies.
 
 Strategy:
   1. For companies with known ATS (from companies.yaml hints): build URL directly
-  2. For others: try common career page URL patterns via HEAD requests
+  2. For others: try common career page URL patterns via HEAD + content validation
   3. Store discovered URL in company.career_url
 
-Cost: $0.00 — only HTTP HEAD requests, no LLM calls.
+Cost: $0.00 — only HTTP requests, no LLM calls.
+Validation: each candidate URL is validated via HEAD + GET content check to ensure
+it actually points to a careers page (not a homepage or login wall).
 """
 
 import asyncio
@@ -14,6 +16,7 @@ import logging
 import re
 from pathlib import Path
 from typing import Optional
+from urllib.parse import urlparse
 
 import httpx
 import yaml
@@ -50,8 +53,42 @@ ATS_BLIND_PATTERNS = [
 ]
 
 CONCURRENCY = 20
-TIMEOUT = 8
+TIMEOUT = 12
 USER_AGENT = "JOBPM/1.0 (career page discovery)"
+
+# ── Content validation constants ─────────────────────────────────────────────
+
+# Known ATS domains — always accepted regardless of path
+_ATS_DOMAINS = {
+    "greenhouse.io",
+    "lever.co",
+    "ashbyhq.com",
+    "smartrecruiters.com",
+    "teamtailor.com",
+    "workday.com",
+    "bamboohr.com",
+    "workable.com",
+    "icims.com",
+    "taleo.net",
+    "myworkdayjobs.com",
+    "recruitee.com",
+    "jobvite.com",
+}
+
+# Path segments that indicate a career page
+_CAREER_PATH_SEGMENTS = {
+    "/careers", "/jobs", "/join", "/work-with-us", "/work",
+    "/positions", "/openings", "/hiring", "/vacancies", "/en/careers",
+    "/company/careers", "/about/careers", "/about/jobs",
+}
+
+# HTML keywords that must appear in the page content
+_CAREER_KEYWORDS = {
+    "job", "apply", "position", "opening", "career",
+    "hiring", "role", "vacanc",
+}
+
+_MIN_CONTENT_LENGTH = 500  # bytes — blank/loading pages are smaller
 
 
 def slugify(name: str) -> list[str]:
@@ -106,17 +143,61 @@ def _load_yaml_hints() -> dict[str, dict]:
     return hints
 
 
-async def _check_url(client: httpx.AsyncClient, url: str) -> bool:
-    """Check if a URL is reachable (returns 2xx/3xx)."""
+async def _validate_career_url(client: httpx.AsyncClient, url: str) -> bool:
+    """Validate that a URL actually points to a career/jobs page.
+
+    Checks (in order):
+      1. HEAD → must return 2xx/3xx
+      2. GET  → fetch content
+      3. Final URL path or domain must look like a career page
+      4. HTML must contain at least one career-related keyword
+      5. Content must be longer than _MIN_CONTENT_LENGTH
+    """
     try:
+        # ── Step 1: cheap HEAD check ──────────────────────────────────────
         resp = await client.head(url)
-        if resp.status_code < 400:
-            return True
-        # Some servers don't support HEAD, try GET
-        if resp.status_code == 405:
-            resp = await client.get(url)
-            return resp.status_code < 400
-        return False
+        if resp.status_code >= 400:
+            # Some servers don't support HEAD
+            if resp.status_code != 405:
+                return False
+        elif resp.status_code >= 300:
+            # HEAD returned redirect without following — rely on GET below
+            pass
+
+        # ── Step 2: GET for content validation ───────────────────────────
+        resp = await client.get(url)
+        if resp.status_code >= 400:
+            return False
+
+        # ── Step 3: path / domain check ──────────────────────────────────
+        final = str(resp.url)
+        parsed = urlparse(final.lower())
+        host = parsed.netloc
+        path = parsed.path
+
+        # Accept any known ATS domain
+        is_ats = any(ats in host for ats in _ATS_DOMAINS)
+
+        # Check for career-related path segment
+        has_career_path = any(seg in path for seg in _CAREER_PATH_SEGMENTS)
+
+        if not is_ats and not has_career_path:
+            logger.debug("  skip %s — path '%s' not career-related", url, path)
+            return False
+
+        # ── Step 4: keyword check ─────────────────────────────────────────
+        html_lower = resp.text.lower()
+        if not any(kw in html_lower for kw in _CAREER_KEYWORDS):
+            logger.debug("  skip %s — no career keywords in content", url)
+            return False
+
+        # ── Step 5: content length check ─────────────────────────────────
+        if len(resp.content) < _MIN_CONTENT_LENGTH:
+            logger.debug("  skip %s — content too short (%d bytes)", url, len(resp.content))
+            return False
+
+        return True
+
     except (httpx.HTTPError, httpx.InvalidURL):
         return False
 
@@ -137,14 +218,14 @@ async def discover_url(
     # ── Strategy 1: known ATS + slug → direct URL ────────────────────────
     if ats and slug and ats in ATS_TEMPLATES:
         url = ATS_TEMPLATES[ats].format(slug=slug)
-        if await _check_url(client, url):
+        if await _validate_career_url(client, url):
             return url
 
     # ── Strategy 2: known slug, try ATS blind patterns ────────────────────
     if slug:
         for pattern in ATS_BLIND_PATTERNS:
             url = pattern.format(slug=slug)
-            if await _check_url(client, url):
+            if await _validate_career_url(client, url):
                 return url
 
     # ── Strategy 3: slugify name, try all patterns ────────────────────────
@@ -158,14 +239,14 @@ async def discover_url(
         # Try generic patterns
         for pattern in GENERIC_PATTERNS:
             url = pattern.format(slug=s)
-            if await _check_url(client, url):
+            if await _validate_career_url(client, url):
                 return url
 
         # Try ATS blind patterns (if not already tried with YAML slug)
         if s != slug:
             for pattern in ATS_BLIND_PATTERNS:
                 url = pattern.format(slug=s)
-                if await _check_url(client, url):
+                if await _validate_career_url(client, url):
                     return url
 
     return None
