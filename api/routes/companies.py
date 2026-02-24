@@ -1,8 +1,11 @@
+import io
 import math
 from datetime import datetime, timezone, timedelta
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Query
+from fastapi.responses import StreamingResponse
+from openpyxl import Workbook
 from sqlalchemy import select, func, and_, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -116,3 +119,52 @@ async def list_companies(
     response = CompaniesResponse(items=items, total=total, page=page, pages=pages)
     cache_set(cache_key, response)
     return response
+
+
+@router.get("/export")
+async def export_companies_excel(
+    db: AsyncSession = Depends(get_db),
+    _key: str = Depends(require_api_key),
+):
+    """Export all companies as an Excel (.xlsx) file."""
+    active_jobs_subq = (
+        select(func.count(Job.id))
+        .where(and_(Job.company_id == Company.id, Job.is_active == True))
+        .correlate(Company)
+        .scalar_subquery()
+    )
+
+    stmt = (
+        select(Company, active_jobs_subq.label("active_jobs"))
+        .order_by(Company.tier.asc(), Company.name.asc())
+    )
+    result = await db.execute(stmt)
+    rows = result.all()
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Companies"
+    ws.append(["Name", "Vertical", "Geo", "Tier", "Size", "Career URL", "Last Scraped", "Active Jobs", "Enabled"])
+
+    for company, active_jobs in rows:
+        ws.append([
+            company.name,
+            company.vertical or "",
+            company.geo_primary or "",
+            company.tier,
+            company.size or "",
+            company.career_url or "",
+            company.last_scraped.strftime("%Y-%m-%d %H:%M") if company.last_scraped else "",
+            active_jobs or 0,
+            "Yes" if company.is_enabled else "No",
+        ])
+
+    buf = io.BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+
+    return StreamingResponse(
+        buf,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": "attachment; filename=fursa_companies.xlsx"},
+    )
