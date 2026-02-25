@@ -88,8 +88,8 @@ async def upsert_jobs(session, jobs: list, company_id=None):
 
 # ── Scrape a single company via LLM ──────────────────────────────────────────
 
-async def scrape_company(session, company, semaphore: asyncio.Semaphore) -> tuple[int, str]:
-    """Scrape one company. Returns (job_count, status_string)."""
+async def scrape_company(session_factory, company_id: int, company_data: dict, semaphore: asyncio.Semaphore) -> tuple[int, str]:
+    """Scrape one company in its own isolated session. Returns (job_count, status_string)."""
     from scrapers.llm_career import fetch_custom
 
     now = datetime.now(timezone.utc)
@@ -97,71 +97,70 @@ async def scrape_company(session, company, semaphore: asyncio.Semaphore) -> tupl
     async with semaphore:
         try:
             jobs, new_hash, status = await fetch_custom(
-                career_url=company.career_url,
-                company_name=company.name,
-                page_hash=company.page_hash,
+                career_url=company_data["career_url"],
+                company_name=company_data["name"],
+                page_hash=company_data["page_hash"],
             )
 
-            count = await upsert_jobs(session, jobs, company_id=company.id)
+            async with session_factory() as session:
+                from api.models import Company
+                company = await session.get(Company, company_id)
 
-            # ── Status tracking ──────────────────────────────────────────
-            if status == "SPA_DETECTED":
-                company.scrape_status = "SPA_DETECTED"
-            elif status == "UNCHANGED":
-                # Page hash unchanged — keep previous scrape_status
-                pass
-            elif count > 0:
-                company.scrape_status = "OK"
-            else:
-                company.scrape_status = "EMPTY"  # tracking only, does NOT trigger re-discovery
+                count = await upsert_jobs(session, jobs, company_id=company.id)
 
-            # Update company scrape metadata
-            company.last_scraped = now
-            company.page_hash = new_hash
-            await session.commit()
+                # ── Status tracking ──────────────────────────────────────────
+                if status == "SPA_DETECTED":
+                    company.scrape_status = "SPA_DETECTED"
+                elif status == "UNCHANGED":
+                    pass
+                elif count > 0:
+                    company.scrape_status = "OK"
+                else:
+                    company.scrape_status = "EMPTY"
+
+                company.last_scraped = now
+                company.page_hash = new_hash
+                await session.commit()
 
             if count:
-                logger.info("  %s: %d PM jobs upserted", company.name, count)
+                logger.info("  %s: %d PM jobs upserted", company_data["name"], count)
             return count, status
 
         except httpx.HTTPStatusError as exc:
             # ── Self-healing: only on BROKEN pages (HTTP errors) ─────────
-            if exc.response.status_code in (404, 410):
+            async with session_factory() as session:
+                from api.models import Company
+                company = await session.get(Company, company_id)
                 company.scrape_status = "HTTP_ERROR"
+                company.last_scraped = now
 
-                if getattr(company, "career_url_source", "auto") == "auto":
-                    # Check cooldown before resetting
-                    can_rediscover = (
-                        not company.last_discovery_attempt
-                        or company.last_discovery_attempt < now - timedelta(days=DISCOVERY_COOLDOWN_DAYS)
-                    )
-                    if can_rediscover:
-                        logger.warning("  %s: career URL returned %d — resetting for rediscovery",
-                                       company.name, exc.response.status_code)
-                        company.career_url = None
-                        company.page_hash = None
-                        company.last_discovery_attempt = now
+                if exc.response.status_code in (404, 410):
+                    if getattr(company, "career_url_source", "auto") == "auto":
+                        can_rediscover = (
+                            not company.last_discovery_attempt
+                            or company.last_discovery_attempt < now - timedelta(days=DISCOVERY_COOLDOWN_DAYS)
+                        )
+                        if can_rediscover:
+                            logger.warning("  %s: career URL returned %d — resetting for rediscovery",
+                                           company_data["name"], exc.response.status_code)
+                            company.career_url = None
+                            company.page_hash = None
+                            company.last_discovery_attempt = now
+                        else:
+                            logger.info("  %s: career URL returned %d — rediscovery cooldown active",
+                                        company_data["name"], exc.response.status_code)
                     else:
-                        logger.info("  %s: career URL returned %d — rediscovery cooldown active",
-                                    company.name, exc.response.status_code)
+                        logger.warning("  %s: career URL returned %d but source=%s, keeping URL",
+                                       company_data["name"], exc.response.status_code,
+                                       getattr(company, "career_url_source", "auto"))
                 else:
-                    # YAML/manual: log warning, NEVER auto-reset
-                    logger.warning("  %s: career URL returned %d but source=%s, keeping URL",
-                                   company.name, exc.response.status_code,
-                                   getattr(company, "career_url_source", "auto"))
+                    logger.error("  %s: HTTP %d — %s", company_data["name"], exc.response.status_code, exc)
 
-                company.last_scraped = now
                 await session.commit()
-            else:
-                company.scrape_status = "HTTP_ERROR"
-                company.last_scraped = now
-                await session.commit()
-                logger.error("  %s: HTTP %d — %s", company.name, exc.response.status_code, exc)
             return 0, "HTTP_ERROR"
 
         except Exception as exc:
-            logger.error("  %s: error — %s", company.name, exc)
-            await session.rollback()
+            logger.error("  %s: error — %s", company_data["name"], exc)
             return 0, "ERROR"
 
         finally:
@@ -303,7 +302,15 @@ async def main():
 
         if companies:
             semaphore = asyncio.Semaphore(CONCURRENCY)
-            tasks = [scrape_company(session, c, semaphore) for c in companies]
+            tasks = [
+                scrape_company(
+                    AsyncSessionLocal,
+                    c.id,
+                    {"career_url": c.career_url, "name": c.name, "page_hash": c.page_hash},
+                    semaphore,
+                )
+                for c in companies
+            ]
             results = await asyncio.gather(*tasks, return_exceptions=True)
 
             for r in results:
