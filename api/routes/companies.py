@@ -3,7 +3,9 @@ import math
 from datetime import datetime, timezone, timedelta
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Query
+from uuid import UUID
+
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from openpyxl import Workbook
 from sqlalchemy import select, func, and_, or_
@@ -13,7 +15,7 @@ from api.auth import require_api_key
 from api.cache import cache_get, cache_set
 from api.database import get_db
 from api.models import Company, Job
-from api.schemas import CompanyOut, CompaniesResponse
+from api.schemas import CompanyOut, CompaniesResponse, CompanyPatch
 
 router = APIRouter(prefix="/api/companies", tags=["companies"])
 
@@ -50,10 +52,11 @@ async def list_companies(
     enabled: Optional[bool] = Query(None, description="Filter by is_enabled"),
     has_url: Optional[bool] = Query(None, description="Filter to companies with/without career_url"),
     status: Optional[str] = Query(None, description="Filter by scrape_status (OK, EMPTY, HTTP_ERROR, SPA_DETECTED)"),
+    sort: Optional[str] = Query(None, description="Sort order: name_asc, name_desc, last_scraped_asc, last_scraped_desc"),
     db: AsyncSession = Depends(get_db),
     _key: str = Depends(require_api_key),
 ):
-    cache_key = f"companies:{page}:{limit}:{search}:{vertical}:{geo}:{tier}:{enabled}:{has_url}:{status}"
+    cache_key = f"companies:{page}:{limit}:{search}:{vertical}:{geo}:{tier}:{enabled}:{has_url}:{status}:{sort}"
     cached = cache_get(cache_key)
     if cached:
         return cached
@@ -107,10 +110,21 @@ async def list_companies(
         .scalar_subquery()
     )
 
+    if sort == "name_asc":
+        order_by = [Company.name.asc()]
+    elif sort == "name_desc":
+        order_by = [Company.name.desc()]
+    elif sort == "last_scraped_asc":
+        order_by = [Company.last_scraped.asc().nulls_last()]
+    elif sort == "last_scraped_desc":
+        order_by = [Company.last_scraped.desc().nulls_last()]
+    else:
+        order_by = [Company.tier.asc(), Company.name.asc()]
+
     stmt = (
         select(Company, active_jobs_subq.label("active_jobs"))
         .where(where_clause)
-        .order_by(Company.tier.asc(), Company.name.asc())
+        .order_by(*order_by)
         .offset(offset)
         .limit(limit)
     )
@@ -179,3 +193,45 @@ async def export_companies_excel(
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={"Content-Disposition": "attachment; filename=fursa_companies.xlsx"},
     )
+
+
+@router.patch("/{company_id}", response_model=CompanyOut)
+async def patch_company(
+    company_id: UUID,
+    patch: CompanyPatch,
+    db: AsyncSession = Depends(get_db),
+    _key: str = Depends(require_api_key),
+):
+    """Update mutable fields of a company (website_url, career_url, is_enabled)."""
+    from api.models import Company
+    from api.cache import cache_clear
+
+    company = await db.get(Company, company_id)
+    if company is None:
+        raise HTTPException(status_code=404, detail="Company not found")
+
+    fields_set = patch.model_fields_set
+
+    if "website_url" in fields_set:
+        company.website_url = patch.website_url
+
+    if "career_url" in fields_set:
+        company.career_url = patch.career_url
+        # Track provenance: manual if setting a URL, auto if clearing (allow rediscovery)
+        company.career_url_source = "manual" if patch.career_url else "auto"
+        if not patch.career_url:
+            company.page_hash = None
+
+    if "is_enabled" in fields_set:
+        company.is_enabled = patch.is_enabled
+
+    await db.commit()
+    await db.refresh(company)
+    cache_clear()
+
+    active_jobs = await db.scalar(
+        select(func.count(Job.id)).where(
+            and_(Job.company_id == company.id, Job.is_active == True)
+        )
+    )
+    return await _company_to_out(company, active_jobs or 0)

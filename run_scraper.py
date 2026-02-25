@@ -135,24 +135,26 @@ async def scrape_company(session_factory, company_id: int, company_data: dict, s
                 company.last_scraped = now
 
                 if exc.response.status_code in (404, 410):
-                    if getattr(company, "career_url_source", "auto") == "auto":
+                    source = getattr(company, "career_url_source", "auto")
+                    if source in ("auto", "manual"):
                         can_rediscover = (
                             not company.last_discovery_attempt
                             or company.last_discovery_attempt < now - timedelta(days=DISCOVERY_COOLDOWN_DAYS)
                         )
                         if can_rediscover:
-                            logger.warning("  %s: career URL returned %d — resetting for rediscovery",
-                                           company_data["name"], exc.response.status_code)
+                            logger.warning("  %s: career URL returned %d (source=%s) — resetting for rediscovery",
+                                           company_data["name"], exc.response.status_code, source)
                             company.career_url = None
+                            company.career_url_source = "auto"
                             company.page_hash = None
                             company.last_discovery_attempt = now
                         else:
                             logger.info("  %s: career URL returned %d — rediscovery cooldown active",
                                         company_data["name"], exc.response.status_code)
                     else:
-                        logger.warning("  %s: career URL returned %d but source=%s, keeping URL",
-                                       company_data["name"], exc.response.status_code,
-                                       getattr(company, "career_url_source", "auto"))
+                        # "yaml" source: protected, never auto-reset
+                        logger.warning("  %s: career URL returned %d but source=%s (yaml-protected), keeping URL",
+                                       company_data["name"], exc.response.status_code, source)
                 else:
                     logger.error("  %s: HTTP %d — %s", company_data["name"], exc.response.status_code, exc)
 

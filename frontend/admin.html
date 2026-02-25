@@ -144,12 +144,17 @@
           <table class="w-full text-sm">
             <thead>
               <tr class="border-b border-gray-100 text-left text-xs text-gray-400 uppercase tracking-wider">
-                <th class="py-2 pr-3">Name</th>
+                <th class="py-2 pr-3 cursor-pointer select-none hover:text-gray-600" onclick="coSortBy('name')">
+                  Name <span id="sort-name-icon" class="ml-0.5">⇅</span>
+                </th>
                 <th class="py-2 pr-3">Vertical</th>
                 <th class="py-2 pr-3">Website</th>
                 <th class="py-2 pr-3">Career URL</th>
-                <th class="py-2 pr-3">Last Scraped</th>
+                <th class="py-2 pr-3 cursor-pointer select-none hover:text-gray-600" onclick="coSortBy('last_scraped')">
+                  Last Scraped <span id="sort-last_scraped-icon" class="ml-0.5">⇅</span>
+                </th>
                 <th class="py-2 text-right">Jobs</th>
+                <th class="py-2 w-6"></th>
               </tr>
             </thead>
             <tbody id="co-tbody" class="divide-y divide-gray-50"></tbody>
@@ -171,6 +176,40 @@
     <!-- Error -->
     <div id="admin-error" class="hidden text-center py-20 text-red-400 text-sm"></div>
 
+  </div>
+
+  <!-- Edit Company Modal -->
+  <div id="edit-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-6">
+      <div class="flex items-center justify-between mb-5">
+        <h3 class="text-sm font-semibold text-gray-800 truncate" id="edit-modal-title"></h3>
+        <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600 text-lg leading-none">✕</button>
+      </div>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-medium text-gray-500 mb-1">Website URL</label>
+          <input id="edit-website-url" type="url" placeholder="https://example.com"
+            class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand-500" />
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-500 mb-1">Career URL</label>
+          <input id="edit-career-url" type="url" placeholder="https://example.com/careers"
+            class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand-500" />
+          <p class="text-xs text-gray-400 mt-1">Leave blank to trigger auto-discovery on next run.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <input id="edit-enabled" type="checkbox" class="rounded border-gray-300 text-brand-500 focus:ring-brand-500" />
+          <label for="edit-enabled" class="text-sm text-gray-600">Enabled</label>
+        </div>
+      </div>
+      <p id="edit-modal-error" class="text-xs text-red-500 mt-3 min-h-[1rem]"></p>
+      <div class="flex justify-end gap-2 mt-5">
+        <button onclick="closeEditModal()"
+          class="text-sm px-4 py-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors">Cancel</button>
+        <button id="edit-save-btn" onclick="saveCompany()"
+          class="text-sm px-4 py-2 rounded-lg bg-brand-500 text-white hover:bg-brand-700 transition-colors disabled:opacity-50">Save</button>
+      </div>
+    </div>
   </div>
 
   <script>window.__API_KEY__ = "{{ api_key }}";</script>
@@ -356,6 +395,7 @@
     let coPage = 1;
     const CO_LIMIT = 50;
     let coDebounce = null;
+    let coSort = "";
 
     function coFilters() {
       const params = new URLSearchParams();
@@ -367,7 +407,27 @@
       if (vertical) params.set("vertical", vertical);
       const hasUrl = document.getElementById("co-url").value;
       if (hasUrl) params.set("has_url", hasUrl);
+      if (coSort) params.set("sort", coSort);
       return params.toString();
+    }
+
+    function coSortBy(field) {
+      const ascKey = field + "_asc";
+      const descKey = field + "_desc";
+      coSort = coSort === ascKey ? descKey : ascKey;
+      coPage = 1;
+      updateSortIcons();
+      loadCompanies();
+    }
+
+    function updateSortIcons() {
+      ["name", "last_scraped"].forEach(f => {
+        const el = document.getElementById(`sort-${f}-icon`);
+        if (!el) return;
+        if (coSort === f + "_asc") el.textContent = "↑";
+        else if (coSort === f + "_desc") el.textContent = "↓";
+        else el.textContent = "⇅";
+      });
     }
 
     async function loadCompanies() {
@@ -380,7 +440,7 @@
 
         const tbody = document.getElementById("co-tbody");
         if (d.items.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-gray-400 text-sm">No companies found</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-gray-400 text-sm">No companies found</td></tr>`;
         } else {
           tbody.innerHTML = d.items.map(c => {
             const verticalDisplay = c.vertical
@@ -398,6 +458,10 @@
               </td>
               <td class="py-2.5 pr-3 text-gray-500">${timeSince(c.last_scraped)}</td>
               <td class="py-2.5 text-right tabular-nums font-medium">${c.active_jobs}</td>
+              <td class="py-2.5 pl-2">
+                <button onclick="openEditModal(${JSON.stringify(c).replace(/"/g, '&quot;')})"
+                  class="text-gray-300 hover:text-gray-500 transition-colors" title="Edit">✏</button>
+              </td>
             </tr>
           `}).join("");
         }
@@ -409,7 +473,7 @@
 
       } catch (err) {
         document.getElementById("co-tbody").innerHTML =
-          `<tr><td colspan="6" class="py-8 text-center text-red-400 text-sm">Error: ${esc(err.message)}</td></tr>`;
+          `<tr><td colspan="7" class="py-8 text-center text-red-400 text-sm">Error: ${esc(err.message)}</td></tr>`;
       }
     }
 
@@ -444,6 +508,62 @@
         alert("Export failed: " + err.message);
       }
     }
+
+    // ── Edit modal ────────────────────────────────────────────────────────────
+
+    let _editCompanyId = null;
+
+    function openEditModal(c) {
+      _editCompanyId = c.id;
+      document.getElementById("edit-modal-title").textContent = c.name;
+      document.getElementById("edit-website-url").value = c.website_url || "";
+      document.getElementById("edit-career-url").value = c.career_url || "";
+      document.getElementById("edit-enabled").checked = c.is_enabled;
+      document.getElementById("edit-modal-error").textContent = "";
+      document.getElementById("edit-modal").classList.remove("hidden");
+    }
+
+    function closeEditModal() {
+      document.getElementById("edit-modal").classList.add("hidden");
+      _editCompanyId = null;
+    }
+
+    async function saveCompany() {
+      if (!_editCompanyId) return;
+      const btn = document.getElementById("edit-save-btn");
+      btn.disabled = true;
+      btn.textContent = "Saving…";
+
+      const payload = {
+        website_url: document.getElementById("edit-website-url").value.trim() || null,
+        career_url: document.getElementById("edit-career-url").value.trim() || null,
+        is_enabled: document.getElementById("edit-enabled").checked,
+      };
+
+      try {
+        const res = await fetch(`/api/companies/${_editCompanyId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json", "X-API-Key": API_KEY },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({ detail: res.statusText }));
+          throw new Error(err.detail || `HTTP ${res.status}`);
+        }
+        closeEditModal();
+        loadCompanies();
+      } catch (err) {
+        document.getElementById("edit-modal-error").textContent = err.message;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Save";
+      }
+    }
+
+    // Close modal on backdrop click
+    document.getElementById("edit-modal").addEventListener("click", function(e) {
+      if (e.target === this) closeEditModal();
+    });
 
     // ── Init ──────────────────────────────────────────────────────────────────
     loadAdmin();
