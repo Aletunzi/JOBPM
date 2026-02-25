@@ -29,6 +29,11 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
+      - name: Run workflow_runs migration
+        run: python migrate_workflow_runs.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
       - name: Seed new companies
         run: python seed_companies.py
         env:

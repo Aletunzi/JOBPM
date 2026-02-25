@@ -86,3 +86,14 @@ class ApiUsage(Base):
     __table_args__ = (
         UniqueConstraint("source", "date", name="uq_api_usage_source_date"),
     )
+
+
+class WorkflowRun(Base):
+    __tablename__ = "workflow_runs"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    started_at = Column(DateTime(timezone=True), nullable=False, default=utcnow)
+    companies_scraped = Column(Integer, nullable=True)
+    jobs_upserted = Column(Integer, nullable=True)
+    duration_seconds = Column(Integer, nullable=True)
+    trigger = Column(String(50), nullable=True)  # "schedule" | "manual"
