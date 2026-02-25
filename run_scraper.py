@@ -110,7 +110,16 @@ async def scrape_company(session_factory, company_id: int, company_data: dict, s
 
                 # ── Status tracking ──────────────────────────────────────────
                 if status == "SPA_DETECTED":
-                    company.scrape_status = "SPA_DETECTED"
+                    from scrapers.ats_router import try_ats_fallback
+                    ats_jobs = await try_ats_fallback(
+                        company_data["career_url"], company_data["name"]
+                    )
+                    if ats_jobs is not None:
+                        count = await upsert_jobs(session, ats_jobs, company_id=company.id)
+                        company.scrape_status = "OK" if count > 0 else "EMPTY"
+                        status = company.scrape_status
+                    else:
+                        company.scrape_status = "SPA_DETECTED"
                 elif status == "UNCHANGED":
                     pass
                 elif count > 0:
