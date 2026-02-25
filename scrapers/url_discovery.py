@@ -4,7 +4,6 @@ Auto-discover career page URLs for companies.
 Strategy (in priority order):
   1. Known ATS + slug (from companies.yaml hints): build URL directly
   2. Website URL-based: use company.website_url domain to generate career page candidates
-  3. Slug-based fallback: slugify company name and try common patterns
 
 Cost: $0.00 — only HTTP requests, no LLM calls.
 Validation: each candidate URL is validated via HEAD + GET content check to ensure
@@ -13,7 +12,6 @@ it actually points to a careers page (not a homepage or login wall).
 
 import asyncio
 import logging
-import re
 from pathlib import Path
 from typing import Optional
 from urllib.parse import urlparse
@@ -32,18 +30,6 @@ ATS_TEMPLATES = {
     "smartrecruiters": "https://jobs.smartrecruiters.com/{slug}",
     "teamtailor": "https://{slug}.teamtailor.com/jobs",
 }
-
-# Generic career page patterns (tried when no ATS hint available)
-GENERIC_PATTERNS = [
-    "https://{slug}.com/careers",
-    "https://www.{slug}.com/careers",
-    "https://careers.{slug}.com",
-    "https://{slug}.com/jobs",
-    "https://www.{slug}.com/jobs",
-    "https://jobs.{slug}.com",
-    "https://{slug}.com/en/careers",
-    "https://{slug}.com/company/careers",
-]
 
 # ATS patterns to try when we don't know which ATS (most common first)
 ATS_BLIND_PATTERNS = [
@@ -89,35 +75,6 @@ _CAREER_KEYWORDS = {
 }
 
 _MIN_CONTENT_LENGTH = 500  # bytes — blank/loading pages are smaller
-
-
-def slugify(name: str) -> list[str]:
-    """Generate slug variants from a company name.
-
-    "Palo Alto Networks" → ["paloaltonetworks", "palo-alto-networks"]
-    "monday.com" → ["monday", "mondaycom"]
-    "Auth0" → ["auth0"]
-    """
-    # Remove common suffixes
-    clean = re.sub(r'\.(com|io|ai|co|dev|app|tech)$', '', name.strip(), flags=re.IGNORECASE)
-    clean = clean.strip()
-
-    # Lowercase
-    lower = clean.lower()
-
-    # Variant 1: remove all non-alphanumeric
-    v1 = re.sub(r'[^a-z0-9]', '', lower)
-
-    # Variant 2: replace spaces/special with hyphens
-    v2 = re.sub(r'[^a-z0-9]+', '-', lower).strip('-')
-
-    slugs = []
-    if v1:
-        slugs.append(v1)
-    if v2 and v2 != v1:
-        slugs.append(v2)
-
-    return slugs
 
 
 def _load_yaml_hints() -> dict[str, dict]:
@@ -252,7 +209,6 @@ async def discover_url(
     Priority:
       1. Known ATS + slug (YAML hint) → direct URL
       2. Website URL-based patterns → candidates from actual domain
-      3. Slug-based fallback → candidates from slugified company name
 
     Returns the first working URL found, or None.
     """
@@ -273,33 +229,12 @@ async def discover_url(
             if await _validate_career_url(client, url):
                 return url
 
-    # ── Priority 2: website URL-based candidates (NEW) ───────────────────
+    # ── Priority 2: website URL-based candidates ─────────────────────────
     if website_url:
         candidates = _website_url_candidates(website_url)
         for url in candidates:
             if await _validate_career_url(client, url):
                 return url
-
-    # ── Priority 3: slugify name, try all patterns (fallback) ────────────
-    slugs = slugify(name)
-
-    # If we have a slug from YAML and it's not in our generated list, prepend it
-    if slug and slug not in slugs:
-        slugs.insert(0, slug)
-
-    for s in slugs:
-        # Try generic patterns
-        for pattern in GENERIC_PATTERNS:
-            url = pattern.format(slug=s)
-            if await _validate_career_url(client, url):
-                return url
-
-        # Try ATS blind patterns (if not already tried with YAML slug)
-        if s != slug:
-            for pattern in ATS_BLIND_PATTERNS:
-                url = pattern.format(slug=s)
-                if await _validate_career_url(client, url):
-                    return url
 
     return None
 
