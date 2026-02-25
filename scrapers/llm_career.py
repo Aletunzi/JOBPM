@@ -145,15 +145,29 @@ def _items_to_jobs(
     return jobs
 
 
+# SPA detection signals
+_SPA_SIGNALS = {"loading", "please wait", "enable javascript", "requires javascript",
+                "javascript is required", "loading...", "please enable"}
+
+
+def _detect_spa(html: str, markdown: str) -> bool:
+    """Detect if a page is a client-side SPA that didn't render server-side."""
+    if len(markdown.strip()) < 100:
+        return True
+    html_lower = html.lower()
+    return any(sig in html_lower for sig in _SPA_SIGNALS) and len(markdown.strip()) < 300
+
+
 async def fetch_custom(
     career_url: str,
     company_name: str,
     page_hash: Optional[str] = None,
-) -> tuple[list[NormalizedJob], str]:
+) -> tuple[list[NormalizedJob], str, str]:
     """Fetch career page (with pagination), extract PM jobs via LLM.
 
-    Returns (jobs, new_page_hash).
-    If page hasn't changed (same hash), returns ([], same_hash) without calling LLM.
+    Returns (jobs, new_page_hash, status).
+    Status values: "OK" | "UNCHANGED" | "SPA_DETECTED"
+    If page hasn't changed (same hash), returns ([], same_hash, "UNCHANGED") without calling LLM.
     Follows up to MAX_PAGES pages when the LLM detects pagination links.
     """
     parsed = urlparse(career_url)
@@ -172,16 +186,18 @@ async def fetch_custom(
         new_hash = hashlib.sha256(resp.content).hexdigest()
         if page_hash and new_hash == page_hash:
             logger.debug("  %s: page unchanged, skipping LLM", company_name)
-            return [], new_hash
+            return [], new_hash, "UNCHANGED"
 
         # ── HTML → Markdown ──────────────────────────────────────────────
         markdown = _h2t.handle(resp.text)
         if len(markdown) > MAX_MARKDOWN_CHARS:
             markdown = markdown[:MAX_MARKDOWN_CHARS]
 
-        if len(markdown.strip()) < 100:
-            logger.warning("  %s: career page too short (%d chars), skipping", company_name, len(markdown))
-            return [], new_hash
+        # ── SPA Detection ────────────────────────────────────────────────
+        if _detect_spa(resp.text, markdown):
+            logger.warning("  %s: career page likely SPA (%d chars), skipping LLM",
+                           company_name, len(markdown.strip()))
+            return [], new_hash, "SPA_DETECTED"
 
         # ── LLM extraction with pagination loop ──────────────────────────
         client = _get_client()
@@ -214,4 +230,4 @@ async def fetch_custom(
             all_jobs.extend(_items_to_jobs(items, company_name, base_url))
 
     logger.info("  %s: LLM extracted %d PM jobs across %d page(s)", company_name, len(all_jobs), page_num)
-    return all_jobs, new_hash
+    return all_jobs, new_hash, "OK"
