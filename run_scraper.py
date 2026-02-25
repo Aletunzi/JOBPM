@@ -194,12 +194,26 @@ async def refresh_search_vectors(session):
 
 async def main():
     from api.database import AsyncSessionLocal
-    from api.models import Company
+    from api.models import Company, WorkflowRun
     from scrapers.url_discovery import discover_all
     from scrapers.website_discovery import discover_websites
 
     logger.info("=== Scrape starting ===")
     start = datetime.now(timezone.utc)
+
+    # Record workflow run start
+    trigger = os.environ.get("GITHUB_EVENT_NAME", "manual")
+    workflow_run_id = None
+    async with AsyncSessionLocal() as session:
+        try:
+            run = WorkflowRun(started_at=start, trigger=trigger)
+            session.add(run)
+            await session.commit()
+            await session.refresh(run)
+            workflow_run_id = run.id
+            logger.info("Workflow run recorded: id=%s trigger=%s", workflow_run_id, trigger)
+        except Exception as exc:
+            logger.warning("Could not record workflow run start: %s", exc)
 
     async with AsyncSessionLocal() as session:
 
@@ -304,6 +318,19 @@ async def main():
     for status, count in sorted(status_counts.items()):
         logger.info("  %s: %d companies", status, count)
     logger.info("=== Done: %d jobs upserted in %.1fs ===", total_jobs, elapsed)
+
+    # Update workflow run record with final stats
+    if workflow_run_id:
+        async with AsyncSessionLocal() as session:
+            try:
+                run = await session.get(WorkflowRun, workflow_run_id)
+                if run:
+                    run.companies_scraped = sum(status_counts.values())
+                    run.jobs_upserted = total_jobs
+                    run.duration_seconds = int(elapsed)
+                    await session.commit()
+            except Exception as exc:
+                logger.warning("Could not update workflow run record: %s", exc)
 
 
 if __name__ == "__main__":

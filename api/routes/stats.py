@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from api.auth import require_api_key
 from api.cache import cache_get, cache_set
 from api.database import get_db
-from api.models import Job, ApiUsage, Company
+from api.models import Job, ApiUsage, Company, WorkflowRun
 from api.schemas import StatsOut, AdminStatsOut
 from scrapers.normalizer import infer_continent, extract_country
 
@@ -84,7 +84,7 @@ async def get_admin_stats(
     new_24h = await db.scalar(
         select(func.count()).where(Job.first_seen >= cutoff_24h)
     )
-    last_run = await db.scalar(select(func.max(Company.last_scraped)))
+    last_run = await db.scalar(select(func.max(WorkflowRun.started_at)))
 
     # ── By Source ───────────────────────────────────────────────────────────────
     src_rows = await db.execute(
