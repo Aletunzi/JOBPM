@@ -25,13 +25,16 @@ async def _company_to_out(c: Company, active_jobs: int) -> CompanyOut:
     return CompanyOut(
         id=c.id,
         name=c.name,
+        website_url=getattr(c, "website_url", None),
         career_url=c.career_url,
+        career_url_source=getattr(c, "career_url_source", "auto"),
         tier=c.tier,
         size=c.size,
         vertical=c.vertical,
         geo_primary=c.geo_primary,
         is_enabled=c.is_enabled,
         last_scraped=c.last_scraped,
+        scrape_status=getattr(c, "scrape_status", None),
         active_jobs=active_jobs,
     )
 
@@ -46,10 +49,11 @@ async def list_companies(
     tier: Optional[str] = Query(None, description="Comma-separated tiers: 1,2,3"),
     enabled: Optional[bool] = Query(None, description="Filter by is_enabled"),
     has_url: Optional[bool] = Query(None, description="Filter to companies with/without career_url"),
+    status: Optional[str] = Query(None, description="Filter by scrape_status (OK, EMPTY, HTTP_ERROR, SPA_DETECTED)"),
     db: AsyncSession = Depends(get_db),
     _key: str = Depends(require_api_key),
 ):
-    cache_key = f"companies:{page}:{limit}:{search}:{vertical}:{geo}:{tier}:{enabled}:{has_url}"
+    cache_key = f"companies:{page}:{limit}:{search}:{vertical}:{geo}:{tier}:{enabled}:{has_url}:{status}"
     cached = cache_get(cache_key)
     if cached:
         return cached
@@ -81,6 +85,9 @@ async def list_companies(
         conditions.append(Company.career_url.is_not(None))
     elif has_url is False:
         conditions.append(Company.career_url.is_(None))
+
+    if status:
+        conditions.append(Company.scrape_status == status.upper())
 
     where_clause = and_(*conditions) if conditions else True
 
@@ -144,7 +151,8 @@ async def export_companies_excel(
     wb = Workbook()
     ws = wb.active
     ws.title = "Companies"
-    ws.append(["Name", "Vertical", "Geo", "Tier", "Size", "Career URL", "Last Scraped", "Active Jobs", "Enabled"])
+    ws.append(["Name", "Vertical", "Geo", "Tier", "Size", "Website URL", "Career URL", "Source",
+               "Status", "Last Scraped", "Active Jobs", "Enabled"])
 
     for company, active_jobs in rows:
         ws.append([
@@ -153,7 +161,10 @@ async def export_companies_excel(
             company.geo_primary or "",
             company.tier,
             company.size or "",
+            getattr(company, "website_url", "") or "",
             company.career_url or "",
+            getattr(company, "career_url_source", "auto"),
+            getattr(company, "scrape_status", "") or "",
             company.last_scraped.strftime("%Y-%m-%d %H:%M") if company.last_scraped else "",
             active_jobs or 0,
             "Yes" if company.is_enabled else "No",

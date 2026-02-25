@@ -36,23 +36,46 @@ async def seed():
             if not name:
                 continue
 
-            stmt = pg_insert(Company).values(
+            # Build values for insert
+            values = dict(
                 name=name,
                 tier=c.get("tier", 3),
                 size=c.get("size"),
                 vertical=c.get("vertical"),
                 geo_primary=c.get("geo_primary"),
-                career_url=c.get("career_url"),  # None for most
+                career_url=c.get("career_url"),
                 is_enabled=True,
                 scrape_interval_days=5,
-            ).on_conflict_do_update(
+            )
+
+            # Include website_url if provided in YAML
+            if c.get("website_url"):
+                values["website_url"] = c["website_url"]
+
+            # If career_url is explicitly set in YAML, mark source as "yaml"
+            if c.get("career_url"):
+                values["career_url_source"] = "yaml"
+
+            # Build update set for upsert
+            update_set = {
+                "tier": c.get("tier", 3),
+                "size": c.get("size"),
+                "vertical": c.get("vertical"),
+                "geo_primary": c.get("geo_primary"),
+            }
+
+            # Only overwrite website_url if explicitly provided
+            if c.get("website_url"):
+                update_set["website_url"] = c["website_url"]
+
+            # Only overwrite career_url if explicitly provided
+            if c.get("career_url"):
+                update_set["career_url"] = c["career_url"]
+                update_set["career_url_source"] = "yaml"
+
+            stmt = pg_insert(Company).values(**values).on_conflict_do_update(
                 constraint="uq_company_name",
-                set_={
-                    "tier": c.get("tier", 3),
-                    "size": c.get("size"),
-                    "vertical": c.get("vertical"),
-                    "geo_primary": c.get("geo_primary"),
-                },
+                set_=update_set,
             )
 
             result = await session.execute(stmt)
@@ -64,7 +87,7 @@ async def seed():
         await session.commit()
 
     print(f"Seeded: {inserted} companies inserted/updated, {updated} unchanged.")
-    print("Note: career_url is NULL for most companies. Add URLs to enable LLM scraping.")
+    print("Note: website_url and career_url are discovered automatically if not set in YAML.")
 
 
 if __name__ == "__main__":

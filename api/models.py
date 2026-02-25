@@ -18,16 +18,21 @@ class Company(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = Column(String(255), nullable=False)
-    career_url = Column(Text, nullable=True)            # URL to scrape (null = not yet configured)
+    website_url = Column(Text, nullable=True)             # Company homepage (e.g. https://stripe.com)
+    career_url = Column(Text, nullable=True)              # URL to scrape (null = not yet configured)
+    career_url_source = Column(String(20), nullable=False, default="auto", server_default="auto")
+    # career_url_source values: "auto" | "yaml" | "manual"
     tier = Column(Integer, nullable=False, default=3)
-    size = Column(String(50), nullable=True)            # startup | scaleup | mid | large
-    vertical = Column(String(50), nullable=True)        # fintech | saas | ai | ...
-    geo_primary = Column(String(20), nullable=True)     # US | EU | UK | GLOBAL | APAC | LATAM
+    size = Column(String(50), nullable=True)              # startup | scaleup | mid | large
+    vertical = Column(String(50), nullable=True)          # fintech | saas | ai | ...
+    geo_primary = Column(String(20), nullable=True)       # US | EU | UK | GLOBAL | APAC | LATAM
 
     is_enabled = Column(Boolean, nullable=False, default=True)
     last_scraped = Column(DateTime(timezone=True), nullable=True)
-    page_hash = Column(String(64), nullable=True)       # SHA-256 of last fetched page (change detection)
+    page_hash = Column(String(64), nullable=True)         # SHA-256 of last fetched page (change detection)
     scrape_interval_days = Column(Integer, nullable=False, default=5)
+    last_discovery_attempt = Column(DateTime(timezone=True), nullable=True)
+    scrape_status = Column(String(30), nullable=True)     # OK | HTTP_ERROR | EMPTY | SPA_DETECTED | TIMEOUT
 
     jobs = relationship("Job", back_populates="company", lazy="select")
 

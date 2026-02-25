@@ -1,10 +1,9 @@
 """
 Auto-discover career page URLs for companies.
 
-Strategy:
-  1. For companies with known ATS (from companies.yaml hints): build URL directly
-  2. For others: try common career page URL patterns via HEAD + content validation
-  3. Store discovered URL in company.career_url
+Strategy (in priority order):
+  1. Known ATS + slug (from companies.yaml hints): build URL directly
+  2. Website URL-based: use company.website_url domain to generate career page candidates
 
 Cost: $0.00 — only HTTP requests, no LLM calls.
 Validation: each candidate URL is validated via HEAD + GET content check to ensure
@@ -13,7 +12,6 @@ it actually points to a careers page (not a homepage or login wall).
 
 import asyncio
 import logging
-import re
 from pathlib import Path
 from typing import Optional
 from urllib.parse import urlparse
@@ -32,18 +30,6 @@ ATS_TEMPLATES = {
     "smartrecruiters": "https://jobs.smartrecruiters.com/{slug}",
     "teamtailor": "https://{slug}.teamtailor.com/jobs",
 }
-
-# Generic career page patterns (tried when no ATS hint available)
-GENERIC_PATTERNS = [
-    "https://{slug}.com/careers",
-    "https://www.{slug}.com/careers",
-    "https://careers.{slug}.com",
-    "https://{slug}.com/jobs",
-    "https://www.{slug}.com/jobs",
-    "https://jobs.{slug}.com",
-    "https://{slug}.com/en/careers",
-    "https://{slug}.com/company/careers",
-]
 
 # ATS patterns to try when we don't know which ATS (most common first)
 ATS_BLIND_PATTERNS = [
@@ -89,35 +75,6 @@ _CAREER_KEYWORDS = {
 }
 
 _MIN_CONTENT_LENGTH = 500  # bytes — blank/loading pages are smaller
-
-
-def slugify(name: str) -> list[str]:
-    """Generate slug variants from a company name.
-
-    "Palo Alto Networks" → ["paloaltonetworks", "palo-alto-networks"]
-    "monday.com" → ["monday", "mondaycom"]
-    "Auth0" → ["auth0"]
-    """
-    # Remove common suffixes
-    clean = re.sub(r'\.(com|io|ai|co|dev|app|tech)$', '', name.strip(), flags=re.IGNORECASE)
-    clean = clean.strip()
-
-    # Lowercase
-    lower = clean.lower()
-
-    # Variant 1: remove all non-alphanumeric
-    v1 = re.sub(r'[^a-z0-9]', '', lower)
-
-    # Variant 2: replace spaces/special with hyphens
-    v2 = re.sub(r'[^a-z0-9]+', '-', lower).strip('-')
-
-    slugs = []
-    if v1:
-        slugs.append(v1)
-    if v2 and v2 != v1:
-        slugs.append(v2)
-
-    return slugs
 
 
 def _load_yaml_hints() -> dict[str, dict]:
@@ -202,12 +159,56 @@ async def _validate_career_url(client: httpx.AsyncClient, url: str) -> bool:
         return False
 
 
+def _website_url_candidates(website_url: str) -> list[str]:
+    """Generate career page candidate URLs from a known website URL.
+
+    Given https://stripe.com, generates:
+      - https://stripe.com/careers
+      - https://stripe.com/jobs
+      - https://careers.stripe.com
+      - https://jobs.stripe.com
+      - ATS blind patterns with domain slug
+      - etc.
+    """
+    parsed = urlparse(website_url)
+    domain = parsed.netloc.lower()  # e.g. "stripe.com" or "www.stripe.com"
+    base = f"{parsed.scheme}://{domain}".rstrip("/")
+
+    # Remove www. prefix for subdomain patterns
+    bare_domain = domain.removeprefix("www.")
+
+    # Extract slug from domain (first part before first dot)
+    domain_slug = bare_domain.split(".")[0]  # "stripe" from "stripe.com"
+
+    candidates = [
+        f"{base}/careers",
+        f"{base}/jobs",
+        f"{base}/company/careers",
+        f"{base}/en/careers",
+        f"{base}/about/careers",
+        f"{base}/work-with-us",
+        f"https://careers.{bare_domain}",
+        f"https://jobs.{bare_domain}",
+    ]
+
+    # Also try ATS blind patterns with domain-derived slug
+    for pattern in ATS_BLIND_PATTERNS:
+        candidates.append(pattern.format(slug=domain_slug))
+
+    return candidates
+
+
 async def discover_url(
     client: httpx.AsyncClient,
     name: str,
     hints: dict[str, dict],
+    website_url: Optional[str] = None,
 ) -> Optional[str]:
     """Discover the career page URL for a single company.
+
+    Priority:
+      1. Known ATS + slug (YAML hint) → direct URL
+      2. Website URL-based patterns → candidates from actual domain
 
     Returns the first working URL found, or None.
     """
@@ -215,39 +216,25 @@ async def discover_url(
     ats = hint.get("ats")
     slug = hint.get("slug")
 
-    # ── Strategy 1: known ATS + slug → direct URL ────────────────────────
+    # ── Priority 1: known ATS + slug → direct URL ────────────────────────
     if ats and slug and ats in ATS_TEMPLATES:
         url = ATS_TEMPLATES[ats].format(slug=slug)
         if await _validate_career_url(client, url):
             return url
 
-    # ── Strategy 2: known slug, try ATS blind patterns ────────────────────
+    # ── Priority 1b: known slug, try ATS blind patterns ──────────────────
     if slug:
         for pattern in ATS_BLIND_PATTERNS:
             url = pattern.format(slug=slug)
             if await _validate_career_url(client, url):
                 return url
 
-    # ── Strategy 3: slugify name, try all patterns ────────────────────────
-    slugs = slugify(name)
-
-    # If we have a slug from YAML and it's not in our generated list, prepend it
-    if slug and slug not in slugs:
-        slugs.insert(0, slug)
-
-    for s in slugs:
-        # Try generic patterns
-        for pattern in GENERIC_PATTERNS:
-            url = pattern.format(slug=s)
+    # ── Priority 2: website URL-based candidates ─────────────────────────
+    if website_url:
+        candidates = _website_url_candidates(website_url)
+        for url in candidates:
             if await _validate_career_url(client, url):
                 return url
-
-        # Try ATS blind patterns (if not already tried with YAML slug)
-        if s != slug:
-            for pattern in ATS_BLIND_PATTERNS:
-                url = pattern.format(slug=s)
-                if await _validate_career_url(client, url):
-                    return url
 
     return None
 
@@ -259,7 +246,7 @@ async def discover_all(
     """Discover career URLs for a batch of companies.
 
     Args:
-        companies: list of Company ORM objects (with .name, .career_url)
+        companies: list of Company ORM objects (with .name, .career_url, .website_url)
         max_companies: limit to avoid too many requests per run
 
     Returns:
@@ -286,7 +273,12 @@ async def discover_all(
 
         async def _discover_one(company):
             async with semaphore:
-                url = await discover_url(client, company.name, hints)
+                url = await discover_url(
+                    client,
+                    company.name,
+                    hints,
+                    website_url=getattr(company, "website_url", None),
+                )
                 if url:
                     discovered[company.name] = url
                     logger.info("  ✓ %s → %s", company.name, url)

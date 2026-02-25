@@ -23,13 +23,16 @@ class JobOut(BaseModel):
 class CompanyOut(BaseModel):
     id: UUID
     name: str
+    website_url: Optional[str] = None
     career_url: Optional[str]
+    career_url_source: str = "auto"
     tier: int
     size: Optional[str]
     vertical: Optional[str]
     geo_primary: Optional[str]
     is_enabled: bool
     last_scraped: Optional[datetime]
+    scrape_status: Optional[str] = None
     active_jobs: int = 0
 
     model_config = {"from_attributes": True}
@@ -62,7 +65,9 @@ class AdminStatsOut(BaseModel):
     top_locations: list[dict]
     total_companies: int          # total companies in DB
     companies_with_url: int       # companies with career_url configured
+    companies_with_website: int = 0  # companies with website_url
     companies_due: int            # companies due for scraping today
+    scrape_health: dict[str, int] = {}  # count by scrape_status (OK, EMPTY, HTTP_ERROR, SPA_DETECTED)
 
 
 class JobsResponse(BaseModel):
