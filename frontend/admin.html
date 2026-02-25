@@ -130,13 +130,6 @@
               <option value="healthcare">Healthcare</option><option value="hr">HR</option>
               <option value="ecommerce">E-commerce</option><option value="logistics">Logistics</option>
             </select>
-            <select id="co-geo"
-              class="text-sm border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-500">
-              <option value="">All geo</option>
-              <option value="US">US</option><option value="EU">EU</option>
-              <option value="UK">UK</option><option value="GLOBAL">Global</option>
-              <option value="APAC">APAC</option><option value="LATAM">LATAM</option>
-            </select>
             <select id="co-url"
               class="text-sm border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-500">
               <option value="">All</option>
@@ -153,13 +146,10 @@
               <tr class="border-b border-gray-100 text-left text-xs text-gray-400 uppercase tracking-wider">
                 <th class="py-2 pr-3">Name</th>
                 <th class="py-2 pr-3">Vertical</th>
-                <th class="py-2 pr-3">Geo</th>
                 <th class="py-2 pr-3">Website</th>
                 <th class="py-2 pr-3">Career URL</th>
-                <th class="py-2 pr-3">Scrape</th>
                 <th class="py-2 pr-3">Last Scraped</th>
-                <th class="py-2 pr-3 text-right">Jobs</th>
-                <th class="py-2 text-right">Status</th>
+                <th class="py-2 text-right">Jobs</th>
               </tr>
             </thead>
             <tbody id="co-tbody" class="divide-y divide-gray-50"></tbody>
@@ -375,8 +365,6 @@
       if (search) params.set("search", search);
       const vertical = document.getElementById("co-vertical").value;
       if (vertical) params.set("vertical", vertical);
-      const geo = document.getElementById("co-geo").value;
-      if (geo) params.set("geo", geo);
       const hasUrl = document.getElementById("co-url").value;
       if (hasUrl) params.set("has_url", hasUrl);
       return params.toString();
@@ -392,37 +380,24 @@
 
         const tbody = document.getElementById("co-tbody");
         if (d.items.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="9" class="py-8 text-center text-gray-400 text-sm">No companies found</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-gray-400 text-sm">No companies found</td></tr>`;
         } else {
           tbody.innerHTML = d.items.map(c => {
-            const scrapeColor = {
-              OK: 'bg-green-50 text-green-700',
-              EMPTY: 'bg-yellow-50 text-yellow-700',
-              HTTP_ERROR: 'bg-red-50 text-red-700',
-              SPA_DETECTED: 'bg-orange-50 text-orange-700',
-              TIMEOUT: 'bg-red-50 text-red-600',
-            }[c.scrape_status] || 'bg-gray-50 text-gray-400';
+            const verticalDisplay = c.vertical
+              ? c.vertical.charAt(0).toUpperCase() + c.vertical.slice(1)
+              : '—';
             return `
             <tr class="${c.is_enabled ? '' : 'opacity-50'}">
               <td class="py-2.5 pr-3 font-medium text-gray-900">${esc(c.name)}</td>
-              <td class="py-2.5 pr-3 text-gray-500">${esc(c.vertical || '—')}</td>
-              <td class="py-2.5 pr-3 text-gray-500">${esc(c.geo_primary || '—')}</td>
+              <td class="py-2.5 pr-3 text-gray-500">${esc(verticalDisplay)}</td>
               <td class="py-2.5 pr-3 text-gray-500 truncate max-w-[140px]" title="${esc(c.website_url || '')}">
                 ${c.website_url ? `<a href="${esc(c.website_url)}" target="_blank" rel="noopener" class="text-blue-500 hover:underline">${esc(truncUrl(c.website_url, 25))}</a>` : '<span class="text-gray-300">—</span>'}
               </td>
               <td class="py-2.5 pr-3 text-gray-500 truncate max-w-[200px]" title="${esc(c.career_url || '')}">
                 ${c.career_url ? `<a href="${esc(c.career_url)}" target="_blank" rel="noopener" class="text-brand-500 hover:underline">${esc(truncUrl(c.career_url, 30))}</a>` : '<span class="text-gray-300">not set</span>'}
               </td>
-              <td class="py-2.5 pr-3">
-                ${c.scrape_status ? `<span class="inline-block px-1.5 py-0.5 text-[10px] rounded ${scrapeColor}" title="source: ${esc(c.career_url_source)}">${esc(c.scrape_status)}</span>` : '<span class="text-gray-300 text-xs">—</span>'}
-              </td>
               <td class="py-2.5 pr-3 text-gray-500">${timeSince(c.last_scraped)}</td>
-              <td class="py-2.5 pr-3 text-right tabular-nums font-medium">${c.active_jobs}</td>
-              <td class="py-2.5 text-right">
-                <span class="inline-block px-2 py-0.5 text-xs rounded-full ${c.is_enabled ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-400'}">
-                  ${c.is_enabled ? 'active' : 'disabled'}
-                </span>
-              </td>
+              <td class="py-2.5 text-right tabular-nums font-medium">${c.active_jobs}</td>
             </tr>
           `}).join("");
         }
@@ -434,7 +409,7 @@
 
       } catch (err) {
         document.getElementById("co-tbody").innerHTML =
-          `<tr><td colspan="9" class="py-8 text-center text-red-400 text-sm">Error: ${esc(err.message)}</td></tr>`;
+          `<tr><td colspan="6" class="py-8 text-center text-red-400 text-sm">Error: ${esc(err.message)}</td></tr>`;
       }
     }
 
@@ -449,7 +424,6 @@
       coDebounce = setTimeout(() => { coPage = 1; loadCompanies(); }, 300);
     });
     document.getElementById("co-vertical").addEventListener("change", () => { coPage = 1; loadCompanies(); });
-    document.getElementById("co-geo").addEventListener("change", () => { coPage = 1; loadCompanies(); });
     document.getElementById("co-url").addEventListener("change", () => { coPage = 1; loadCompanies(); });
 
     // ── Excel export ──────────────────────────────────────────────────────────
