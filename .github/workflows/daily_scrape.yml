@@ -40,6 +40,12 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
+      - name: Invalidate API cache
+        if: always()
+        run: |
+          curl -sf -X POST "${{ secrets.API_BASE_URL }}/api/admin/cache-clear" \
+            -H "X-API-Key: ${{ secrets.API_KEY }}" || true
+
       - name: Notify on failure
         if: failure()
         run: |
