@@ -84,7 +84,7 @@ async def get_admin_stats(
     new_24h = await db.scalar(
         select(func.count()).where(Job.first_seen >= cutoff_24h)
     )
-    last_run = await db.scalar(select(func.max(Job.first_seen)))
+    last_run = await db.scalar(select(func.max(Company.last_scraped)))
 
     # ── By Source ───────────────────────────────────────────────────────────────
     src_rows = await db.execute(
