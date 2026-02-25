@@ -70,6 +70,12 @@ class AdminStatsOut(BaseModel):
     scrape_health: dict[str, int] = {}  # count by scrape_status (OK, EMPTY, HTTP_ERROR, SPA_DETECTED)
 
 
+class CompanyPatch(BaseModel):
+    website_url: Optional[str] = None
+    career_url: Optional[str] = None
+    is_enabled: Optional[bool] = None
+
+
 class JobsResponse(BaseModel):
     items: list[JobOut]
     next_cursor: Optional[str]
