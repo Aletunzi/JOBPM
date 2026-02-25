@@ -160,6 +160,7 @@ async def scrape_company(session, company, semaphore: asyncio.Semaphore) -> tupl
 
         except Exception as exc:
             logger.error("  %s: error — %s", company.name, exc)
+            await session.rollback()
             return 0, "ERROR"
 
         finally:
