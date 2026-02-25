@@ -2,7 +2,7 @@ import time
 from typing import Any, Optional
 
 _store: dict[str, tuple[float, Any]] = {}
-TTL = 300  # 5 minutes
+TTL = 60  # 1 minute
 
 
 def cache_get(key: str) -> Optional[Any]:
