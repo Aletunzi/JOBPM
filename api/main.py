@@ -40,6 +40,13 @@ app.include_router(companies.router)
 app.include_router(stats.router)
 
 
+@app.post("/api/admin/cache-clear", tags=["admin"])
+async def clear_cache(_key: str = Depends(require_api_key)):
+    """Invalidate the in-process cache. Called by GitHub Actions after each scraper run."""
+    cache_clear()
+    return {"status": "cache cleared"}
+
+
 @app.post("/api/scrape", tags=["admin"])
 async def trigger_scrape(_key: str = Depends(require_api_key)):
     """Manually trigger the scraper (runs in-process, may be slow)."""
