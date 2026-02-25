@@ -267,19 +267,28 @@ async def main():
         # ── Phase 1: LLM Rolling ─────────────────────────────────────────
         logger.info("--- Phase 1: LLM career page scraping ---")
 
-        cutoff_default = datetime.now(timezone.utc) - timedelta(days=5)
+        is_manual = trigger == "workflow_dispatch"
+        base_filter = and_(
+            Company.is_enabled == True,
+            Company.career_url.is_not(None),
+        )
+        if is_manual:
+            # Manual run: check all companies regardless of last_scraped
+            logger.info("Manual trigger detected — scraping all companies (ignoring 5-day window)")
+            where_clause = base_filter
+        else:
+            cutoff_default = datetime.now(timezone.utc) - timedelta(days=5)
+            where_clause = and_(
+                base_filter,
+                or_(
+                    Company.last_scraped.is_(None),
+                    Company.last_scraped < cutoff_default,
+                ),
+            )
+
         result = await session.execute(
             select(Company)
-            .where(
-                and_(
-                    Company.is_enabled == True,
-                    Company.career_url.is_not(None),
-                    or_(
-                        Company.last_scraped.is_(None),
-                        Company.last_scraped < cutoff_default,
-                    ),
-                )
-            )
+            .where(where_clause)
             .order_by(Company.last_scraped.asc().nulls_first())
             .limit(MAX_PER_RUN)
         )
