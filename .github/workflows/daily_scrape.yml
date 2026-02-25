@@ -24,6 +24,11 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Run migrations
+        run: python migrate_v3_website_url.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
       - name: Seed new companies
         run: python seed_companies.py
         env:
