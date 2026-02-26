@@ -145,7 +145,7 @@ async def scrape_company(session_factory, company_id: int, company_data: dict, s
 
                 if exc.response.status_code in (404, 410):
                     source = getattr(company, "career_url_source", "auto")
-                    if source in ("auto", "manual"):
+                    if source == "auto":
                         can_rediscover = (
                             not company.last_discovery_attempt
                             or company.last_discovery_attempt < now - timedelta(days=DISCOVERY_COOLDOWN_DAYS)
@@ -161,8 +161,8 @@ async def scrape_company(session_factory, company_id: int, company_data: dict, s
                             logger.info("  %s: career URL returned %d — rediscovery cooldown active",
                                         company_data["name"], exc.response.status_code)
                     else:
-                        # "yaml" source: protected, never auto-reset
-                        logger.warning("  %s: career URL returned %d but source=%s (yaml-protected), keeping URL",
+                        # "manual" or "yaml" source: protected, never auto-reset
+                        logger.warning("  %s: career URL returned %d but source=%s (protected), keeping URL",
                                        company_data["name"], exc.response.status_code, source)
                 else:
                     logger.error("  %s: HTTP %d — %s", company_data["name"], exc.response.status_code, exc)
