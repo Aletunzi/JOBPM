@@ -112,10 +112,19 @@
             <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider">
               Companies <span id="companies-count" class="text-gray-300"></span>
             </h2>
-            <button onclick="exportExcel()"
-              class="text-xs font-medium bg-brand-500 text-white px-3 py-1 rounded-lg hover:bg-brand-700 transition-colors">
-              Export Excel
-            </button>
+            <div class="flex items-center gap-2">
+              <button onclick="exportExcel()"
+                class="text-xs font-medium bg-brand-500 text-white px-3 py-1 rounded-lg hover:bg-brand-700 transition-colors">
+                Export Excel
+              </button>
+              <button onclick="document.getElementById('import-file-input').click()"
+                class="text-xs font-medium bg-gray-600 text-white px-3 py-1 rounded-lg hover:bg-gray-500 transition-colors">
+                Import Excel
+              </button>
+              <input id="import-file-input" type="file" accept=".xlsx,.xls" class="hidden"
+                onchange="importExcel(this)">
+              <span id="import-status" class="text-xs text-gray-400 hidden"></span>
+            </div>
           </div>
           <div class="flex flex-wrap items-center gap-2">
             <input id="co-search" type="text" placeholder="Search by name…"
@@ -506,6 +515,44 @@
         URL.revokeObjectURL(url);
       } catch (err) {
         alert("Export failed: " + err.message);
+      }
+    }
+
+    // ── Excel import ──────────────────────────────────────────────────────────
+    async function importExcel(input) {
+      const file = input.files[0];
+      if (!file) return;
+      input.value = "";                        // reset so same file can be re-selected
+
+      const status = document.getElementById("import-status");
+      status.textContent = "Uploading…";
+      status.className = "text-xs text-gray-400";
+      status.classList.remove("hidden");
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        const res = await fetch("/api/companies/import", {
+          method: "POST",
+          headers: { "X-API-Key": API_KEY },
+          body: formData,
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || `HTTP ${res.status}`);
+
+        const parts = [`✓ ${data.updated} updated`, `${data.deleted} deleted`];
+        if (data.not_found?.length) parts.push(`${data.not_found.length} not found`);
+        status.textContent = parts.join(" · ");
+        status.className = "text-xs text-green-400";
+
+        loadCompanies();   // refresh table
+        if (data.not_found?.length) {
+          console.warn("Companies not found in DB:", data.not_found);
+        }
+      } catch (err) {
+        status.textContent = "Import failed: " + err.message;
+        status.className = "text-xs text-red-400";
       }
     }
 
