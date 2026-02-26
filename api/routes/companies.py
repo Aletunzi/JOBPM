@@ -8,7 +8,6 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
 from fastapi.responses import StreamingResponse
 from openpyxl import Workbook, load_workbook
-from pydantic import BaseModel
 from sqlalchemy import select, func, and_, or_, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -18,10 +17,6 @@ from api.database import get_db
 from api.models import Company, Job
 from api.schemas import CompanyOut, CompaniesResponse, CompanyPatch
 
-
-class BulkUpdateRequest(BaseModel):
-    website_updates: dict[str, str] = {}   # {name: website_url}
-    delete_names: list[str] = []
 
 router = APIRouter(prefix="/api/companies", tags=["companies"])
 
@@ -354,42 +349,3 @@ async def delete_company(
     await db.delete(company)
     await db.commit()
     cache_clear()
-
-
-@router.post("/admin/bulk-update")
-async def bulk_update_companies(
-    payload: BulkUpdateRequest,
-    db: AsyncSession = Depends(get_db),
-    _key: str = Depends(require_api_key),
-):
-    """
-    Bulk operation (admin only):
-    - website_updates: {name: url}  — set website_url by company name
-    - delete_names: [name, ...]     — delete companies (and their jobs) by name
-    """
-    results = {"updated": [], "not_found_update": [], "deleted": [], "not_found_delete": []}
-
-    # ── website_url updates ──────────────────────────────────────────────────
-    for name, url in payload.website_updates.items():
-        result = await db.execute(select(Company).where(Company.name == name))
-        company = result.scalar_one_or_none()
-        if company is None:
-            results["not_found_update"].append(name)
-        else:
-            company.website_url = url
-            results["updated"].append(name)
-
-    # ── deletions ────────────────────────────────────────────────────────────
-    for name in payload.delete_names:
-        result = await db.execute(select(Company).where(Company.name == name))
-        company = result.scalar_one_or_none()
-        if company is None:
-            results["not_found_delete"].append(name)
-        else:
-            await db.execute(delete(Job).where(Job.company_id == company.id))
-            await db.delete(company)
-            results["deleted"].append(name)
-
-    await db.commit()
-    cache_clear()
-    return results
