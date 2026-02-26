@@ -325,6 +325,7 @@ companies:
     size: scaleup
     vertical: saas
     geo_primary: EU
+    website_url: https://www.personio.com
 
   - name: GetYourGuide
     ats: greenhouse
@@ -333,6 +334,7 @@ companies:
     size: scaleup
     vertical: marketplace
     geo_primary: EU
+    website_url: https://www.getyourguide.com
 
   - name: Delivery Hero
     ats: greenhouse
@@ -341,6 +343,7 @@ companies:
     size: large
     vertical: marketplace
     geo_primary: EU
+    website_url: https://www.deliveryhero.com
 
   - name: Signifyd
     ats: greenhouse
@@ -438,6 +441,7 @@ companies:
     size: scaleup
     vertical: saas
     geo_primary: US
+    website_url: https://www.gusto.com
 
   - name: Faire
     ats: lever
@@ -446,6 +450,7 @@ companies:
     size: scaleup
     vertical: marketplace
     geo_primary: US
+    website_url: https://www.faire.com
 
   - name: Ironclad
     ats: lever
@@ -495,6 +500,7 @@ companies:
     size: startup
     vertical: ai
     geo_primary: US
+    website_url: https://www.cursor.com
 
   - name: Perplexity
     ats: ashby
@@ -503,6 +509,7 @@ companies:
     size: scaleup
     vertical: ai
     geo_primary: US
+    website_url: https://www.perplexity.ai
 
   - name: Mistral AI
     ats: ashby
@@ -559,6 +566,7 @@ companies:
     size: startup
     vertical: fintech
     geo_primary: EU
+    website_url: https://www.swan.io
 
   - name: Cohere
     ats: ashby
@@ -632,6 +640,7 @@ companies:
     size: large
     vertical: consumer
     geo_primary: US
+    website_url: https://www.reddit.com
 
   - name: Discord
     ats: greenhouse
@@ -656,6 +665,7 @@ companies:
     size: large
     vertical: marketplace
     geo_primary: US
+    website_url: https://www.doordash.com
 
   - name: Duolingo
     ats: greenhouse
@@ -745,6 +755,7 @@ companies:
     size: large
     vertical: saas
     geo_primary: US
+    website_url: https://www.udemy.com
 
   - name: Mozilla
     ats: greenhouse
@@ -785,6 +796,7 @@ companies:
     size: large
     vertical: fintech
     geo_primary: EU
+    website_url: https://www.revolut.com
 
   - name: Monzo
     ats: greenhouse
@@ -834,6 +846,7 @@ companies:
     size: scaleup
     vertical: marketplace
     geo_primary: US
+    website_url: https://www.patreon.com
 
   - name: Modern Health
     ats: lever
@@ -866,6 +879,7 @@ companies:
     size: scaleup
     vertical: consumer
     geo_primary: US
+    website_url: https://www.masterclass.com
 
   - name: Talkdesk
     ats: lever
@@ -882,6 +896,7 @@ companies:
     size: scaleup
     vertical: saas
     geo_primary: US
+    website_url: https://www.dutchie.com
 
   # ── TIER 2 — Ashby (new) ─────────────────────────────────────────────────────
   - name: Glean
@@ -1004,6 +1019,7 @@ companies:
     size: large
     vertical: saas
     geo_primary: EU
+    website_url: https://www.ericsson.com
 
   - name: Nokia
     ats: smartrecruiters
@@ -1036,6 +1052,7 @@ companies:
     size: large
     vertical: saas
     geo_primary: US
+    website_url: https://www.dell.com
 
   - name: Siemens
     ats: smartrecruiters
@@ -1125,6 +1142,7 @@ companies:
     size: scaleup
     vertical: marketplace
     geo_primary: EU
+    website_url: https://www.vivino.com
 
   - name: Mojang Studios
     ats: teamtailor
@@ -1150,6 +1168,7 @@ companies:
     size: scaleup
     vertical: ai
     geo_primary: US
+    website_url: https://www.openai.com
 
   - name: Anthropic
     slug: anthropic
@@ -1241,6 +1260,7 @@ companies:
     size: startup
     vertical: ai
     geo_primary: US
+    website_url: https://x.ai
 
   - name: Writer
     slug: writer
@@ -1439,6 +1459,7 @@ companies:
     size: scaleup
     vertical: security
     geo_primary: US
+    website_url: https://www.drata.com
 
   - name: Honeycomb
     slug: honeycomb
@@ -1551,6 +1572,7 @@ companies:
     size: large
     vertical: saas
     geo_primary: US
+    website_url: https://www.servicenow.com
 
   # ── Data & Analytics ───────────────────────────────────────────────────────
 
@@ -1737,6 +1759,7 @@ companies:
     size: mid
     vertical: fintech
     geo_primary: US
+    website_url: https://www.kraken.com
 
   - name: Block
     slug: block
@@ -1842,6 +1865,7 @@ companies:
     size: scaleup
     vertical: fintech
     geo_primary: GLOBAL
+    website_url: https://paystack.com
 
   - name: Flutterwave
     slug: flutterwave
@@ -1863,6 +1887,7 @@ companies:
     size: mid
     vertical: fintech
     geo_primary: US
+    website_url: https://www.sofi.com
 
   - name: Betterment
     slug: betterment
@@ -2163,6 +2188,7 @@ companies:
     size: large
     vertical: ecommerce
     geo_primary: UK
+    website_url: https://www.farfetch.com
 
   - name: Mytheresa
     slug: mytheresa
@@ -2177,6 +2203,7 @@ companies:
     size: scaleup
     vertical: marketplace
     geo_primary: UK
+    website_url: https://www.depop.com
 
   - name: Whatnot
     slug: whatnot
@@ -2184,6 +2211,7 @@ companies:
     size: scaleup
     vertical: marketplace
     geo_primary: US
+    website_url: https://www.whatnot.com
 
   - name: Etsy
     slug: etsy
@@ -2191,6 +2219,7 @@ companies:
     size: large
     vertical: marketplace
     geo_primary: US
+    website_url: https://www.etsy.com
 
   - name: Wayfair
     slug: wayfair
@@ -2233,6 +2262,7 @@ companies:
     size: scaleup
     vertical: marketplace
     geo_primary: EU
+    website_url: https://www.vestiairecollective.com
 
   # ── Healthcare ─────────────────────────────────────────────────────────────
 
@@ -2249,6 +2279,7 @@ companies:
     size: mid
     vertical: healthcare
     geo_primary: US
+    website_url: https://www.forhims.com
 
   - name: Noom
     slug: noom
@@ -2342,6 +2373,7 @@ companies:
     size: scaleup
     vertical: logistics
     geo_primary: US
+    website_url: https://www.li.me
 
   - name: Bolt
     slug: bolt
@@ -2384,6 +2416,7 @@ companies:
     size: large
     vertical: marketplace
     geo_primary: APAC
+    website_url: https://www.swiggy.com
 
   - name: Zomato
     slug: zomato
@@ -2398,6 +2431,7 @@ companies:
     size: scaleup
     vertical: marketplace
     geo_primary: EU
+    website_url: https://www.getir.com
 
   - name: Flexport
     slug: flexport
@@ -2442,6 +2476,7 @@ companies:
     size: scaleup
     vertical: edtech
     geo_primary: US
+    website_url: https://www.quizlet.com
 
   - name: Brilliant
     slug: brilliant
@@ -2463,6 +2498,7 @@ companies:
     size: scaleup
     vertical: edtech
     geo_primary: US
+    website_url: https://www.datacamp.com
 
   - name: Pluralsight
     slug: pluralsight
@@ -2484,6 +2520,7 @@ companies:
     size: scaleup
     vertical: edtech
     geo_primary: US
+    website_url: https://www.skillshare.com
 
   - name: Teachable
     slug: teachable
@@ -2500,6 +2537,7 @@ companies:
     size: large
     vertical: proptech
     geo_primary: US
+    website_url: https://www.zillow.com
 
   - name: Opendoor
     slug: opendoor
@@ -2535,6 +2573,7 @@ companies:
     size: large
     vertical: proptech
     geo_primary: US
+    website_url: https://www.costar.com
 
   # ── Media & Design ─────────────────────────────────────────────────────────
 
@@ -2637,6 +2676,7 @@ companies:
     size: large
     vertical: saas
     geo_primary: UK
+    website_url: https://www.sage.com
 
   - name: Coupa
     slug: coupa
@@ -2644,6 +2684,7 @@ companies:
     size: large
     vertical: saas
     geo_primary: US
+    website_url: https://www.coupa.com
 
   # ── EU Tech ────────────────────────────────────────────────────────────────
 
@@ -2688,6 +2729,7 @@ companies:
     size: scaleup
     vertical: saas
     geo_primary: EU
+    website_url: https://www.adjust.com
 
   - name: Mambu
     slug: mambu
@@ -2709,6 +2751,7 @@ companies:
     size: scaleup
     vertical: healthcare
     geo_primary: EU
+    website_url: https://www.doctolib.fr
 
   - name: Qonto
     slug: qonto
@@ -2807,6 +2850,7 @@ companies:
     size: scaleup
     vertical: saas
     geo_primary: EU
+    website_url: https://www.showpad.com
 
   - name: Collibra
     slug: collibra
@@ -2872,6 +2916,7 @@ companies:
     size: scaleup
     vertical: saas
     geo_primary: APAC
+    website_url: https://www.safetyculture.com
 
   - name: Employment Hero
     slug: employment-hero
@@ -2914,6 +2959,7 @@ companies:
     size: large
     vertical: ecommerce
     geo_primary: APAC
+    website_url: https://www.flipkart.com
 
   - name: Meesho
     slug: meesho
@@ -2921,6 +2967,7 @@ companies:
     size: scaleup
     vertical: ecommerce
     geo_primary: APAC
+    website_url: https://www.meesho.com
 
   - name: CRED
     slug: cred
@@ -2949,6 +2996,7 @@ companies:
     size: scaleup
     vertical: ecommerce
     geo_primary: APAC
+    website_url: https://www.nykaa.com
 
   - name: Ola
     slug: ola
@@ -2956,6 +3004,7 @@ companies:
     size: large
     vertical: marketplace
     geo_primary: APAC
+    website_url: https://www.olacabs.com
 
   - name: Tokopedia
     slug: tokopedia
@@ -2963,6 +3012,7 @@ companies:
     size: large
     vertical: ecommerce
     geo_primary: APAC
+    website_url: https://www.tokopedia.com
 
   # ── LATAM ──────────────────────────────────────────────────────────────────
 
@@ -3060,6 +3110,7 @@ companies:
     size: large
     vertical: media
     geo_primary: US
+    website_url: https://www.epicgames.com
 
   - name: Unity Technologies
     slug: unity-technologies
@@ -3183,6 +3234,7 @@ companies:
     size: scaleup
     vertical: saas
     geo_primary: US
+    website_url: https://www.midjourney.com
 
   - name: Cerebras Systems
     slug: cerebras-systems
@@ -3204,6 +3256,7 @@ companies:
     size: startup
     vertical: saas
     geo_primary: EU
+    website_url: https://www.cradle.bio
 
   - name: Poolside AI
     slug: poolside-ai
@@ -3211,6 +3264,7 @@ companies:
     size: startup
     vertical: saas
     geo_primary: US
+    website_url: https://www.poolside.ai
 
   - name: Magic AI
     slug: magic-ai
@@ -3218,6 +3272,7 @@ companies:
     size: startup
     vertical: saas
     geo_primary: US
+    website_url: https://magic.dev
 
   - name: Imbue
     slug: imbue
@@ -3225,6 +3280,7 @@ companies:
     size: startup
     vertical: saas
     geo_primary: US
+    website_url: https://imbue.com
 
   - name: Contextual AI
     slug: contextual-ai
@@ -3232,6 +3288,7 @@ companies:
     size: startup
     vertical: saas
     geo_primary: US
+    website_url: https://contextual.ai
 
   - name: Reka AI
     slug: reka-ai
@@ -3239,6 +3296,7 @@ companies:
     size: startup
     vertical: saas
     geo_primary: EU
+    website_url: https://www.reka.ai
 
   - name: Galileo AI
     slug: galileo-ai
@@ -3246,6 +3304,7 @@ companies:
     size: startup
     vertical: saas
     geo_primary: US
+    website_url: https://www.usegalileo.ai
 
   - name: Unstructured
     slug: unstructured
@@ -3253,6 +3312,7 @@ companies:
     size: startup
     vertical: saas
     geo_primary: US
+    website_url: https://unstructured.io
 
   - name: LangChain
     slug: langchain
@@ -3291,13 +3351,6 @@ companies:
 
   - name: Mosaic ML
     slug: mosaic-ml
-    tier: 3
-    size: startup
-    vertical: saas
-    geo_primary: US
-
-  - name: Determined AI
-    slug: determined-ai
     tier: 3
     size: startup
     vertical: saas
@@ -3393,6 +3446,7 @@ companies:
     size: large
     vertical: saas
     geo_primary: EU
+    website_url: https://www.sap.com
 
   - name: Oracle
     slug: oracle
@@ -3428,6 +3482,7 @@ companies:
     size: large
     vertical: saas
     geo_primary: US
+    website_url: https://www.intuit.com
 
   - name: Autodesk
     slug: autodesk
@@ -3463,6 +3518,7 @@ companies:
     size: large
     vertical: saas
     geo_primary: US
+    website_url: https://www.netapp.com
 
   - name: F5 Networks
     slug: f5-networks
@@ -3478,19 +3534,13 @@ companies:
     vertical: saas
     geo_primary: US
 
-  - name: Twistlock
-    slug: twistlock
-    tier: 3
-    size: startup
-    vertical: saas
-    geo_primary: US
-
   - name: HashiCorp
     slug: hashicorp
     tier: 2
     size: scaleup
     vertical: saas
     geo_primary: US
+    website_url: https://www.hashicorp.com
 
   - name: Kong
     slug: kong
@@ -3569,13 +3619,6 @@ companies:
     vertical: saas
     geo_primary: US
 
-  - name: Netlify CMS
-    slug: netlify-cms
-    tier: 3
-    size: startup
-    vertical: saas
-    geo_primary: US
-
   - name: Prismic
     slug: prismic
     tier: 3
@@ -3589,6 +3632,7 @@ companies:
     size: mid
     vertical: saas
     geo_primary: EU
+    website_url: https://www.sitecore.com
 
   - name: JetBrains
     slug: jetbrains
@@ -3855,6 +3899,7 @@ companies:
     size: startup
     vertical: saas
     geo_primary: EU
+    website_url: https://www.siffletdata.com
 
   - name: Atlan
     slug: atlan
@@ -3960,6 +4005,7 @@ companies:
     size: large
     vertical: saas
     geo_primary: US
+    website_url: https://www.tableau.com
 
   - name: Domo
     slug: domo
@@ -4065,6 +4111,7 @@ companies:
     size: startup
     vertical: saas
     geo_primary: US
+    website_url: https://panther.com
 
   - name: Hunters
     slug: hunters
@@ -4093,6 +4140,7 @@ companies:
     size: startup
     vertical: saas
     geo_primary: US
+    website_url: https://normalyze.ai
 
   - name: Polar Security
     slug: polar-security
@@ -4254,6 +4302,7 @@ companies:
     size: large
     vertical: fintech
     geo_primary: US
+    website_url: https://www.fisglobal.com
 
   - name: Fiserv
     slug: fiserv
@@ -4268,6 +4317,7 @@ companies:
     size: large
     vertical: fintech
     geo_primary: US
+    website_url: https://www.globalpayments.com
 
   - name: Worldpay
     slug: worldpay
@@ -4310,6 +4360,7 @@ companies:
     size: startup
     vertical: fintech
     geo_primary: GLOBAL
+    website_url: https://www.tribal.credit
 
   - name: Kuda Bank
     slug: kuda-bank
@@ -4436,6 +4487,7 @@ companies:
     size: startup
     vertical: fintech
     geo_primary: EU
+    website_url: https://www.zopa.com
 
   - name: OakNorth
     slug: oaknorth
@@ -4611,6 +4663,7 @@ companies:
     size: startup
     vertical: ecommerce
     geo_primary: US
+    website_url: https://www.feedvisor.com
 
   - name: Jungle Scout
     slug: jungle-scout
@@ -4639,6 +4692,7 @@ companies:
     size: mid
     vertical: ecommerce
     geo_primary: US
+    website_url: https://www.thredup.com
 
   - name: The RealReal
     slug: the-realreal
@@ -4653,6 +4707,7 @@ companies:
     size: scaleup
     vertical: ecommerce
     geo_primary: US
+    website_url: https://www.stockx.com
 
   - name: GOAT
     slug: goat
@@ -4660,6 +4715,7 @@ companies:
     size: scaleup
     vertical: ecommerce
     geo_primary: US
+    website_url: https://www.goat.com
 
   - name: Mercari
     slug: mercari
@@ -4667,6 +4723,7 @@ companies:
     size: mid
     vertical: ecommerce
     geo_primary: GLOBAL
+    website_url: https://www.mercari.com
 
   - name: Greenhouse
     slug: greenhouse
@@ -4723,6 +4780,7 @@ companies:
     size: scaleup
     vertical: saas
     geo_primary: US
+    website_url: https://www.toptal.com
 
   - name: Andela
     slug: andela
@@ -4772,6 +4830,7 @@ companies:
     size: large
     vertical: saas
     geo_primary: US
+    website_url: https://www.ukg.com
 
   - name: ADP
     slug: adp
@@ -4926,6 +4985,7 @@ companies:
     size: scaleup
     vertical: healthtech
     geo_primary: EU
+    website_url: https://www.babylonhealth.com
 
   - name: Kry
     slug: kry
@@ -4954,6 +5014,7 @@ companies:
     size: scaleup
     vertical: healthtech
     geo_primary: US
+    website_url: https://www.zocdoc.com
 
   - name: GoodRx
     slug: goodrx
@@ -4961,6 +5022,7 @@ companies:
     size: mid
     vertical: healthtech
     geo_primary: US
+    website_url: https://www.goodrx.com
 
   - name: CareRev
     slug: carerev
@@ -4989,6 +5051,7 @@ companies:
     size: scaleup
     vertical: healthtech
     geo_primary: US
+    website_url: https://www.forhims.com
 
   - name: Nurx
     slug: nurx
@@ -5137,13 +5200,6 @@ companies:
     vertical: logistics
     geo_primary: US
 
-  - name: Fetch Robotics
-    slug: fetch-robotics
-    tier: 3
-    size: startup
-    vertical: logistics
-    geo_primary: US
-
   - name: Nuro
     slug: nuro
     tier: 2
@@ -5164,6 +5220,7 @@ companies:
     size: scaleup
     vertical: logistics
     geo_primary: US
+    website_url: https://www.tusimple.com
 
   - name: Plus AI
     slug: plus-ai
@@ -5255,6 +5312,7 @@ companies:
     size: scaleup
     vertical: logistics
     geo_primary: EU
+    website_url: https://www.free-now.com
 
   - name: Loft
     slug: loft
@@ -5283,6 +5341,7 @@ companies:
     size: scaleup
     vertical: proptech
     geo_primary: US
+    website_url: https://www.fundrise.com
 
   - name: Roofstock
     slug: roofstock
@@ -5314,13 +5373,6 @@ companies:
 
   - name: Snapdocs
     slug: snapdocs
-    tier: 3
-    size: startup
-    vertical: proptech
-    geo_primary: US
-
-  - name: States Title
-    slug: states-title
     tier: 3
     size: startup
     vertical: proptech
@@ -5381,6 +5433,7 @@ companies:
     size: startup
     vertical: proptech
     geo_primary: EU
+    website_url: https://www.mcmakler.de
 
   - name: PurpleBricks
     slug: purplebricks
@@ -5458,6 +5511,7 @@ companies:
     size: startup
     vertical: edtech
     geo_primary: US
+    website_url: https://www.springboard.com
 
   - name: Thinkful
     slug: thinkful
@@ -5718,13 +5772,6 @@ companies:
     vertical: saas
     geo_primary: EU
 
-  - name: Partytown
-    slug: partytown
-    tier: 3
-    size: startup
-    vertical: saas
-    geo_primary: US
-
   - name: Segment CDP
     slug: segment-cdp
     tier: 3
@@ -5780,6 +5827,7 @@ companies:
     size: large
     vertical: gaming
     geo_primary: EU
+    website_url: https://www.embracer.com
 
   - name: CD Projekt Red
     slug: cd-projekt-red
@@ -5843,6 +5891,7 @@ companies:
     size: mid
     vertical: gaming
     geo_primary: US
+    website_url: https://www.insomniacgames.com
 
   - name: Santa Monica Studio
     slug: santa-monica-studio
@@ -5871,6 +5920,7 @@ companies:
     size: large
     vertical: gaming
     geo_primary: GLOBAL
+    website_url: https://www.krafton.com
 
   - name: Garena
     slug: garena
@@ -5892,6 +5942,7 @@ companies:
     size: large
     vertical: travel
     geo_primary: US
+    website_url: https://www.expedia.com
 
   - name: TripAdvisor
     slug: tripadvisor
@@ -5899,6 +5950,7 @@ companies:
     size: large
     vertical: travel
     geo_primary: US
+    website_url: https://www.tripadvisor.com
 
   - name: Hopper
     slug: hopper
@@ -5906,6 +5958,7 @@ companies:
     size: scaleup
     vertical: travel
     geo_primary: US
+    website_url: https://www.hopper.com
 
   - name: Kiwi.com
     slug: kiwicom
@@ -5920,6 +5973,7 @@ companies:
     size: scaleup
     vertical: travel
     geo_primary: EU
+    website_url: https://www.omio.com
 
   - name: Trainline
     slug: trainline
@@ -5983,6 +6037,7 @@ companies:
     size: scaleup
     vertical: travel
     geo_primary: GLOBAL
+    website_url: https://www.klook.com
 
   - name: Musement
     slug: musement
@@ -6018,6 +6073,7 @@ companies:
     size: startup
     vertical: travel
     geo_primary: EU
+    website_url: https://www.theculturetrip.com
 
   - name: Tourlane
     slug: tourlane
@@ -6032,6 +6088,7 @@ companies:
     size: large
     vertical: foodtech
     geo_primary: EU
+    website_url: https://www.justeattakeaway.com
 
   - name: Wolt
     slug: wolt
@@ -6110,13 +6167,6 @@ companies:
     vertical: foodtech
     geo_primary: US
 
-  - name: Freshly
-    slug: freshly
-    tier: 3
-    size: startup
-    vertical: foodtech
-    geo_primary: US
-
   - name: CookUnity
     slug: cookunity
     tier: 3
@@ -6137,6 +6187,7 @@ companies:
     size: mid
     vertical: foodtech
     geo_primary: US
+    website_url: https://www.toasttab.com
 
   - name: SpotOn
     slug: spoton
@@ -6158,6 +6209,7 @@ companies:
     size: mid
     vertical: foodtech
     geo_primary: US
+    website_url: https://squareup.com/us/en/restaurants
 
   - name: Olo
     slug: olo
@@ -6224,13 +6276,6 @@ companies:
 
   - name: Rocket Lawyer
     slug: rocket-lawyer
-    tier: 3
-    size: startup
-    vertical: saas
-    geo_primary: US
-
-  - name: Themis Solutions
-    slug: themis-solutions
     tier: 3
     size: startup
     vertical: saas
@@ -6327,13 +6372,6 @@ companies:
     vertical: saas
     geo_primary: US
 
-  - name: Running Tide
-    slug: running-tide
-    tier: 3
-    size: startup
-    vertical: saas
-    geo_primary: US
-
   - name: Charm Industrial
     slug: charm-industrial
     tier: 3
@@ -6354,6 +6392,7 @@ companies:
     size: startup
     vertical: saas
     geo_primary: EU
+    website_url: https://www.sweep.net
 
   - name: Normative
     slug: normative
@@ -6361,6 +6400,7 @@ companies:
     size: startup
     vertical: saas
     geo_primary: EU
+    website_url: https://normative.io
 
   - name: Plan A
     slug: plan-a
@@ -6452,6 +6492,7 @@ companies:
     size: mid
     vertical: saas
     geo_primary: US
+    website_url: https://www.vonage.com
 
   - name: Bandwidth
     slug: bandwidth
@@ -6495,19 +6536,13 @@ companies:
     vertical: saas
     geo_primary: EU
 
-  - name: Nexmo
-    slug: nexmo
-    tier: 3
-    size: startup
-    vertical: saas
-    geo_primary: EU
-
   - name: Africa's Talking
     slug: africas-talking
     tier: 3
     size: startup
     vertical: saas
     geo_primary: GLOBAL
+    website_url: https://africastalking.com
 
   - name: Gupshup
     slug: gupshup
@@ -6739,6 +6774,7 @@ companies:
     size: startup
     vertical: saas
     geo_primary: EU
+    website_url: https://slite.com
 
   - name: Craft
     slug: craft
@@ -6823,13 +6859,7 @@ companies:
     size: startup
     vertical: saas
     geo_primary: US
-
-  - name: Canva Docs
-    slug: canva-docs
-    tier: 3
-    size: startup
-    vertical: saas
-    geo_primary: GLOBAL
+    website_url: https://tome.app
 
   - name: Whereby
     slug: whereby
@@ -6844,6 +6874,7 @@ companies:
     size: startup
     vertical: saas
     geo_primary: US
+    website_url: https://www.around.co
 
   - name: Livekit
     slug: livekit
@@ -6921,6 +6952,7 @@ companies:
     size: startup
     vertical: saas
     geo_primary: EU
+    website_url: https://ravio.com
 
   - name: Pequity
     slug: pequity
@@ -7054,6 +7086,7 @@ companies:
     size: startup
     vertical: saas
     geo_primary: US
+    website_url: https://www.he360.com
 
   - name: Spire Global
     slug: spire-global
@@ -7152,6 +7185,7 @@ companies:
     size: scaleup
     vertical: saas
     geo_primary: US
+    website_url: https://www.substack.com
 
   - name: Beehiiv
     slug: beehiiv
@@ -7180,6 +7214,7 @@ companies:
     size: startup
     vertical: saas
     geo_primary: US
+    website_url: https://convertkit.com
 
   - name: Podia
     slug: podia
@@ -7208,6 +7243,7 @@ companies:
     size: mid
     vertical: saas
     geo_primary: US
+    website_url: https://www.thinkific.com
 
   - name: Circle.so
     slug: circleso
@@ -7222,6 +7258,7 @@ companies:
     size: large
     vertical: logistics
     geo_primary: US
+    website_url: https://www.tesla.com
 
   - name: Arrival
     slug: arrival
@@ -7229,6 +7266,7 @@ companies:
     size: scaleup
     vertical: logistics
     geo_primary: EU
+    website_url: https://arrival.com
 
   - name: Northvolt
     slug: northvolt
@@ -7250,6 +7288,7 @@ companies:
     size: startup
     vertical: logistics
     geo_primary: US
+    website_url: https://www.solidpowerbattery.com
 
   - name: Redwood Materials
     slug: redwood-materials
@@ -7285,6 +7324,7 @@ companies:
     size: large
     vertical: logistics
     geo_primary: GLOBAL
+    website_url: https://www.nio.com
 
   - name: Farmers Business Network
     slug: farmers-business-network
@@ -7328,13 +7368,6 @@ companies:
     vertical: saas
     geo_primary: US
 
-  - name: Prospera Technologies
-    slug: prospera-technologies
-    tier: 3
-    size: startup
-    vertical: saas
-    geo_primary: US
-
   - name: AppHarvest
     slug: appharvest
     tier: 3
@@ -7355,6 +7388,7 @@ companies:
     size: startup
     vertical: saas
     geo_primary: US
+    website_url: https://www.plenty.ag
 
   - name: Teladoc Health
     slug: teladoc-health
@@ -7439,6 +7473,7 @@ companies:
     size: mid
     vertical: ecommerce
     geo_primary: GLOBAL
+    website_url: https://www.jumia.com
 
   - name: Interswitch
     slug: interswitch
@@ -7460,6 +7495,7 @@ companies:
     size: startup
     vertical: fintech
     geo_primary: GLOBAL
+    website_url: https://moniepoint.com
 
   - name: Kavak
     slug: kavak
