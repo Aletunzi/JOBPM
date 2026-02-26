@@ -8,14 +8,20 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from openpyxl import Workbook
-from sqlalchemy import select, func, and_, or_
+from pydantic import BaseModel
+from sqlalchemy import select, func, and_, or_, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.auth import require_api_key
-from api.cache import cache_get, cache_set
+from api.cache import cache_get, cache_set, cache_clear
 from api.database import get_db
 from api.models import Company, Job
 from api.schemas import CompanyOut, CompaniesResponse, CompanyPatch
+
+
+class BulkUpdateRequest(BaseModel):
+    website_updates: dict[str, str] = {}   # {name: website_url}
+    delete_names: list[str] = []
 
 router = APIRouter(prefix="/api/companies", tags=["companies"])
 
@@ -204,7 +210,6 @@ async def patch_company(
 ):
     """Update mutable fields of a company (website_url, career_url, is_enabled)."""
     from api.models import Company
-    from api.cache import cache_clear
 
     company = await db.get(Company, company_id)
     if company is None:
@@ -235,3 +240,58 @@ async def patch_company(
         )
     )
     return await _company_to_out(company, active_jobs or 0)
+
+
+@router.delete("/{company_id}", status_code=204)
+async def delete_company(
+    company_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    _key: str = Depends(require_api_key),
+):
+    """Delete a company and all its jobs."""
+    company = await db.get(Company, company_id)
+    if company is None:
+        raise HTTPException(status_code=404, detail="Company not found")
+    await db.execute(delete(Job).where(Job.company_id == company_id))
+    await db.delete(company)
+    await db.commit()
+    cache_clear()
+
+
+@router.post("/admin/bulk-update")
+async def bulk_update_companies(
+    payload: BulkUpdateRequest,
+    db: AsyncSession = Depends(get_db),
+    _key: str = Depends(require_api_key),
+):
+    """
+    Bulk operation (admin only):
+    - website_updates: {name: url}  — set website_url by company name
+    - delete_names: [name, ...]     — delete companies (and their jobs) by name
+    """
+    results = {"updated": [], "not_found_update": [], "deleted": [], "not_found_delete": []}
+
+    # ── website_url updates ──────────────────────────────────────────────────
+    for name, url in payload.website_updates.items():
+        result = await db.execute(select(Company).where(Company.name == name))
+        company = result.scalar_one_or_none()
+        if company is None:
+            results["not_found_update"].append(name)
+        else:
+            company.website_url = url
+            results["updated"].append(name)
+
+    # ── deletions ────────────────────────────────────────────────────────────
+    for name in payload.delete_names:
+        result = await db.execute(select(Company).where(Company.name == name))
+        company = result.scalar_one_or_none()
+        if company is None:
+            results["not_found_delete"].append(name)
+        else:
+            await db.execute(delete(Job).where(Job.company_id == company.id))
+            await db.delete(company)
+            results["deleted"].append(name)
+
+    await db.commit()
+    cache_clear()
+    return results
