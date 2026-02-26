@@ -9,7 +9,7 @@ services:
     name: pmjobs-api
     runtime: python
     plan: free          # upgrade to starter ($7/mo) to avoid cold starts
-    buildCommand: pip install -r requirements.txt
+    buildCommand: pip install -r requirements.txt && python migrate_v3_website_url.py && python migrate_workflow_runs.py && python migrate_v4_cleanup.py
     startCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     envVars:
