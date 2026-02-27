@@ -14,7 +14,7 @@
         extend: {
           fontFamily: { sans: ["Inter Tight", "sans-serif"] },
           colors: {
-            brand: { 50: '#e8fef0', 500: '#0C1422', 600: '#0C1422', 700: '#0f1a13' },
+            brand: { 50: '#E4EBF8', 500: '#0C1422', 600: '#0C1422', 700: '#070D18' },
             gray: {
               50: '#f7f8f7', 100: '#eeeeed', 200: '#d8dbd9', 300: '#c1c7c3',
               400: '#7d9187', 500: '#5a6a62', 600: '#3a4d42', 700: '#2a3930',
@@ -225,12 +225,9 @@
   <script>
     const API_KEY = window.__API_KEY__ || "dev-insecure-key";
 
-    const SOURCE_LABELS = { custom: "LLM (Custom)" };
+    const SOURCE_LABELS = { custom: "Else Agent" };
 
-    const CONTINENT_ORDER = [
-      "North America", "Europe", "Asia", "South America",
-      "Oceania", "Africa", "Remote", "Antarctica", "Other",
-    ];
+    function capFirst(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
 
     // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -357,16 +354,14 @@
         const srcMax     = Math.max(...srcEntries.map(([, v]) => v), 1);
         document.getElementById("card-source").innerHTML =
           srcEntries.map(([src, cnt]) =>
-            barRow(SOURCE_LABELS[src] || src, cnt, srcMax, srcTotal)
+            barRow(src in SOURCE_LABELS ? SOURCE_LABELS[src] : capFirst(src), cnt, srcMax, srcTotal)
           ).join("");
 
         // By Continent
         const contData   = d.by_continent || {};
         const contTotal  = Object.values(contData).reduce((s, v) => s + v, 0);
-        const contMax    = Math.max(...Object.values(contData), 1);
-        const contRows   = CONTINENT_ORDER
-          .map(name => [name, contData[name] || 0])
-          .filter(([, v], i) => v > 0 || i < 7);
+        const contRows   = Object.entries(contData).sort((a, b) => b[1] - a[1]);
+        const contMax    = contRows.length ? contRows[0][1] : 1;
         document.getElementById("card-geo").innerHTML =
           contRows.map(([name, cnt]) =>
             barRow(name, cnt, contMax, contTotal)

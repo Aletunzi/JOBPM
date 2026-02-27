@@ -182,7 +182,7 @@
 }
 
 .badge-new {
-  background: #d4fce4;
+  background: #E4EBF8;
   color: #0C1422;
 }
 
@@ -197,7 +197,7 @@
 }
 
 .badge-remote {
-  background: #d4fce4;
+  background: #E4EBF8;
   color: #0C1422;
 }
 
@@ -239,7 +239,7 @@
 
 /* Active filter buttons */
 #btn-new-only.active {
-  background: #d4fce4;
+  background: #E4EBF8;
   border-color: #0C1422;
   color: #0C1422;
 }
