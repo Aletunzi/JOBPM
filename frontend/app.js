@@ -76,6 +76,48 @@ const CONTINENT_TO_GEO = {
   "sudamerica": "LATAM",    "america latina": "LATAM",
   "remote": "REMOTE",       "remoto": "REMOTE",     "à distance": "REMOTE",
   "heimarbeit": "REMOTE",   "telearbeit": "REMOTE",
+  // Countries with dedicated geo_region
+  "united kingdom": "UK",   "uk": "UK",             "great britain": "UK",
+  "gb": "UK",               "england": "UK",        "britain": "UK",
+  "united states": "US",    "usa": "US",
+};
+
+// Country → main cities that appear in job location_raw strings
+const COUNTRY_CITIES = {
+  "Italy":          ["Milan", "Rome", "Turin", "Bologna", "Florence", "Naples", "Genoa", "Venice", "Palermo", "Milano", "Roma", "Torino"],
+  "Germany":        ["Berlin", "Munich", "Hamburg", "Frankfurt", "Cologne", "Stuttgart", "Düsseldorf", "Leipzig", "Nuremberg", "Dortmund", "Bremen"],
+  "France":         ["Paris", "Lyon", "Marseille", "Toulouse", "Bordeaux", "Lille", "Nice", "Nantes", "Strasbourg", "Rennes"],
+  "Spain":          ["Madrid", "Barcelona", "Valencia", "Seville", "Bilbao", "Málaga", "Zaragoza"],
+  "Netherlands":    ["Amsterdam", "Rotterdam", "The Hague", "Utrecht", "Eindhoven", "Delft"],
+  "Belgium":        ["Brussels", "Antwerp", "Ghent", "Leuven"],
+  "Switzerland":    ["Zurich", "Geneva", "Basel", "Bern", "Lausanne", "Zug"],
+  "Austria":        ["Vienna", "Graz", "Linz", "Salzburg"],
+  "Sweden":         ["Stockholm", "Gothenburg", "Malmö", "Uppsala"],
+  "Norway":         ["Oslo", "Bergen", "Trondheim"],
+  "Denmark":        ["Copenhagen", "Aarhus"],
+  "Finland":        ["Helsinki", "Tampere", "Espoo"],
+  "Poland":         ["Warsaw", "Kraków", "Wrocław", "Gdańsk", "Poznan"],
+  "Ireland":        ["Dublin", "Cork", "Galway"],
+  "Portugal":       ["Lisbon", "Porto", "Braga"],
+  "Czech Republic": ["Prague", "Brno", "Ostrava"],
+  "Hungary":        ["Budapest"],
+  "Romania":        ["Bucharest", "Cluj-Napoca", "Timisoara"],
+  "Greece":         ["Athens", "Thessaloniki"],
+  "Croatia":        ["Zagreb", "Split"],
+  "Canada":         ["Toronto", "Vancouver", "Montreal", "Ottawa", "Calgary"],
+  "Australia":      ["Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide"],
+  "India":          ["Bangalore", "Bengaluru", "Mumbai", "Delhi", "Hyderabad", "Chennai", "Pune"],
+  "Singapore":      ["Singapore"],
+  "Japan":          ["Tokyo", "Osaka", "Yokohama"],
+  "China":          ["Beijing", "Shanghai", "Shenzhen", "Guangzhou"],
+  "Israel":         ["Tel Aviv", "Jerusalem", "Haifa", "Herzliya"],
+  "UAE":            ["Dubai", "Abu Dhabi"],
+  "Turkey":         ["Istanbul", "Ankara", "Izmir"],
+  "Brazil":         ["São Paulo", "Rio de Janeiro", "Belo Horizonte", "Curitiba"],
+  "Mexico":         ["Mexico City", "Monterrey", "Guadalajara"],
+  "Argentina":      ["Buenos Aires", "Córdoba"],
+  "Colombia":       ["Bogotá", "Medellín"],
+  "Chile":          ["Santiago"],
 };
 
 // Multilingual location aliases → English (cities and countries)
@@ -165,18 +207,28 @@ function resolveLocationFilter(raw) {
   if (!raw) return { city: null, geo: null };
   const lower = raw.toLowerCase().trim();
 
-  // 1. Continent / macro-region
+  // 1. Direct continent / macro-region check (handles "europe", "remote", "uk", "usa"…)
   if (CONTINENT_TO_GEO[lower]) return { city: null, geo: CONTINENT_TO_GEO[lower] };
 
-  // 2. Exact alias match
-  if (LOCATION_ALIAS[lower]) return { city: LOCATION_ALIAS[lower], geo: null };
+  // 2. Translate non-English → English (exact then partial)
+  let translated = LOCATION_ALIAS[lower];
+  if (!translated) {
+    for (const [alias, en] of Object.entries(LOCATION_ALIAS)) {
+      if (lower.includes(alias)) { translated = raw.replace(new RegExp(alias, "gi"), en); break; }
+    }
+  }
+  translated = translated || raw;
 
-  // 3. Partial alias match (e.g. "Berlino, Germany")
-  for (const [alias, en] of Object.entries(LOCATION_ALIAS)) {
-    if (lower.includes(alias)) return { city: raw.replace(new RegExp(alias, "gi"), en), geo: null };
+  // 3. Check translated value against geo map (e.g. "gran bretagna"→"United Kingdom"→geo=UK)
+  if (CONTINENT_TO_GEO[translated.toLowerCase()]) {
+    return { city: null, geo: CONTINENT_TO_GEO[translated.toLowerCase()] };
   }
 
-  return { city: raw, geo: null };
+  // 4. Country → expand to "Country,City1,City2,…" so backend ORs all terms
+  const cities = COUNTRY_CITIES[translated];
+  if (cities) return { city: [translated, ...cities].join(","), geo: null };
+
+  return { city: translated, geo: null };
 }
 
 // Display-only normalisation of location_raw (for card rendering)

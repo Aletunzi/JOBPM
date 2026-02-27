@@ -112,7 +112,11 @@ async def list_jobs(
         )
 
     if city and city.strip():
-        conditions.append(Job.location_raw.ilike(f"%{city.strip()}%"))
+        terms = [t.strip() for t in city.split(",") if t.strip()]
+        if len(terms) == 1:
+            conditions.append(Job.location_raw.ilike(f"%{terms[0]}%"))
+        else:
+            conditions.append(or_(*[Job.location_raw.ilike(f"%{t}%") for t in terms]))
 
     if country and country.strip():
         conditions.append(Job.location_raw.ilike(f"%{country.strip()}%"))
