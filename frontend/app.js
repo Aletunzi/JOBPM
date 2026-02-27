@@ -54,19 +54,6 @@ async function apiFetch(endpoint, params = null) {
   return res.json();
 }
 
-// ── Stats bar ─────────────────────────────────────────────────────────────────
-
-async function loadStats() {
-  try {
-    const stats = await apiFetch("/api/stats");
-    if (stats.last_scraped) {
-      const d = new Date(stats.last_scraped);
-      document.getElementById("stat-scraped").textContent =
-        `Last updated: ${d.toLocaleDateString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}`;
-      document.getElementById("stat-scraped").classList.remove("hidden");
-    }
-  } catch { /* stats are decorative */ }
-}
 
 // ── Rendering ─────────────────────────────────────────────────────────────────
 
@@ -342,5 +329,4 @@ document.getElementById("btn-reset").addEventListener("click", () => {
 // ── Init ──────────────────────────────────────────────────────────────────────
 
 updatePillLabels();
-loadStats();
 loadJobs();
