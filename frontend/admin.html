@@ -163,7 +163,9 @@
                 <th class="py-2 pr-3 cursor-pointer select-none hover:text-gray-600" onclick="coSortBy('last_scraped')">
                   Last Scraped <span id="sort-last_scraped-icon" class="ml-0.5">⇅</span>
                 </th>
-                <th class="py-2 pr-3">Status</th>
+                <th class="py-2 pr-3 cursor-pointer select-none hover:text-gray-600" onclick="coSortBy('scrape_status')">
+                  Status <span id="sort-scrape_status-icon" class="ml-0.5">⇅</span>
+                </th>
                 <th class="py-2 text-right">Jobs</th>
                 <th class="py-2 w-6"></th>
               </tr>
@@ -173,12 +175,12 @@
         </div>
 
         <!-- Pagination -->
-        <div class="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+        <div class="flex items-center justify-center gap-1 mt-4 pt-3 border-t border-gray-100">
           <button id="co-prev" onclick="coNav(-1)"
-            class="text-sm text-gray-500 hover:text-gray-900 disabled:opacity-30 disabled:cursor-default">← Prev</button>
-          <span id="co-page-info" class="text-xs text-gray-400"></span>
+            class="w-7 h-7 flex items-center justify-center rounded text-gray-400 hover:text-gray-900 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-default transition-colors">←</button>
+          <div id="co-page-info" class="flex items-center gap-1"></div>
           <button id="co-next" onclick="coNav(1)"
-            class="text-sm text-gray-500 hover:text-gray-900 disabled:opacity-30 disabled:cursor-default">Next →</button>
+            class="w-7 h-7 flex items-center justify-center rounded text-gray-400 hover:text-gray-900 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-default transition-colors">→</button>
         </div>
       </div>
 
@@ -414,7 +416,7 @@
     let coPage = 1;
     const CO_LIMIT = 50;
     let coDebounce = null;
-    let coSort = "";
+    let coSort = "name_asc";
 
     function coFilters() {
       const params = new URLSearchParams();
@@ -430,6 +432,30 @@
       return params.toString();
     }
 
+    function coGoTo(page) {
+      coPage = page;
+      loadCompanies();
+    }
+
+    function renderPagination(cur, total) {
+      if (total <= 1) return "";
+      const items = [];
+      if (total <= 7) {
+        for (let i = 1; i <= total; i++) items.push(i);
+      } else {
+        items.push(1);
+        if (cur > 3) items.push("…");
+        for (let i = Math.max(2, cur - 1); i <= Math.min(total - 1, cur + 1); i++) items.push(i);
+        if (cur < total - 2) items.push("…");
+        items.push(total);
+      }
+      return items.map(p => {
+        if (p === "…") return `<span class="text-xs text-gray-400 px-0.5 select-none">…</span>`;
+        const active = p === cur;
+        return `<button onclick="coGoTo(${p})" class="text-xs w-7 h-7 rounded flex items-center justify-center transition-colors ${active ? 'bg-brand-500 text-white font-semibold' : 'text-gray-500 hover:bg-gray-100'}">${p}</button>`;
+      }).join("");
+    }
+
     function coSortBy(field) {
       const ascKey = field + "_asc";
       const descKey = field + "_desc";
@@ -440,7 +466,7 @@
     }
 
     function updateSortIcons() {
-      ["name", "last_scraped"].forEach(f => {
+      ["name", "last_scraped", "scrape_status"].forEach(f => {
         const el = document.getElementById(`sort-${f}-icon`);
         if (!el) return;
         if (coSort === f + "_asc") el.textContent = "↑";
@@ -481,9 +507,9 @@
               <td class="py-2.5 pl-2">
                 <button onclick="openEditModal(${JSON.stringify(c).replace(/"/g, '&quot;')})"
                   class="text-gray-300 hover:text-gray-600 transition-colors" title="Edit">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" width="15" height="15">
-                    <path d="M13.488 2.513a1.75 1.75 0 0 0-2.475 0L6.75 6.774a2.75 2.75 0 0 0-.596 1.22L5.58 10.23a.75.75 0 0 0 .91.91l2.235-.573a2.75 2.75 0 0 0 1.22-.596l4.262-4.262a1.75 1.75 0 0 0 0-2.475Z"/>
-                    <path d="M4.75 5.5A2.25 2.25 0 0 0 2.5 7.75v3.5A2.25 2.25 0 0 0 4.75 13.5h3.5A2.25 2.25 0 0 0 10.5 11.25V9.5a.75.75 0 0 0-1.5 0v1.75a.75.75 0 0 1-.75.75h-3.5a.75.75 0 0 1-.75-.75v-3.5a.75.75 0 0 1 .75-.75H7a.75.75 0 0 0 0-1.5H4.75Z"/>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                   </svg>
                 </button>
               </td>
@@ -492,7 +518,7 @@
         }
 
         // Pagination
-        document.getElementById("co-page-info").textContent = `Page ${d.page} of ${d.pages}`;
+        document.getElementById("co-page-info").innerHTML = renderPagination(d.page, d.pages);
         document.getElementById("co-prev").disabled = d.page <= 1;
         document.getElementById("co-next").disabled = d.page >= d.pages;
 
