@@ -111,16 +111,18 @@ async def list_companies(
         .scalar_subquery()
     )
 
-    if sort == "name_asc":
-        order_by = [Company.name.asc()]
-    elif sort == "name_desc":
+    if sort == "name_desc":
         order_by = [Company.name.desc()]
     elif sort == "last_scraped_asc":
         order_by = [Company.last_scraped.asc().nulls_last()]
     elif sort == "last_scraped_desc":
         order_by = [Company.last_scraped.desc().nulls_last()]
-    else:
-        order_by = [Company.tier.asc(), Company.name.asc()]
+    elif sort == "scrape_status_asc":
+        order_by = [Company.scrape_status.asc().nulls_last()]
+    elif sort == "scrape_status_desc":
+        order_by = [Company.scrape_status.desc().nulls_last()]
+    else:  # default + name_asc
+        order_by = [Company.name.asc()]
 
     stmt = (
         select(Company, active_jobs_subq.label("active_jobs"))
