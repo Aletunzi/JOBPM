@@ -31,16 +31,19 @@ function getRadioValue(name) {
 
 function buildParams(cursor = null) {
   const keyword   = document.getElementById("filter-keyword").value.trim();
-  const city      = document.getElementById("filter-city").value.trim();
+  const rawCity   = document.getElementById("filter-city").value.trim();
   const dateVal   = getRadioValue("date") || "7D";
   const seniority = getCheckedByName("seniority");
   const workType  = getCheckedByName("work_type");
+
+  const { city: resolvedCity, geo: resolvedGeo } = resolveLocationFilter(rawCity);
 
   const p = new URLSearchParams();
   if (seniority.length) p.set("seniority", seniority.join(","));
   if (workType.length)  p.set("work_type", workType.join(","));
   if (keyword)          p.set("keyword",   keyword);
-  if (city)             p.set("city",      city);
+  if (resolvedGeo)      p.set("geo",       resolvedGeo);
+  if (resolvedCity)     p.set("city",      resolvedCity);
   if (dateVal && dateVal !== "ALL") p.set("date", dateVal);
   p.set("limit", FETCH_SIZE);
   if (cursor) p.set("cursor", cursor);
@@ -57,41 +60,136 @@ async function apiFetch(endpoint, params = null) {
 
 // ── Rendering ─────────────────────────────────────────────────────────────────
 
-// City name normalisation — maps non-English variants to English
-const CITY_NAME_EN = {
-  "münchen": "Munich",     "muenchen": "Munich",
-  "köln": "Cologne",       "koeln": "Cologne",
-  "düsseldorf": "Dusseldorf",
-  "nürnberg": "Nuremberg", "nuernberg": "Nuremberg",
-  "frankfurt am main": "Frankfurt",
-  "wien": "Vienna",
-  "zürich": "Zurich",      "zuerich": "Zurich",
-  "genève": "Geneva",      "geneve": "Geneva",      "genf": "Geneva",
-  "milano": "Milan",       "roma": "Rome",          "firenze": "Florence",
-  "torino": "Turin",       "napoli": "Naples",      "venezia": "Venice",
-  "berlino": "Berlin",     "amburgo": "Hamburg",
-  "varsavia": "Warsaw",    "praga": "Prague",
-  "barcellona": "Barcelona", "siviglia": "Seville",
-  "lisbona": "Lisbon",
-  "bruxelles": "Brussels", "brüssel": "Brussels",   "brussel": "Brussels",
-  "københavn": "Copenhagen", "kobenhavn": "Copenhagen", "copenhague": "Copenhagen",
-  "göteborg": "Gothenburg",  "goteborg": "Gothenburg",
-  "stoccolma": "Stockholm",
-  "mosca": "Moscow",       "moskau": "Moscow",      "moscou": "Moscow",  "moscú": "Moscow",
+// ── Location filter resolution ────────────────────────────────────────────────
+
+// Continent / macro-region names (any language) → geo_region param values
+const CONTINENT_TO_GEO = {
+  "europe": "EU,UK",        "europa": "EU,UK",      "european": "EU,UK",
+  "europäisch": "EU,UK",   "européen": "EU,UK",    "europeo": "EU,UK",
+  "north america": "US",   "nordamerika": "US",    "nordamerica": "US",
+  "amérique du nord": "US", "america del norte": "US",
+  "asia": "APAC",           "asie": "APAC",          "asien": "APAC",
+  "asia-pacific": "APAC",  "apac": "APAC",
+  "latam": "LATAM",         "latin america": "LATAM", "latinoamérica": "LATAM",
+  "latinoamerica": "LATAM", "south america": "LATAM", "südamerika": "LATAM",
+  "amérique latine": "LATAM", "lateinamerika": "LATAM", "sudamérica": "LATAM",
+  "sudamerica": "LATAM",    "america latina": "LATAM",
+  "remote": "REMOTE",       "remoto": "REMOTE",     "à distance": "REMOTE",
+  "heimarbeit": "REMOTE",   "telearbeit": "REMOTE",
 };
 
+// Multilingual location aliases → English (cities and countries)
+const LOCATION_ALIAS = {
+  // Cities — German
+  "münchen": "Munich",      "muenchen": "Munich",
+  "köln": "Cologne",        "koeln": "Cologne",
+  "düsseldorf": "Dusseldorf", "duesseldorf": "Dusseldorf",
+  "nürnberg": "Nuremberg",  "nuernberg": "Nuremberg",
+  "frankfurt am main": "Frankfurt",
+  "hannover": "Hanover",
+  "wien": "Vienna",
+  "zürich": "Zurich",       "zuerich": "Zurich",
+  "genève": "Geneva",       "geneve": "Geneva",     "genf": "Geneva",
+  "brüssel": "Brussels",    "brussel": "Brussels",
+  "göteborg": "Gothenburg", "goteborg": "Gothenburg",
+  "kopenhagen": "Copenhagen",
+  "moskau": "Moscow",
+  "warschau": "Warsaw",
+  "prag": "Prague",
+  "mailand": "Milan",
+  "lissabon": "Lisbon",
+  // Cities — Italian
+  "berlino": "Berlin",      "amburgo": "Hamburg",
+  "monaco di baviera": "Munich", "francoforte": "Frankfurt", "colonia": "Cologne",
+  "varsavia": "Warsaw",     "praga": "Prague",
+  "barcellona": "Barcelona", "siviglia": "Seville",
+  "lisbona": "Lisbon",      "bruxelles": "Brussels",
+  "stoccolma": "Stockholm",
+  "mosca": "Moscow",        "moscou": "Moscow",     "moscú": "Moscow",
+  "roma": "Rome",           "firenze": "Florence",
+  "torino": "Turin",        "napoli": "Naples",     "venezia": "Venice",
+  "milano": "Milan",
+  // Cities — Spanish
+  "berlín": "Berlin",       "múnich": "Munich",     "hamburgo": "Hamburg",
+  "francfort": "Frankfurt", "ámsterdam": "Amsterdam",
+  "copenhague": "Copenhagen",
+  "varsovia": "Warsaw",
+  // Cities — French
+  "vienne": "Vienna",
+  "varsovie": "Warsaw",
+  "lisbonne": "Lisbon",
+  "moscou": "Moscow",
+  // Countries — German
+  "deutschland": "Germany",    "frankreich": "France",    "spanien": "Spain",
+  "italien": "Italy",          "niederlande": "Netherlands", "belgien": "Belgium",
+  "schweiz": "Switzerland",    "österreich": "Austria",   "schweden": "Sweden",
+  "norwegen": "Norway",        "dänemark": "Denmark",     "finnland": "Finland",
+  "polen": "Poland",           "tschechien": "Czech Republic", "ungarn": "Hungary",
+  "rumänien": "Romania",       "irland": "Ireland",       "griechenland": "Greece",
+  "kroatien": "Croatia",       "grossbritannien": "United Kingdom",
+  "vereinigtes königreich": "United Kingdom",
+  "vereinigte staaten": "United States",
+  "kanada": "Canada",          "australien": "Australia", "indien": "India",
+  "brasilien": "Brazil",       "mexiko": "Mexico",        "argentinien": "Argentina",
+  "singapur": "Singapore",     "japan": "Japan",
+  // Countries — Italian
+  "germania": "Germany",       "spagna": "Spain",
+  "paesi bassi": "Netherlands", "belgio": "Belgium",
+  "svizzera": "Switzerland",   "svezia": "Sweden",       "norvegia": "Norway",
+  "danimarca": "Denmark",      "finlandia": "Finland",   "polonia": "Poland",
+  "regno unito": "United Kingdom", "stati uniti": "United States",
+  "brasile": "Brazil",         "messico": "Mexico",
+  "giappone": "Japan",         "cina": "China",
+  // Countries — French
+  "allemagne": "Germany",      "espagne": "Spain",       "italie": "Italy",
+  "pays-bas": "Netherlands",   "pays bas": "Netherlands",
+  "autriche": "Austria",       "suisse": "Switzerland",  "suède": "Sweden",
+  "suede": "Sweden",           "danemark": "Denmark",    "finlande": "Finland",
+  "pologne": "Poland",         "irlande": "Ireland",     "grèce": "Greece",
+  "royaume-uni": "United Kingdom", "royaume uni": "United Kingdom",
+  "états-unis": "United States", "etats-unis": "United States",
+  "états unis": "United States",
+  "brésil": "Brazil",          "bresil": "Brazil",       "mexique": "Mexico",
+  "japon": "Japan",             "chine": "China",         "inde": "India",
+  // Countries — Spanish
+  "alemania": "Germany",       "francia": "France",
+  "países bajos": "Netherlands", "bélgica": "Belgium",   "belgica": "Belgium",
+  "suecia": "Sweden",          "noruega": "Norway",      "dinamarca": "Denmark",
+  "polonia": "Poland",         "irlanda": "Ireland",     "grecia": "Greece",
+  "reino unido": "United Kingdom", "estados unidos": "United States",
+  "japón": "Japan",             "china": "China",
+};
+
+// Resolve a raw filter input → { city, geo } params for the API
+function resolveLocationFilter(raw) {
+  if (!raw) return { city: null, geo: null };
+  const lower = raw.toLowerCase().trim();
+
+  // 1. Continent / macro-region
+  if (CONTINENT_TO_GEO[lower]) return { city: null, geo: CONTINENT_TO_GEO[lower] };
+
+  // 2. Exact alias match
+  if (LOCATION_ALIAS[lower]) return { city: LOCATION_ALIAS[lower], geo: null };
+
+  // 3. Partial alias match (e.g. "Berlino, Germany")
+  for (const [alias, en] of Object.entries(LOCATION_ALIAS)) {
+    if (lower.includes(alias)) return { city: raw.replace(new RegExp(alias, "gi"), en), geo: null };
+  }
+
+  return { city: raw, geo: null };
+}
+
+// Display-only normalisation of location_raw (for card rendering)
 function normalizeLocationCity(raw) {
   if (!raw) return null;
   const lower = raw.toLowerCase().trim();
   const cityPart = lower.split(",")[0].trim();
-  if (CITY_NAME_EN[cityPart]) {
+  if (LOCATION_ALIAS[cityPart]) {
     const rest = raw.includes(",") ? raw.substring(raw.indexOf(",")) : "";
-    return CITY_NAME_EN[cityPart] + rest;
+    return LOCATION_ALIAS[cityPart] + rest;
   }
-  for (const [nonEn, en] of Object.entries(CITY_NAME_EN)) {
-    if (lower.includes(nonEn)) {
-      return raw.replace(new RegExp(nonEn, "i"), en);
-    }
+  for (const [alias, en] of Object.entries(LOCATION_ALIAS)) {
+    if (lower.includes(alias)) return raw.replace(new RegExp(alias, "gi"), en);
   }
   return raw;
 }
