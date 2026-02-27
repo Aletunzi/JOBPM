@@ -163,6 +163,7 @@
                 <th class="py-2 pr-3 cursor-pointer select-none hover:text-gray-600" onclick="coSortBy('last_scraped')">
                   Last Scraped <span id="sort-last_scraped-icon" class="ml-0.5">⇅</span>
                 </th>
+                <th class="py-2 pr-3">Status</th>
                 <th class="py-2 text-right">Jobs</th>
                 <th class="py-2 w-6"></th>
               </tr>
@@ -273,6 +274,19 @@
     function truncUrl(url, max) {
       if (!url) return "";
       return url.length > max ? url.slice(0, max) + "…" : url;
+    }
+
+    function scrapeStatusBadge(status) {
+      if (!status) return '<span class="text-gray-300">—</span>';
+      const cfg = {
+        OK:           ["#16a34a", "OK"],
+        HTTP_ERROR:   ["#dc2626", "HTTP error"],
+        TIMEOUT:      ["#dc2626", "Timeout"],
+        EMPTY:        ["#d97706", "Empty"],
+        SPA_DETECTED: ["#d97706", "SPA"],
+      };
+      const [color, label] = cfg[status] || ["#6b7280", status];
+      return `<span class="text-xs font-medium" style="color:${color}">${label}</span>`;
     }
 
     // ── Render helpers ─────────────────────────────────────────────────────────
@@ -445,7 +459,7 @@
 
         const tbody = document.getElementById("co-tbody");
         if (d.items.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-gray-400 text-sm">No companies found</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="8" class="py-8 text-center text-gray-400 text-sm">No companies found</td></tr>`;
         } else {
           tbody.innerHTML = d.items.map(c => {
             const verticalDisplay = c.vertical
@@ -462,10 +476,16 @@
                 ${c.career_url ? `<a href="${esc(c.career_url)}" target="_blank" rel="noopener" class="text-brand-500 hover:underline">${esc(truncUrl(c.career_url, 30))}</a>` : '<span class="text-gray-300">not set</span>'}
               </td>
               <td class="py-2.5 pr-3 text-gray-500">${timeSince(c.last_scraped)}</td>
+              <td class="py-2.5 pr-3">${scrapeStatusBadge(c.scrape_status)}</td>
               <td class="py-2.5 text-right tabular-nums font-medium">${c.active_jobs}</td>
               <td class="py-2.5 pl-2">
                 <button onclick="openEditModal(${JSON.stringify(c).replace(/"/g, '&quot;')})"
-                  class="text-gray-300 hover:text-gray-500 transition-colors" title="Edit">✏</button>
+                  class="text-gray-300 hover:text-gray-600 transition-colors" title="Edit">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" width="15" height="15">
+                    <path d="M13.488 2.513a1.75 1.75 0 0 0-2.475 0L6.75 6.774a2.75 2.75 0 0 0-.596 1.22L5.58 10.23a.75.75 0 0 0 .91.91l2.235-.573a2.75 2.75 0 0 0 1.22-.596l4.262-4.262a1.75 1.75 0 0 0 0-2.475Z"/>
+                    <path d="M4.75 5.5A2.25 2.25 0 0 0 2.5 7.75v3.5A2.25 2.25 0 0 0 4.75 13.5h3.5A2.25 2.25 0 0 0 10.5 11.25V9.5a.75.75 0 0 0-1.5 0v1.75a.75.75 0 0 1-.75.75h-3.5a.75.75 0 0 1-.75-.75v-3.5a.75.75 0 0 1 .75-.75H7a.75.75 0 0 0 0-1.5H4.75Z"/>
+                  </svg>
+                </button>
               </td>
             </tr>
           `}).join("");
@@ -478,7 +498,7 @@
 
       } catch (err) {
         document.getElementById("co-tbody").innerHTML =
-          `<tr><td colspan="7" class="py-8 text-center text-red-400 text-sm">Error: ${esc(err.message)}</td></tr>`;
+          `<tr><td colspan="8" class="py-8 text-center text-red-400 text-sm">Error: ${esc(err.message)}</td></tr>`;
       }
     }
 
