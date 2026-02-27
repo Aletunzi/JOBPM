@@ -5,19 +5,19 @@
   gap: 8px;
   cursor: pointer;
   font-size: 0.875rem;
-  color: #1B2D21;
+  color: #0C1422;
   user-select: none;
 }
 
 .filter-check input[type="checkbox"] {
   width: 14px;
   height: 14px;
-  accent-color: #1B2D21;
+  accent-color: #0C1422;
   cursor: pointer;
 }
 
 .filter-check:hover span {
-  color: #1B2D21;
+  color: #0C1422;
   opacity: 0.7;
 }
 
@@ -40,12 +40,12 @@
   font-family: inherit;
   outline: none;
   background: white;
-  color: #1B2D21;
+  color: #0C1422;
   transition: border-color 0.15s;
 }
 
 .fp-input::placeholder { color: #7d9187; }
-.fp-input:focus { border-color: #1B2D21; }
+.fp-input:focus { border-color: #0C1422; }
 
 /* Dropdown pill wrapper */
 .fp-wrap { position: relative; flex-shrink: 0; }
@@ -69,11 +69,11 @@
   white-space: nowrap;
 }
 
-.fp-btn:hover { border-color: #1B2D21; color: #1B2D21; }
+.fp-btn:hover { border-color: #0C1422; color: #0C1422; }
 
 .fp-btn.active {
-  background: #1B2D21;
-  border-color: #1B2D21;
+  background: #0C1422;
+  border-color: #0C1422;
   color: white;
 }
 
@@ -115,7 +115,7 @@
 .dp-option input {
   width: 15px;
   height: 15px;
-  accent-color: #1B2D21;
+  accent-color: #0C1422;
   cursor: pointer;
   flex-shrink: 0;
 }
@@ -156,12 +156,12 @@
 }
 
 .job-card:hover {
-  box-shadow: 0 4px 16px rgba(27, 45, 33, 0.1);
-  border-color: #1B2D21;
+  box-shadow: 0 4px 16px rgba(12, 20, 34, 0.1);
+  border-color: #0C1422;
 }
 
 .job-card.is-new {
-  border-left: 3px solid #1B2D21;
+  border-left: 3px solid #0C1422;
 }
 
 /* Card bottom divider */
@@ -183,22 +183,22 @@
 
 .badge-new {
   background: #d4fce4;
-  color: #1B2D21;
+  color: #0C1422;
 }
 
 .badge-geo {
   background: #e2e1d8;
-  color: #1B2D21;
+  color: #0C1422;
 }
 
 .badge-seniority {
   background: #e2e1d8;
-  color: #1B2D21;
+  color: #0C1422;
 }
 
 .badge-remote {
   background: #d4fce4;
-  color: #1B2D21;
+  color: #0C1422;
 }
 
 /* Apply button */
@@ -208,9 +208,9 @@
   gap: 6px;
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #1B2D21;
+  color: #0C1422;
   padding: 6px 14px;
-  border: 1.5px solid #1B2D21;
+  border: 1.5px solid #0C1422;
   border-radius: 8px;
   transition: background 0.15s ease, color 0.15s ease;
   text-decoration: none;
@@ -218,9 +218,9 @@
 }
 
 .btn-apply:hover {
-  background: #1B2D21;
+  background: #0C1422;
   color: white;
-  border-color: #1B2D21;
+  border-color: #0C1422;
 }
 
 /* Skeleton loading */
@@ -240,6 +240,6 @@
 /* Active filter buttons */
 #btn-new-only.active {
   background: #d4fce4;
-  border-color: #1B2D21;
-  color: #1B2D21;
+  border-color: #0C1422;
+  color: #0C1422;
 }

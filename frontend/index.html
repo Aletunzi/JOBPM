@@ -6,7 +6,7 @@
   <title>Fursa</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Lora:ital@1&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -16,7 +16,7 @@
             sans: ["Inter Tight", "sans-serif"],
           },
           colors: {
-            brand: { 50: '#e8fef0', 500: '#1B2D21', 600: '#1B2D21', 700: '#0f1a13' },
+            brand: { 50: '#e8fef0', 500: '#0C1422', 600: '#0C1422', 700: '#0f1a13' },
             gray: {
               50:  '#f7f8f7',
               100: '#eeeeed',
@@ -27,7 +27,7 @@
               600: '#3a4d42',
               700: '#2a3930',
               800: '#1f2e24',
-              900: '#1B2D21',
+              900: '#0C1422',
             }
           }
         }
@@ -42,11 +42,10 @@
   <header class="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
     <div class="max-w-screen-xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
       <div class="flex items-center gap-3">
-        <span class="text-2xl font-bold text-brand-600 tracking-tight">Fursa</span>
+        <span class="text-2xl text-brand-600" style="font-family:'Lora',serif;font-style:italic;">else</span>
       </div>
-      <div id="stats-bar" class="flex items-center gap-3 text-sm text-gray-500">
-        <span id="stat-scraped" class="hidden sm:block"></span>
-        <a href="/admin" class="text-xs font-medium px-3 py-1.5 rounded-full border border-gray-200 text-gray-500 hover:border-brand-500 hover:text-gray-900 transition-colors">Admin</a>
+      <div class="flex items-center">
+        <a href="/admin" class="btn-apply">Admin</a>
       </div>
     </div>
   </header>
