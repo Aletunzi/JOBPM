@@ -71,6 +71,10 @@
           class="hidden text-sm font-medium bg-amber-500 text-white px-4 py-2 rounded-lg hover:bg-amber-600 transition-colors">
           Pause
         </button>
+        <button id="btn-restart" onclick="restartSearch()"
+          class="text-sm font-medium border border-gray-300 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-40">
+          Restart
+        </button>
         <button onclick="exportExcel()"
           class="text-sm font-medium bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-500 transition-colors">
           Export Excel
@@ -291,6 +295,15 @@
         btn.textContent = "Resume";
         progressLabel.textContent = "Paused";
       }
+    }
+
+    function restartSearch() {
+      if (searchRunning) return;
+      batchStart = 0;
+      for (const c of allCompanies) { delete results[c.id]; updateRow(c); }
+      saveProgress();
+      document.getElementById("btn-label").textContent = "Launch Search";
+      document.getElementById("progress-wrap").classList.add("hidden");
     }
 
     // ── Search ────────────────────────────────────────────────────────────────

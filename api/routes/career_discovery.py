@@ -15,8 +15,8 @@ from api.models import Company
 
 router = APIRouter(prefix="/api/career-discovery", tags=["career-discovery"])
 
-# Matches any http/https URL, tolerant of surrounding markdown/punctuation
-_URL_RE = re.compile(r'https?://[^\s\)\]\'"<>,;]+')
+# Matches any http/https URL; stops before citation brackets [1], parentheses, quotes etc.
+_URL_RE = re.compile(r'https?://[^\s\)\]\[\'"<>,;]+')
 
 
 def _extract_url(text: str) -> Optional[str]:
@@ -130,41 +130,54 @@ async def _search_gemini(company_name: str, website_url: Optional[str]) -> Provi
         "If you cannot find it, return exactly: NOT_FOUND"
     )
 
-    try:
+    endpoint = (
+        f"https://generativelanguage.googleapis.com/v1beta/models/"
+        f"gemini-2.0-flash:generateContent?key={api_key}"
+    )
+    base_payload: dict = {
+        "contents": [{"parts": [{"text": prompt}]}],
+        "generationConfig": {"maxOutputTokens": 300, "temperature": 0.0},
+    }
+
+    async def _call(use_search: bool) -> httpx.Response:
+        payload = {**base_payload}
+        if use_search:
+            payload["tools"] = [{"google_search": {}}]
         async with httpx.AsyncClient(timeout=45.0) as client:
-            resp = await client.post(
-                f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}",
-                headers={"Content-Type": "application/json"},
-                json={
-                    "contents": [{"parts": [{"text": prompt}]}],
-                    "tools": [{"google_search": {}}],
-                    "generationConfig": {
-                        "maxOutputTokens": 300,
-                        "temperature": 0.0,
-                    },
-                },
-            )
-            resp.raise_for_status()
-            data = resp.json()
-            candidates = data.get("candidates", [])
-            if not candidates:
-                return ProviderResult(url=None)
+            for attempt in range(2):
+                r = await client.post(
+                    endpoint,
+                    headers={"Content-Type": "application/json"},
+                    json=payload,
+                )
+                if r.status_code == 429 and attempt == 0:
+                    await asyncio.sleep(4)
+                    continue
+                return r
+        return r  # type: ignore[return-value]
 
-            # 1. Try to extract URL from text parts (handles plain URLs and markdown links)
-            parts = candidates[0].get("content", {}).get("parts", [])
-            text = " ".join(p.get("text", "") for p in parts if "text" in p).strip()
-            url = _extract_url(text)
-            if url:
-                return ProviderResult(url=url)
+    def _parse(resp: httpx.Response) -> Optional[str]:
+        data = resp.json()
+        candidates = data.get("candidates", [])
+        if not candidates:
+            return None
+        parts = candidates[0].get("content", {}).get("parts", [])
+        text = " ".join(p.get("text", "") for p in parts if "text" in p).strip()
+        url = _extract_url(text)
+        if url:
+            return url
+        # Fallback: grounding metadata (only present when google_search is used)
+        grounding = candidates[0].get("groundingMetadata", {})
+        for chunk in grounding.get("groundingChunks", []):
+            uri = chunk.get("web", {}).get("uri", "")
+            if uri.startswith("http"):
+                return uri
+        return None
 
-            # 2. Fallback: check grounding metadata chunks
-            grounding = candidates[0].get("groundingMetadata", {})
-            for chunk in grounding.get("groundingChunks", []):
-                uri = chunk.get("web", {}).get("uri", "")
-                if uri.startswith("http"):
-                    return ProviderResult(url=uri)
-
-            return ProviderResult(url=None)
+    try:
+        resp = await _call(use_search=True)
+        resp.raise_for_status()
+        return ProviderResult(url=_parse(resp))
     except httpx.HTTPStatusError as e:
         return ProviderResult(error=f"HTTP {e.response.status_code}: {e.response.text[:200]}")
     except Exception as e:
