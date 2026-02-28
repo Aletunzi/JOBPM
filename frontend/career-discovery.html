@@ -55,9 +55,6 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
       <div>
         <h1 class="text-lg font-bold text-gray-900">Career URL Discovery</h1>
-        <p class="text-sm text-gray-400 mt-0.5">
-          Runs Perplexity Sonar + Gemini (Google Search) in parallel to find career page URLs for every company.
-        </p>
       </div>
       <div class="flex items-center gap-2">
         <button id="btn-launch"
@@ -69,6 +66,10 @@
             <polygon points="5 3 19 12 5 21 5 3"/>
           </svg>
           <span id="btn-label">Launch Search</span>
+        </button>
+        <button id="btn-pause" onclick="togglePause()"
+          class="hidden text-sm font-medium bg-amber-500 text-white px-4 py-2 rounded-lg hover:bg-amber-600 transition-colors">
+          Pause
         </button>
         <button onclick="exportExcel()"
           class="text-sm font-medium bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-500 transition-colors">
@@ -133,11 +134,19 @@
   <script>window.__API_KEY__ = "{{ api_key }}";</script>
   <script>
     const API_KEY = window.__API_KEY__ || "dev-insecure-key";
+    const STORAGE_KEY = "career_discovery_results";
+    const STORAGE_START_KEY = "career_discovery_batch_start";
+    const BATCH_SIZE = 100;
+    const CONCURRENCY = 5;
 
-    // In-memory results store: company_id → { sonar_url, sonar_error, gemini_url, gemini_error, status }
+    // Results store: company_id → { sonar_url, sonar_error, gemini_url, gemini_error, status }
     const results = {};
     let allCompanies = [];
     let searchRunning = false;
+    let searchPaused = false;
+    let pausePromise = null;
+    let pauseResolve = null;
+    let batchStart = 0;
 
     // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -217,6 +226,24 @@
       if (statusEl) statusEl.innerHTML = statusBadge(r.status || "pending");
     }
 
+    // ── Persistence ───────────────────────────────────────────────────────────
+
+    function saveProgress() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(results));
+        localStorage.setItem(STORAGE_START_KEY, String(batchStart));
+      } catch(e) {}
+    }
+
+    function restoreProgress() {
+      try {
+        const savedResults = localStorage.getItem(STORAGE_KEY);
+        if (savedResults) Object.assign(results, JSON.parse(savedResults));
+        const savedStart = localStorage.getItem(STORAGE_START_KEY);
+        if (savedStart !== null) batchStart = parseInt(savedStart, 10) || 0;
+      } catch(e) {}
+    }
+
     // ── Load companies ────────────────────────────────────────────────────────
 
     async function loadCompanies() {
@@ -225,62 +252,110 @@
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         allCompanies = await res.json();
 
+        restoreProgress();
+
         const tbody = document.getElementById("disc-tbody");
         tbody.innerHTML = allCompanies.map(c => buildRow(c)).join("");
 
         document.getElementById("footer-count").textContent = allCompanies.length.toLocaleString();
         document.getElementById("page-loading").classList.add("hidden");
         document.getElementById("table-wrap").classList.remove("hidden");
+
+        // Restore button label based on saved progress
+        const remaining = allCompanies.length - batchStart;
+        if (batchStart > 0 && remaining > 0) {
+          document.getElementById("btn-label").textContent = `Continue (${remaining} remaining)`;
+        } else if (batchStart >= allCompanies.length && allCompanies.length > 0) {
+          document.getElementById("btn-label").textContent = "Re-run Search";
+        }
       } catch (err) {
         document.getElementById("page-loading").innerHTML =
           `<p class="text-red-400 text-sm">Failed to load companies: ${esc(err.message)}</p>`;
       }
     }
 
-    // ── Search ────────────────────────────────────────────────────────────────
+    // ── Pause / Resume ────────────────────────────────────────────────────────
 
-    const CONCURRENCY = 5; // simultaneous API calls per batch
+    function togglePause() {
+      if (!searchRunning) return;
+      const btn = document.getElementById("btn-pause");
+      const progressLabel = document.getElementById("progress-label");
+      if (searchPaused) {
+        searchPaused = false;
+        if (pauseResolve) { pauseResolve(); pauseResolve = null; pausePromise = null; }
+        btn.textContent = "Pause";
+        progressLabel.textContent = "Searching…";
+      } else {
+        searchPaused = true;
+        pausePromise = new Promise(resolve => { pauseResolve = resolve; });
+        btn.textContent = "Resume";
+        progressLabel.textContent = "Paused";
+      }
+    }
+
+    // ── Search ────────────────────────────────────────────────────────────────
 
     async function launchSearch() {
       if (searchRunning) return;
+
+      // If all batches done, reset for a full re-run
+      if (batchStart >= allCompanies.length) {
+        batchStart = 0;
+        for (const c of allCompanies) { delete results[c.id]; updateRow(c); }
+        saveProgress();
+      }
+
+      const batch = allCompanies.slice(batchStart, batchStart + BATCH_SIZE);
+      if (batch.length === 0) return;
+
       searchRunning = true;
+      searchPaused = false;
 
       const btn = document.getElementById("btn-launch");
       const btnLabel = document.getElementById("btn-label");
       const btnIcon = document.getElementById("btn-icon");
+      const btnPause = document.getElementById("btn-pause");
+
       btn.disabled = true;
       btnLabel.textContent = "Searching…";
       btnIcon.innerHTML = `<path d="M21 12a9 9 0 1 1-6.219-8.56"/>`;
       btnIcon.classList.add("spinner");
+      btnPause.classList.remove("hidden");
+      btnPause.textContent = "Pause";
 
-      const progressWrap = document.getElementById("progress-wrap");
-      const progressBar  = document.getElementById("progress-bar");
+      const progressWrap  = document.getElementById("progress-wrap");
+      const progressBar   = document.getElementById("progress-bar");
       const progressCount = document.getElementById("progress-count");
       const progressLabel = document.getElementById("progress-label");
       progressWrap.classList.remove("hidden");
 
-      // Reset all statuses
-      for (const c of allCompanies) {
-        results[c.id] = { status: "pending" };
-        updateRow(c);
+      // Mark batch items as pending (only those not already done)
+      for (const c of batch) {
+        if (!results[c.id] || results[c.id].status !== "done") {
+          results[c.id] = { status: "pending" };
+          updateRow(c);
+        }
       }
 
       let done = 0;
-      const total = allCompanies.length;
+      const total = batch.length;
+      const globalOffset = batchStart;
+      const globalTotal = allCompanies.length;
 
       const updateProgress = () => {
         const pct = total > 0 ? ((done / total) * 100).toFixed(0) : 0;
         progressBar.style.width = `${pct}%`;
-        progressCount.textContent = `${done} / ${total}`;
-        progressLabel.textContent = done < total ? "Searching…" : "Done!";
+        progressCount.textContent = `${globalOffset + done} / ${globalTotal}`;
+        if (!searchPaused) {
+          progressLabel.textContent = done < total ? "Searching…" : "Done!";
+        }
       };
       updateProgress();
 
-      // Process in batches with CONCURRENCY limit
-      const queue = [...allCompanies];
+      const queue = [...batch];
 
       async function processOne(c) {
-        results[c.id] = { status: "searching" };
+        results[c.id] = { ...(results[c.id] || {}), status: "searching" };
         updateRow(c);
 
         try {
@@ -316,14 +391,15 @@
         done++;
         updateRow(c);
         updateProgress();
+        saveProgress();
       }
 
-      // Concurrency-limited processing
       async function runBatch() {
         const workers = [];
         for (let i = 0; i < CONCURRENCY; i++) {
           workers.push((async () => {
             while (queue.length > 0) {
+              if (pausePromise) await pausePromise;
               const c = queue.shift();
               if (c) await processOne(c);
             }
@@ -334,12 +410,21 @@
 
       await runBatch();
 
-      // Restore button
+      batchStart += batch.length;
+      saveProgress();
+
+      const remaining = allCompanies.length - batchStart;
       searchRunning = false;
       btn.disabled = false;
-      btnLabel.textContent = "Re-run Search";
       btnIcon.classList.remove("spinner");
       btnIcon.innerHTML = `<polygon points="5 3 19 12 5 21 5 3"/>`;
+      btnPause.classList.add("hidden");
+
+      if (remaining > 0) {
+        btnLabel.textContent = `Continue (${remaining} remaining)`;
+      } else {
+        btnLabel.textContent = "Re-run Search";
+      }
     }
 
     // ── Excel export ─────────────────────────────────────────────────────────
@@ -353,20 +438,18 @@
       const rows = allCompanies.map(c => {
         const r = results[c.id] || {};
         return {
-          "Company":           c.name,
-          "Website":           c.website_url || "",
+          "Company":            c.name,
+          "Website":            c.website_url || "",
           "Current Career URL": c.current_career_url || "",
-          "Sonar Career URL":  r.sonar_url   || "",
-          "Sonar Error":       r.sonar_error || "",
-          "Gemini Career URL": r.gemini_url  || "",
-          "Gemini Error":      r.gemini_error || "",
-          "Status":            r.status || "pending",
+          "Sonar Career URL":   r.sonar_url   || "",
+          "Sonar Error":        r.sonar_error || "",
+          "Gemini Career URL":  r.gemini_url  || "",
+          "Gemini Error":       r.gemini_error || "",
+          "Status":             r.status || "pending",
         };
       });
 
       const ws = XLSX.utils.json_to_sheet(rows);
-
-      // Auto-fit columns (approximate)
       const colWidths = Object.keys(rows[0] || {}).map(key => ({
         wch: Math.max(key.length, ...rows.map(r => String(r[key] || "").length), 10)
       }));
