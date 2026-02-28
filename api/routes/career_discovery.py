@@ -175,11 +175,7 @@ async def _search_gemini(company_name: str, website_url: Optional[str]) -> Provi
         return None
 
     try:
-        # First attempt: with google_search grounding
         resp = await _call(use_search=True)
-        # Free-tier or unsupported plan: google_search may return 400/403 — fall back
-        if resp.status_code >= 400:
-            resp = await _call(use_search=False)
         resp.raise_for_status()
         return ProviderResult(url=_parse(resp))
     except httpx.HTTPStatusError as e:
