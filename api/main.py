@@ -11,7 +11,7 @@ from api.auth import require_api_key
 from api.cache import cache_clear
 from api.database import engine
 from api.models import Base
-from api.routes import jobs, companies, stats
+from api.routes import jobs, companies, stats, career_discovery
 
 
 @asynccontextmanager
@@ -38,6 +38,7 @@ app.add_middleware(
 app.include_router(jobs.router)
 app.include_router(companies.router)
 app.include_router(stats.router)
+app.include_router(career_discovery.router)
 
 
 @app.post("/api/admin/cache-clear", tags=["admin"])
@@ -79,5 +80,10 @@ if frontend_dir.exists():
     async def serve_admin(request: Request):
         api_key = os.environ.get("API_KEY", "dev-insecure-key")
         return templates.TemplateResponse("admin.html", {"request": request, "api_key": api_key})
+
+    @app.get("/career-discovery", include_in_schema=False)
+    async def serve_career_discovery(request: Request):
+        api_key = os.environ.get("API_KEY", "dev-insecure-key")
+        return templates.TemplateResponse("career-discovery.html", {"request": request, "api_key": api_key})
 
     app.mount("/", StaticFiles(directory=str(frontend_dir), html=True), name="frontend")
