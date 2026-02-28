@@ -1,5 +1,6 @@
 import asyncio
 import os
+import re
 from typing import Optional
 
 import httpx
@@ -13,6 +14,18 @@ from api.database import get_db
 from api.models import Company
 
 router = APIRouter(prefix="/api/career-discovery", tags=["career-discovery"])
+
+# Matches any http/https URL, tolerant of surrounding markdown/punctuation
+_URL_RE = re.compile(r'https?://[^\s\)\]\'"<>,;]+')
+
+
+def _extract_url(text: str) -> Optional[str]:
+    """Return the first clean URL found in text, handling markdown links etc."""
+    for match in _URL_RE.finditer(text):
+        url = match.group(0).rstrip(".,;:)'\"")
+        if url:
+            return url
+    return None
 
 
 class SearchRequest(BaseModel):
@@ -70,30 +83,32 @@ async def _search_sonar(company_name: str, website_url: Optional[str]) -> Provid
     )
 
     try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            resp = await client.post(
-                "https://api.perplexity.ai/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {api_key}",
-                    "Content-Type": "application/json",
-                },
-                json={
-                    "model": "sonar",
-                    "messages": [{"role": "user", "content": prompt}],
-                    "max_tokens": 300,
-                    "temperature": 0.0,
-                },
-            )
-            resp.raise_for_status()
+        async with httpx.AsyncClient(timeout=45.0) as client:
+            for attempt in range(2):
+                resp = await client.post(
+                    "https://api.perplexity.ai/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {api_key}",
+                        "Content-Type": "application/json",
+                    },
+                    json={
+                        "model": "sonar",
+                        "messages": [{"role": "user", "content": prompt}],
+                        "max_tokens": 300,
+                        "temperature": 0.0,
+                    },
+                )
+                if resp.status_code == 429 and attempt == 0:
+                    await asyncio.sleep(4)
+                    continue
+                resp.raise_for_status()
+                break
             data = resp.json()
             text = data["choices"][0]["message"]["content"].strip()
-            # Extract first URL-like token from response
-            for token in text.split():
-                if token.startswith("http"):
-                    return ProviderResult(url=token.rstrip(".,;"))
-            if text.upper() == "NOT_FOUND" or not text.startswith("http"):
-                return ProviderResult(url=None)
-            return ProviderResult(url=text)
+            url = _extract_url(text)
+            if url:
+                return ProviderResult(url=url)
+            return ProviderResult(url=None)
     except httpx.HTTPStatusError as e:
         return ProviderResult(error=f"HTTP {e.response.status_code}: {e.response.text[:200]}")
     except Exception as e:
@@ -116,7 +131,7 @@ async def _search_gemini(company_name: str, website_url: Optional[str]) -> Provi
     )
 
     try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
+        async with httpx.AsyncClient(timeout=45.0) as client:
             resp = await client.post(
                 f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}",
                 headers={"Content-Type": "application/json"},
@@ -134,15 +149,22 @@ async def _search_gemini(company_name: str, website_url: Optional[str]) -> Provi
             candidates = data.get("candidates", [])
             if not candidates:
                 return ProviderResult(url=None)
+
+            # 1. Try to extract URL from text parts (handles plain URLs and markdown links)
             parts = candidates[0].get("content", {}).get("parts", [])
-            text = " ".join(p.get("text", "") for p in parts).strip()
-            # Extract first URL-like token
-            for token in text.split():
-                if token.startswith("http"):
-                    return ProviderResult(url=token.rstrip(".,;"))
-            if text.upper() == "NOT_FOUND" or not text.startswith("http"):
-                return ProviderResult(url=None)
-            return ProviderResult(url=text)
+            text = " ".join(p.get("text", "") for p in parts if "text" in p).strip()
+            url = _extract_url(text)
+            if url:
+                return ProviderResult(url=url)
+
+            # 2. Fallback: check grounding metadata chunks
+            grounding = candidates[0].get("groundingMetadata", {})
+            for chunk in grounding.get("groundingChunks", []):
+                uri = chunk.get("web", {}).get("uri", "")
+                if uri.startswith("http"):
+                    return ProviderResult(url=uri)
+
+            return ProviderResult(url=None)
     except httpx.HTTPStatusError as e:
         return ProviderResult(error=f"HTTP {e.response.status_code}: {e.response.text[:200]}")
     except Exception as e:
