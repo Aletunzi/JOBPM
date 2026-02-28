@@ -140,8 +140,8 @@
     const API_KEY = window.__API_KEY__ || "dev-insecure-key";
     const STORAGE_KEY = "career_discovery_results";
     const STORAGE_START_KEY = "career_discovery_batch_start";
-    const BATCH_SIZE = 100;
-    const CONCURRENCY = 3;
+    const BATCH_SIZE = 10;
+    const CONCURRENCY = 1;
 
     // Results store: company_id → { sonar_url, sonar_error, gemini_url, gemini_error, status }
     const results = {};
