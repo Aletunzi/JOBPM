@@ -122,12 +122,17 @@ async def _search_gemini(company_name: str, website_url: Optional[str]) -> Provi
 
     site_hint = f" (company website: {website_url})" if website_url else ""
     prompt = (
-        f"Find the URL of the page where \"{company_name}\"{site_hint} lists all their open job positions. "
-        "I need the specific page that shows the full list of current vacancies or job openings — "
-        "NOT the generic careers landing page, NOT the 'About us' or 'Work with us' overview page. "
-        "The target page must contain actual job listings or a searchable jobs board with individual postings. "
+        f"Find the exact URL of the job listings page for \"{company_name}\"{site_hint}. "
+        "This must be the page that directly shows ALL open job positions as a list or board — "
+        "for example: /jobs, /careers/jobs, /open-roles, /positions, or a third-party ATS page "
+        "(Lever, Greenhouse, Workable, Ashby, Recruitee, BambooHR, etc.) that lists every current vacancy. "
+        "STRICT RULES — the URL you return must NOT be: "
+        "the company homepage, a generic /careers or /work-with-us landing page, "
+        "an 'About us' page, a blog post, a LinkedIn page, or any page that does not itself "
+        "render a list of individual job openings. "
+        "If the company uses an ATS platform, return the ATS board URL directly (e.g. https://jobs.lever.co/company or https://boards.greenhouse.io/company). "
         "Return ONLY the full URL (starting with https://), nothing else. "
-        "If you cannot find it, return exactly: NOT_FOUND"
+        "If you cannot find a page that actually lists open positions, return exactly: NOT_FOUND"
     )
 
     endpoint = (
