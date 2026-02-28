@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>else | Career Discovery</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='8' fill='%230C1422'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Lora:ital@1&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ["Inter Tight", "sans-serif"] },
+          colors: {
+            brand: { 50: '#E4EBF8', 500: '#0C1422', 600: '#0C1422', 700: '#070D18' },
+            gray: {
+              50: '#f7f8f7', 100: '#eeeeed', 200: '#d8dbd9', 300: '#c1c7c3',
+              400: '#7d9187', 500: '#5a6a62', 600: '#3a4d42', 700: '#2a3930',
+              800: '#1f2e24', 900: '#0C1422',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .spinner { animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .status-pending { color: #c1c7c3; }
+    .status-searching { color: #d97706; }
+    .status-done { color: #16a34a; }
+    .status-error { color: #dc2626; }
+    .url-cell { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen font-sans text-gray-900">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
+    <div class="max-w-screen-xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+      <span class="text-2xl text-brand-600" style="font-family:'Lora',serif;font-style:italic;">else</span>
+      <div class="flex items-center gap-3">
+        <a href="/admin" class="text-sm text-gray-500 hover:text-gray-900 transition-colors">← Admin</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="max-w-screen-xl mx-auto px-4 py-6">
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
+      <div>
+        <h1 class="text-lg font-bold text-gray-900">Career URL Discovery</h1>
+        <p class="text-sm text-gray-400 mt-0.5">
+          Runs Perplexity Sonar + Gemini (Google Search) in parallel to find career page URLs for every company.
+        </p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="btn-launch"
+          onclick="launchSearch()"
+          class="text-sm font-medium bg-brand-500 text-white px-4 py-2 rounded-lg hover:bg-brand-700 transition-colors flex items-center gap-2 disabled:opacity-50">
+          <svg id="btn-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            width="15" height="15">
+            <polygon points="5 3 19 12 5 21 5 3"/>
+          </svg>
+          <span id="btn-label">Launch Search</span>
+        </button>
+        <button onclick="exportExcel()"
+          class="text-sm font-medium bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-500 transition-colors">
+          Export Excel
+        </button>
+      </div>
+    </div>
+
+    <!-- Progress bar -->
+    <div id="progress-wrap" class="hidden mb-4">
+      <div class="flex items-center justify-between text-xs text-gray-400 mb-1">
+        <span id="progress-label">Searching…</span>
+        <span id="progress-count"></span>
+      </div>
+      <div class="w-full bg-gray-100 rounded-full h-1.5">
+        <div id="progress-bar" class="bg-brand-500 rounded-full h-1.5 transition-all duration-300" style="width:0%"></div>
+      </div>
+    </div>
+
+    <!-- Config warnings -->
+    <div id="config-warning" class="hidden mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-700"></div>
+
+    <!-- Loading state -->
+    <div id="page-loading" class="flex justify-center py-20">
+      <div class="w-8 h-8 border-4 border-brand-500 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+
+    <!-- Table -->
+    <div id="table-wrap" class="hidden bg-white border border-gray-200 rounded-xl">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-gray-100 text-left text-xs text-gray-400 uppercase tracking-wider">
+              <th class="py-3 px-4 font-semibold">Company</th>
+              <th class="py-3 px-4 font-semibold">Website</th>
+              <th class="py-3 px-4 font-semibold">Current Career URL</th>
+              <th class="py-3 px-4 font-semibold">
+                <div class="flex items-center gap-1.5">
+                  <span class="inline-block w-2 h-2 rounded-full bg-blue-400"></span>
+                  Sonar
+                </div>
+              </th>
+              <th class="py-3 px-4 font-semibold">
+                <div class="flex items-center gap-1.5">
+                  <span class="inline-block w-2 h-2 rounded-full bg-green-400"></span>
+                  Gemini
+                </div>
+              </th>
+              <th class="py-3 px-4 font-semibold text-center">Status</th>
+            </tr>
+          </thead>
+          <tbody id="disc-tbody" class="divide-y divide-gray-50"></tbody>
+        </table>
+      </div>
+      <div id="table-footer" class="px-4 py-2 text-xs text-gray-400 border-t border-gray-100">
+        <span id="footer-count">—</span> companies loaded
+      </div>
+    </div>
+
+  </div>
+
+  <script>window.__API_KEY__ = "{{ api_key }}";</script>
+  <script>
+    const API_KEY = window.__API_KEY__ || "dev-insecure-key";
+
+    // In-memory results store: company_id → { sonar_url, sonar_error, gemini_url, gemini_error, status }
+    const results = {};
+    let allCompanies = [];
+    let searchRunning = false;
+
+    // ── Helpers ────────────────────────────────────────────────────────────────
+
+    function esc(str) {
+      return String(str || "")
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    function truncUrl(url, max) {
+      if (!url) return "";
+      return url.length > max ? url.slice(0, max) + "…" : url;
+    }
+
+    function urlCell(url, error, colorClass) {
+      if (error) {
+        return `<span class="text-xs text-red-400 italic" title="${esc(error)}">Error</span>`;
+      }
+      if (url) {
+        return `<a href="${esc(url)}" target="_blank" rel="noopener"
+          class="${colorClass} hover:underline url-cell block"
+          title="${esc(url)}">${esc(truncUrl(url, 35))}</a>`;
+      }
+      return `<span class="text-gray-300 text-xs">—</span>`;
+    }
+
+    function statusBadge(status) {
+      if (status === "pending")   return `<span class="status-pending text-xs">waiting</span>`;
+      if (status === "searching") return `
+        <svg class="spinner inline-block text-amber-500" xmlns="http://www.w3.org/2000/svg"
+          width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2.5"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>`;
+      if (status === "done")      return `<span class="status-done text-xs font-medium">✓</span>`;
+      if (status === "error")     return `<span class="status-error text-xs">✗</span>`;
+      return "";
+    }
+
+    function buildRow(c) {
+      const r = results[c.id] || {};
+      const status = r.status || "pending";
+      return `
+        <tr id="row-${c.id}" class="hover:bg-gray-50/50 transition-colors">
+          <td class="py-3 px-4 font-medium text-gray-900">${esc(c.name)}</td>
+          <td class="py-3 px-4 text-gray-500">
+            ${c.website_url
+              ? `<a href="${esc(c.website_url)}" target="_blank" rel="noopener"
+                  class="text-blue-500 hover:underline url-cell block"
+                  title="${esc(c.website_url)}">${esc(truncUrl(c.website_url, 28))}</a>`
+              : '<span class="text-gray-300 text-xs">—</span>'}
+          </td>
+          <td class="py-3 px-4">
+            ${c.current_career_url
+              ? `<a href="${esc(c.current_career_url)}" target="_blank" rel="noopener"
+                  class="text-brand-500 hover:underline url-cell block text-xs"
+                  title="${esc(c.current_career_url)}">${esc(truncUrl(c.current_career_url, 32))}</a>`
+              : '<span class="text-gray-300 text-xs">not set</span>'}
+          </td>
+          <td class="py-3 px-4" id="sonar-${c.id}">
+            ${urlCell(r.sonar_url, r.sonar_error, "text-blue-600 text-xs")}
+          </td>
+          <td class="py-3 px-4" id="gemini-${c.id}">
+            ${urlCell(r.gemini_url, r.gemini_error, "text-green-600 text-xs")}
+          </td>
+          <td class="py-3 px-4 text-center" id="status-${c.id}">
+            ${statusBadge(status)}
+          </td>
+        </tr>`;
+    }
+
+    function updateRow(c) {
+      const r = results[c.id] || {};
+      const sonarEl  = document.getElementById(`sonar-${c.id}`);
+      const geminiEl = document.getElementById(`gemini-${c.id}`);
+      const statusEl = document.getElementById(`status-${c.id}`);
+      if (sonarEl)  sonarEl.innerHTML  = urlCell(r.sonar_url,  r.sonar_error,  "text-blue-600 text-xs");
+      if (geminiEl) geminiEl.innerHTML = urlCell(r.gemini_url, r.gemini_error, "text-green-600 text-xs");
+      if (statusEl) statusEl.innerHTML = statusBadge(r.status || "pending");
+    }
+
+    // ── Load companies ────────────────────────────────────────────────────────
+
+    async function loadCompanies() {
+      try {
+        const res = await fetch("/api/career-discovery/companies", { headers: { "X-API-Key": API_KEY } });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        allCompanies = await res.json();
+
+        const tbody = document.getElementById("disc-tbody");
+        tbody.innerHTML = allCompanies.map(c => buildRow(c)).join("");
+
+        document.getElementById("footer-count").textContent = allCompanies.length.toLocaleString();
+        document.getElementById("page-loading").classList.add("hidden");
+        document.getElementById("table-wrap").classList.remove("hidden");
+      } catch (err) {
+        document.getElementById("page-loading").innerHTML =
+          `<p class="text-red-400 text-sm">Failed to load companies: ${esc(err.message)}</p>`;
+      }
+    }
+
+    // ── Search ────────────────────────────────────────────────────────────────
+
+    const CONCURRENCY = 5; // simultaneous API calls per batch
+
+    async function launchSearch() {
+      if (searchRunning) return;
+      searchRunning = true;
+
+      const btn = document.getElementById("btn-launch");
+      const btnLabel = document.getElementById("btn-label");
+      const btnIcon = document.getElementById("btn-icon");
+      btn.disabled = true;
+      btnLabel.textContent = "Searching…";
+      btnIcon.innerHTML = `<path d="M21 12a9 9 0 1 1-6.219-8.56"/>`;
+      btnIcon.classList.add("spinner");
+
+      const progressWrap = document.getElementById("progress-wrap");
+      const progressBar  = document.getElementById("progress-bar");
+      const progressCount = document.getElementById("progress-count");
+      const progressLabel = document.getElementById("progress-label");
+      progressWrap.classList.remove("hidden");
+
+      // Reset all statuses
+      for (const c of allCompanies) {
+        results[c.id] = { status: "pending" };
+        updateRow(c);
+      }
+
+      let done = 0;
+      const total = allCompanies.length;
+
+      const updateProgress = () => {
+        const pct = total > 0 ? ((done / total) * 100).toFixed(0) : 0;
+        progressBar.style.width = `${pct}%`;
+        progressCount.textContent = `${done} / ${total}`;
+        progressLabel.textContent = done < total ? "Searching…" : "Done!";
+      };
+      updateProgress();
+
+      // Process in batches with CONCURRENCY limit
+      const queue = [...allCompanies];
+
+      async function processOne(c) {
+        results[c.id] = { status: "searching" };
+        updateRow(c);
+
+        try {
+          const res = await fetch("/api/career-discovery/search", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-API-Key": API_KEY },
+            body: JSON.stringify({
+              company_id: c.id,
+              company_name: c.name,
+              website_url: c.website_url || null,
+            }),
+          });
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({ detail: `HTTP ${res.status}` }));
+            throw new Error(err.detail || `HTTP ${res.status}`);
+          }
+          const data = await res.json();
+          results[c.id] = {
+            status: "done",
+            sonar_url:    data.sonar?.url   || null,
+            sonar_error:  data.sonar?.error || null,
+            gemini_url:   data.gemini?.url  || null,
+            gemini_error: data.gemini?.error || null,
+          };
+        } catch (err) {
+          results[c.id] = {
+            status: "error",
+            sonar_error:  err.message,
+            gemini_error: err.message,
+          };
+        }
+
+        done++;
+        updateRow(c);
+        updateProgress();
+      }
+
+      // Concurrency-limited processing
+      async function runBatch() {
+        const workers = [];
+        for (let i = 0; i < CONCURRENCY; i++) {
+          workers.push((async () => {
+            while (queue.length > 0) {
+              const c = queue.shift();
+              if (c) await processOne(c);
+            }
+          })());
+        }
+        await Promise.all(workers);
+      }
+
+      await runBatch();
+
+      // Restore button
+      searchRunning = false;
+      btn.disabled = false;
+      btnLabel.textContent = "Re-run Search";
+      btnIcon.classList.remove("spinner");
+      btnIcon.innerHTML = `<polygon points="5 3 19 12 5 21 5 3"/>`;
+    }
+
+    // ── Excel export ─────────────────────────────────────────────────────────
+
+    function exportExcel() {
+      if (!allCompanies.length) {
+        alert("No data to export yet. Load companies first.");
+        return;
+      }
+
+      const rows = allCompanies.map(c => {
+        const r = results[c.id] || {};
+        return {
+          "Company":           c.name,
+          "Website":           c.website_url || "",
+          "Current Career URL": c.current_career_url || "",
+          "Sonar Career URL":  r.sonar_url   || "",
+          "Sonar Error":       r.sonar_error || "",
+          "Gemini Career URL": r.gemini_url  || "",
+          "Gemini Error":      r.gemini_error || "",
+          "Status":            r.status || "pending",
+        };
+      });
+
+      const ws = XLSX.utils.json_to_sheet(rows);
+
+      // Auto-fit columns (approximate)
+      const colWidths = Object.keys(rows[0] || {}).map(key => ({
+        wch: Math.max(key.length, ...rows.map(r => String(r[key] || "").length), 10)
+      }));
+      ws["!cols"] = colWidths;
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Career Discovery");
+
+      const now = new Date().toISOString().slice(0, 10);
+      XLSX.writeFile(wb, `career_discovery_${now}.xlsx`);
+    }
+
+    // ── Init ─────────────────────────────────────────────────────────────────
+    loadCompanies();
+  </script>
+</body>
+</html>
