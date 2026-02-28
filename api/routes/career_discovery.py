@@ -132,7 +132,7 @@ async def _search_gemini(company_name: str, website_url: Optional[str]) -> Provi
 
     endpoint = (
         f"https://generativelanguage.googleapis.com/v1beta/models/"
-        f"gemini-2.0-flash-001:generateContent?key={api_key}"
+        f"gemini-2.5-flash:generateContent?key={api_key}"
     )
     base_payload: dict = {
         "contents": [{"parts": [{"text": prompt}]}],

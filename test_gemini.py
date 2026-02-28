@@ -14,7 +14,7 @@ async def test():
 
     endpoint = (
         "https://generativelanguage.googleapis.com/v1beta/models/"
-        f"gemini-2.0-flash:generateContent?key={api_key}"
+        f"gemini-2.5-flash:generateContent?key={api_key}"
     )
     base_payload = {
         "contents": [{"parts": [{"text": 'Find the career page URL for "Google". Return only the URL.'}]}],
