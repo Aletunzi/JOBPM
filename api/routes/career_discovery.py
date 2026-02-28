@@ -61,7 +61,10 @@ async def _search_sonar(company_name: str, website_url: Optional[str]) -> Provid
 
     site_hint = f" (company website: {website_url})" if website_url else ""
     prompt = (
-        f"What is the official careers/jobs page URL for the company \"{company_name}\"{site_hint}? "
+        f"Find the URL of the page where \"{company_name}\"{site_hint} lists all their open job positions. "
+        "I need the specific page that shows the full list of current vacancies or job openings — "
+        "NOT the generic careers landing page, NOT the 'About us' or 'Work with us' overview page. "
+        "The target page must contain actual job listings or a searchable jobs board with individual postings. "
         "Return ONLY the full URL (starting with https://), nothing else. "
         "If you cannot find it, return exactly: NOT_FOUND"
     )
@@ -104,7 +107,10 @@ async def _search_gemini(company_name: str, website_url: Optional[str]) -> Provi
 
     site_hint = f" (company website: {website_url})" if website_url else ""
     prompt = (
-        f"What is the official careers/jobs page URL for the company \"{company_name}\"{site_hint}? "
+        f"Find the URL of the page where \"{company_name}\"{site_hint} lists all their open job positions. "
+        "I need the specific page that shows the full list of current vacancies or job openings — "
+        "NOT the generic careers landing page, NOT the 'About us' or 'Work with us' overview page. "
+        "The target page must contain actual job listings or a searchable jobs board with individual postings. "
         "Return ONLY the full URL (starting with https://), nothing else. "
         "If you cannot find it, return exactly: NOT_FOUND"
     )
