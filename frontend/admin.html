@@ -10,6 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@500&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -28,6 +29,11 @@
     }
   </script>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    .spinner { animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .url-cell { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  </style>
 </head>
 <body class="bg-gray-50 min-h-screen font-sans text-gray-900">
 
@@ -36,7 +42,6 @@
     <div class="max-w-screen-xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
       <a href="/" class="text-2xl text-brand-600 hover:opacity-70 transition-opacity" style="font-family:'Satoshi',sans-serif;font-weight:500;">else</a>
       <div class="flex items-center gap-3">
-        <a href="/career-discovery" class="text-sm font-medium bg-brand-500 text-white px-3 py-1.5 rounded-lg hover:bg-brand-700 transition-colors">Career Discovery</a>
         <a href="/" class="text-sm text-gray-500 hover:text-gray-900 transition-colors">← Back to jobs</a>
       </div>
     </div>
@@ -44,154 +49,249 @@
 
   <div class="max-w-screen-xl mx-auto px-4 py-6">
 
-    <h1 class="text-lg font-bold text-gray-900 mb-5">Admin Overview</h1>
-
-    <!-- Loading -->
-    <div id="admin-loading" class="flex justify-center py-20">
-      <div class="w-8 h-8 border-4 border-brand-500 border-t-transparent rounded-full animate-spin"></div>
+    <!-- Tabs -->
+    <div class="flex border-b border-gray-200 mb-6">
+      <button id="tab-scrape" onclick="switchTab('scrape')"
+        class="px-5 py-3 text-sm font-medium -mb-px border-b-2 transition-colors">
+        Scrape overview
+      </button>
+      <button id="tab-quality" onclick="switchTab('quality')"
+        class="px-5 py-3 text-sm font-medium -mb-px border-b-2 transition-colors">
+        Database quality
+      </button>
     </div>
 
-    <!-- Content -->
-    <div id="admin-content" class="hidden space-y-4">
+    <!-- ══════════════════ PANEL: Scrape overview ══════════════════ -->
+    <div id="panel-scrape">
 
-      <!-- KPI Summary -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div class="bg-white border border-gray-200 rounded-xl p-4 text-center">
-          <div id="kpi-last-run" class="text-lg font-bold text-brand-600">—</div>
-          <div class="text-xs text-gray-400 mt-1">Last workflow run</div>
-        </div>
-        <div class="bg-white border border-gray-200 rounded-xl p-4 text-center">
-          <div id="kpi-companies" class="text-2xl font-bold text-brand-600">—</div>
-          <div class="text-xs text-gray-400 mt-1">Companies in DB</div>
-        </div>
-        <div class="bg-white border border-gray-200 rounded-xl p-4 text-center">
-          <div id="kpi-with-url" class="text-2xl font-bold text-brand-600">—</div>
-          <div class="text-xs text-gray-400 mt-1">With career URL</div>
-        </div>
-        <div class="bg-white border border-gray-200 rounded-xl p-4 text-center">
-          <div id="kpi-vacancies" class="text-2xl font-bold text-brand-600">—</div>
-          <div class="text-xs text-gray-400 mt-1">Vacancies found</div>
-        </div>
+      <!-- Loading -->
+      <div id="admin-loading" class="flex justify-center py-20">
+        <div class="w-8 h-8 border-4 border-brand-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
 
-      <!-- Row 1: Scraper + DB -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <!-- Content -->
+      <div id="admin-content" class="hidden space-y-4">
 
-        <div class="bg-white border border-gray-200 rounded-xl p-5">
-          <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Scraper Status</h2>
-          <div id="card-scraper" class="space-y-2.5"></div>
+        <!-- KPI Summary -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div class="bg-white border border-gray-200 rounded-xl p-4 text-center">
+            <div id="kpi-last-run" class="text-lg font-bold text-brand-600">—</div>
+            <div class="text-xs text-gray-400 mt-1">Last workflow run</div>
+          </div>
+          <div class="bg-white border border-gray-200 rounded-xl p-4 text-center">
+            <div id="kpi-companies" class="text-2xl font-bold text-brand-600">—</div>
+            <div class="text-xs text-gray-400 mt-1">Companies in DB</div>
+          </div>
+          <div class="bg-white border border-gray-200 rounded-xl p-4 text-center">
+            <div id="kpi-with-url" class="text-2xl font-bold text-brand-600">—</div>
+            <div class="text-xs text-gray-400 mt-1">With career URL</div>
+          </div>
+          <div class="bg-white border border-gray-200 rounded-xl p-4 text-center">
+            <div id="kpi-vacancies" class="text-2xl font-bold text-brand-600">—</div>
+            <div class="text-xs text-gray-400 mt-1">Vacancies found</div>
+          </div>
         </div>
 
-        <div class="bg-white border border-gray-200 rounded-xl p-5">
-          <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Database</h2>
-          <div id="card-database" class="space-y-2.5"></div>
+        <!-- Row 1: Scraper + DB -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="bg-white border border-gray-200 rounded-xl p-5">
+            <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Scraper Status</h2>
+            <div id="card-scraper" class="space-y-2.5"></div>
+          </div>
+          <div class="bg-white border border-gray-200 rounded-xl p-5">
+            <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Database</h2>
+            <div id="card-database" class="space-y-2.5"></div>
+          </div>
         </div>
 
-      </div>
-
-      <!-- Row 2: By Source (full width) -->
-      <div class="bg-white border border-gray-200 rounded-xl p-5">
-        <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">By Source</h2>
-        <div id="card-source" class="divide-y divide-gray-50"></div>
-      </div>
-
-      <!-- Row 3: By Region + Top Locations -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
+        <!-- Row 2: By Source -->
         <div class="bg-white border border-gray-200 rounded-xl p-5">
-          <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">By Continent</h2>
-          <div id="card-geo" class="divide-y divide-gray-50"></div>
+          <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">By Source</h2>
+          <div id="card-source" class="divide-y divide-gray-50"></div>
         </div>
 
-        <div class="bg-white border border-gray-200 rounded-xl p-5">
-          <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Top Locations</h2>
-          <div id="card-locations" class="divide-y divide-gray-50"></div>
+        <!-- Row 3: By Region + Top Locations -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="bg-white border border-gray-200 rounded-xl p-5">
+            <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">By Continent</h2>
+            <div id="card-geo" class="divide-y divide-gray-50"></div>
+          </div>
+          <div class="bg-white border border-gray-200 rounded-xl p-5">
+            <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Top Locations</h2>
+            <div id="card-locations" class="divide-y divide-gray-50"></div>
+          </div>
         </div>
 
-      </div>
-
-      <!-- Row 4: Companies List -->
-      <div class="bg-white border border-gray-200 rounded-xl p-5">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-          <div class="flex items-center gap-3">
-            <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-              Companies <span id="companies-count" class="text-gray-300"></span>
-            </h2>
-            <div class="flex items-center gap-2">
-              <button onclick="exportExcel()"
-                class="text-xs font-medium bg-brand-500 text-white px-3 py-1 rounded-lg hover:bg-brand-700 transition-colors">
-                Export Excel
-              </button>
-              <button onclick="document.getElementById('import-file-input').click()"
-                class="text-xs font-medium bg-gray-600 text-white px-3 py-1 rounded-lg hover:bg-gray-500 transition-colors">
-                Import Excel
-              </button>
-              <input id="import-file-input" type="file" accept=".xlsx,.xls" class="hidden"
-                onchange="importExcel(this)">
-              <span id="import-status" class="text-xs text-gray-400 hidden"></span>
+        <!-- Row 4: Companies List -->
+        <div class="bg-white border border-gray-200 rounded-xl p-5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <div class="flex items-center gap-3">
+              <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                Companies <span id="companies-count" class="text-gray-300"></span>
+              </h2>
+              <div class="flex items-center gap-2">
+                <button onclick="exportExcel()"
+                  class="text-xs font-medium bg-brand-500 text-white px-3 py-1 rounded-lg hover:bg-brand-700 transition-colors">
+                  Export Excel
+                </button>
+                <button onclick="document.getElementById('import-file-input').click()"
+                  class="text-xs font-medium bg-gray-600 text-white px-3 py-1 rounded-lg hover:bg-gray-500 transition-colors">
+                  Import Excel
+                </button>
+                <input id="import-file-input" type="file" accept=".xlsx,.xls" class="hidden"
+                  onchange="importExcel(this)">
+                <span id="import-status" class="text-xs text-gray-400 hidden"></span>
+              </div>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <input id="co-search" type="text" placeholder="Search by name…"
+                class="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-500 w-44" />
+              <select id="co-vertical"
+                class="text-sm border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-500">
+                <option value="">All verticals</option>
+                <option value="saas">SaaS</option><option value="fintech">Fintech</option>
+                <option value="ai">AI</option><option value="data">Data</option>
+                <option value="devtools">DevTools</option><option value="security">Security</option>
+                <option value="marketplace">Marketplace</option><option value="consumer">Consumer</option>
+                <option value="healthcare">Healthcare</option><option value="hr">HR</option>
+                <option value="ecommerce">E-commerce</option><option value="logistics">Logistics</option>
+              </select>
+              <select id="co-url"
+                class="text-sm border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-500">
+                <option value="">All</option>
+                <option value="true">Has URL</option>
+                <option value="false">No URL</option>
+              </select>
             </div>
           </div>
-          <div class="flex flex-wrap items-center gap-2">
-            <input id="co-search" type="text" placeholder="Search by name…"
-              class="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-500 w-44" />
-            <select id="co-vertical"
-              class="text-sm border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-500">
-              <option value="">All verticals</option>
-              <option value="saas">SaaS</option><option value="fintech">Fintech</option>
-              <option value="ai">AI</option><option value="data">Data</option>
-              <option value="devtools">DevTools</option><option value="security">Security</option>
-              <option value="marketplace">Marketplace</option><option value="consumer">Consumer</option>
-              <option value="healthcare">Healthcare</option><option value="hr">HR</option>
-              <option value="ecommerce">E-commerce</option><option value="logistics">Logistics</option>
-            </select>
-            <select id="co-url"
-              class="text-sm border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-500">
-              <option value="">All</option>
-              <option value="true">Has URL</option>
-              <option value="false">No URL</option>
-            </select>
+
+          <!-- Table -->
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b border-gray-100 text-left text-xs text-gray-400 uppercase tracking-wider">
+                  <th class="py-2 pr-3 cursor-pointer select-none hover:text-gray-600" onclick="coSortBy('name')">
+                    Name <span id="sort-name-icon" class="ml-0.5">⇅</span>
+                  </th>
+                  <th class="py-2 pr-3">Vertical</th>
+                  <th class="py-2 pr-3">Website</th>
+                  <th class="py-2 pr-3">Career URL</th>
+                  <th class="py-2 pr-3 cursor-pointer select-none hover:text-gray-600" onclick="coSortBy('last_scraped')">
+                    Last Scraped <span id="sort-last_scraped-icon" class="ml-0.5">⇅</span>
+                  </th>
+                  <th class="py-2 pr-3 cursor-pointer select-none hover:text-gray-600" onclick="coSortBy('scrape_status')">
+                    Status <span id="sort-scrape_status-icon" class="ml-0.5">⇅</span>
+                  </th>
+                  <th class="py-2 text-center">Jobs</th>
+                  <th class="py-2 w-6"></th>
+                </tr>
+              </thead>
+              <tbody id="co-tbody" class="divide-y divide-gray-50"></tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          <div class="flex items-center justify-center gap-1 mt-4 pt-3 border-t border-gray-100">
+            <button id="co-prev" onclick="coNav(-1)"
+              class="w-7 h-7 flex items-center justify-center rounded text-gray-400 hover:text-gray-900 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-default transition-colors">←</button>
+            <div id="co-page-info" class="flex items-center gap-1"></div>
+            <button id="co-next" onclick="coNav(1)"
+              class="w-7 h-7 flex items-center justify-center rounded text-gray-400 hover:text-gray-900 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-default transition-colors">→</button>
           </div>
         </div>
 
-        <!-- Table -->
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead>
-              <tr class="border-b border-gray-100 text-left text-xs text-gray-400 uppercase tracking-wider">
-                <th class="py-2 pr-3 cursor-pointer select-none hover:text-gray-600" onclick="coSortBy('name')">
-                  Name <span id="sort-name-icon" class="ml-0.5">⇅</span>
-                </th>
-                <th class="py-2 pr-3">Vertical</th>
-                <th class="py-2 pr-3">Website</th>
-                <th class="py-2 pr-3">Career URL</th>
-                <th class="py-2 pr-3 cursor-pointer select-none hover:text-gray-600" onclick="coSortBy('last_scraped')">
-                  Last Scraped <span id="sort-last_scraped-icon" class="ml-0.5">⇅</span>
-                </th>
-                <th class="py-2 pr-3 cursor-pointer select-none hover:text-gray-600" onclick="coSortBy('scrape_status')">
-                  Status <span id="sort-scrape_status-icon" class="ml-0.5">⇅</span>
-                </th>
-                <th class="py-2 text-center">Jobs</th>
-                <th class="py-2 w-6"></th>
-              </tr>
-            </thead>
-            <tbody id="co-tbody" class="divide-y divide-gray-50"></tbody>
-          </table>
-        </div>
+      </div>
 
-        <!-- Pagination -->
-        <div class="flex items-center justify-center gap-1 mt-4 pt-3 border-t border-gray-100">
-          <button id="co-prev" onclick="coNav(-1)"
-            class="w-7 h-7 flex items-center justify-center rounded text-gray-400 hover:text-gray-900 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-default transition-colors">←</button>
-          <div id="co-page-info" class="flex items-center gap-1"></div>
-          <button id="co-next" onclick="coNav(1)"
-            class="w-7 h-7 flex items-center justify-center rounded text-gray-400 hover:text-gray-900 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-default transition-colors">→</button>
+      <!-- Error -->
+      <div id="admin-error" class="hidden text-center py-20 text-red-400 text-sm"></div>
+
+    </div><!-- /panel-scrape -->
+
+    <!-- ══════════════════ PANEL: Database quality ══════════════════ -->
+    <div id="panel-quality" class="hidden">
+
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
+        <div></div>
+        <div class="flex items-center gap-2">
+          <button id="disc-btn-launch"
+            onclick="discLaunchSearch()"
+            class="text-sm font-medium bg-brand-500 text-white px-4 py-2 rounded-lg hover:bg-brand-700 transition-colors flex items-center gap-2 disabled:opacity-50">
+            <svg id="disc-btn-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              width="15" height="15">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+            <span id="disc-btn-label">Launch Search</span>
+          </button>
+          <button id="disc-btn-stop" onclick="discStopSearch()"
+            class="hidden text-sm font-medium bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors">
+            Stop
+          </button>
+          <button onclick="exportDiscoveryExcel()" title="Export Excel"
+            class="p-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-100 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+          </button>
         </div>
       </div>
 
-    </div>
+      <!-- Progress bar -->
+      <div id="disc-progress-wrap" class="hidden mb-4">
+        <div class="flex items-center justify-between text-xs text-gray-400 mb-1">
+          <span id="disc-progress-label">Searching…</span>
+          <span id="disc-progress-count"></span>
+        </div>
+        <div class="w-full bg-gray-100 rounded-full h-1.5">
+          <div id="disc-progress-bar" class="bg-brand-500 rounded-full h-1.5 transition-all duration-300" style="width:0%"></div>
+        </div>
+      </div>
 
-    <!-- Error -->
-    <div id="admin-error" class="hidden text-center py-20 text-red-400 text-sm"></div>
+      <!-- Loading state -->
+      <div id="disc-page-loading" class="flex justify-center py-20">
+        <div class="w-8 h-8 border-4 border-brand-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+
+      <!-- Table -->
+      <div id="disc-table-wrap" class="hidden bg-white border border-gray-200 rounded-xl">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm table-fixed">
+            <thead>
+              <tr class="border-b border-gray-100 text-left text-xs text-gray-400 uppercase tracking-wider">
+                <th class="py-3 px-4 w-[4%]">
+                  <input type="checkbox" id="disc-chk-all" onchange="discToggleSelectAll(this.checked)"
+                    class="w-4 h-4 rounded border-gray-300 cursor-pointer accent-gray-900">
+                </th>
+                <th class="py-3 px-4 font-semibold w-[18%]">Company</th>
+                <th class="py-3 px-4 font-semibold w-[11%]">Website</th>
+                <th class="py-3 px-4 font-semibold w-[13%]">Current Career URL</th>
+                <th class="py-3 px-4 font-semibold w-[19%]">
+                  <div class="flex items-center gap-1.5">
+                    <span class="inline-block w-2 h-2 rounded-full bg-blue-400"></span>
+                    Perplexity
+                  </div>
+                </th>
+                <th class="py-3 px-4 font-semibold w-[19%]">
+                  <div class="flex items-center gap-1.5">
+                    <span class="inline-block w-2 h-2 rounded-full bg-green-400"></span>
+                    Gemini
+                  </div>
+                </th>
+                <th class="py-3 px-4 font-semibold w-[16%] text-center">Last run</th>
+              </tr>
+            </thead>
+            <tbody id="disc-tbody" class="divide-y divide-gray-50"></tbody>
+          </table>
+        </div>
+        <div id="disc-table-footer" class="px-4 py-2 text-xs text-gray-400 border-t border-gray-100">
+          <span id="disc-footer-count">—</span> companies loaded
+        </div>
+      </div>
+
+    </div><!-- /panel-quality -->
 
   </div>
 
@@ -233,11 +333,48 @@
   <script>
     const API_KEY = window.__API_KEY__ || "dev-insecure-key";
 
+    // ── Shared helpers ─────────────────────────────────────────────────────────
+
+    function esc(str) {
+      return String(str || "")
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    function truncUrl(url, max) {
+      if (!url) return "";
+      return url.length > max ? url.slice(0, max) + "…" : url;
+    }
+
+    // ── Tab routing ────────────────────────────────────────────────────────────
+
+    let qualityInitialized = false;
+
+    function switchTab(tab) {
+      history.replaceState(null, "", "#" + tab);
+      ["scrape", "quality"].forEach(t => {
+        const btn   = document.getElementById("tab-" + t);
+        const panel = document.getElementById("panel-" + t);
+        const active = t === tab;
+        btn.classList.toggle("border-brand-500", active);
+        btn.classList.toggle("text-gray-900", active);
+        btn.classList.toggle("border-transparent", !active);
+        btn.classList.toggle("text-gray-400", !active);
+        panel.classList.toggle("hidden", !active);
+      });
+      if (tab === "quality" && !qualityInitialized) {
+        qualityInitialized = true;
+        loadDiscoveryCompanies();
+      }
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // SCRAPE OVERVIEW
+    // ══════════════════════════════════════════════════════════════════════════
+
     const SOURCE_LABELS = { custom: "Else Agent" };
 
     function capFirst(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
-
-    // ── Helpers ────────────────────────────────────────────────────────────────
 
     function timeSince(iso) {
       if (!iso) return "—";
@@ -258,12 +395,6 @@
       });
     }
 
-    function esc(str) {
-      return String(str || "")
-        .replace(/&/g, "&amp;").replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-    }
-
     function parseCronHuman(cron) {
       if (!cron) return cron;
       const parts = cron.split(" ");
@@ -275,11 +406,6 @@
           : hours.join(" / ") + " UTC";
       }
       return cron;
-    }
-
-    function truncUrl(url, max) {
-      if (!url) return "";
-      return url.length > max ? url.slice(0, max) + "…" : url;
     }
 
     function scrapeStatusBadge(status) {
@@ -294,8 +420,6 @@
       const [color, label] = cfg[status] || ["#6b7280", status];
       return `<span class="text-xs font-medium" style="color:${color}">${label}</span>`;
     }
-
-    // ── Render helpers ─────────────────────────────────────────────────────────
 
     function statRow(label, value, note) {
       return `
@@ -338,15 +462,12 @@
         </div>`;
     }
 
-    // ── Load admin stats ────────────────────────────────────────────────────────
-
     async function loadAdmin() {
       try {
         const res = await fetch("/api/stats/admin", { headers: { "X-API-Key": API_KEY } });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const d = await res.json();
 
-        // Scraper Status
         document.getElementById("card-scraper").innerHTML =
           heroStat(`${d.runs_per_day}×`, "runs / day") +
           [
@@ -363,13 +484,11 @@
             ) : []),
           ].join("");
 
-        // Database
         document.getElementById("card-database").innerHTML = [
           statRow("Active jobs",        d.total_jobs.toLocaleString()),
           statRow("Added in last 24 h", `+${d.new_24h.toLocaleString()}`),
         ].join("");
 
-        // By Source
         const srcEntries = Object.entries(d.by_source).sort((a, b) => b[1] - a[1]);
         const srcTotal   = srcEntries.reduce((s, [, v]) => s + v, 0);
         const srcMax     = Math.max(...srcEntries.map(([, v]) => v), 1);
@@ -378,23 +497,18 @@
             barRow(src in SOURCE_LABELS ? SOURCE_LABELS[src] : capFirst(src), cnt, srcMax, srcTotal)
           ).join("");
 
-        // By Continent
-        const contData   = d.by_continent || {};
-        const contTotal  = Object.values(contData).reduce((s, v) => s + v, 0);
-        const contRows   = Object.entries(contData).sort((a, b) => b[1] - a[1]);
-        const contMax    = contRows.length ? contRows[0][1] : 1;
+        const contData  = d.by_continent || {};
+        const contTotal = Object.values(contData).reduce((s, v) => s + v, 0);
+        const contRows  = Object.entries(contData).sort((a, b) => b[1] - a[1]);
+        const contMax   = contRows.length ? contRows[0][1] : 1;
         document.getElementById("card-geo").innerHTML =
-          contRows.map(([name, cnt]) =>
-            barRow(name, cnt, contMax, contTotal)
-          ).join("");
+          contRows.map(([name, cnt]) => barRow(name, cnt, contMax, contTotal)).join("");
 
-        // Top Locations
         document.getElementById("card-locations").innerHTML =
           d.top_locations.length
             ? d.top_locations.map(loc => locRow(loc.name, loc.count)).join("")
             : `<p class="text-sm text-gray-400 py-4 text-center">No data yet</p>`;
 
-        // KPI summary
         document.getElementById("kpi-last-run").textContent = timeSince(d.last_run);
         document.getElementById("kpi-last-run").title = fmtDatetime(d.last_run);
         document.getElementById("kpi-companies").textContent = d.total_companies.toLocaleString();
@@ -404,9 +518,7 @@
         document.getElementById("admin-loading").classList.add("hidden");
         document.getElementById("admin-content").classList.remove("hidden");
 
-        // Load companies table after stats
         loadCompanies();
-
       } catch (err) {
         document.getElementById("admin-loading").classList.add("hidden");
         const el = document.getElementById("admin-error");
@@ -415,7 +527,7 @@
       }
     }
 
-    // ── Companies table ──────────────────────────────────────────────────────
+    // ── Companies table ───────────────────────────────────────────────────────
 
     let coPage = 1;
     const CO_LIMIT = 50;
@@ -437,10 +549,7 @@
       return params.toString();
     }
 
-    function coGoTo(page) {
-      coPage = page;
-      loadCompanies();
-    }
+    function coGoTo(page) { coPage = page; loadCompanies(); }
 
     function renderPagination(cur, total) {
       if (total <= 1) return "";
@@ -462,9 +571,7 @@
     }
 
     function coSortBy(field) {
-      const ascKey = field + "_asc";
-      const descKey = field + "_desc";
-      coSort = coSort === ascKey ? descKey : ascKey;
+      coSort = coSort === field + "_asc" ? field + "_desc" : field + "_asc";
       coPage = 1;
       updateSortIcons();
       loadCompanies();
@@ -522,7 +629,6 @@
           `}).join("");
         }
 
-        // Pagination
         document.getElementById("co-page-info").innerHTML = renderPagination(d.page, d.pages);
         document.getElementById("co-prev").disabled = d.page <= 1;
         document.getElementById("co-next").disabled = d.page >= d.pages;
@@ -533,12 +639,8 @@
       }
     }
 
-    function coNav(dir) {
-      coPage = Math.max(1, coPage + dir);
-      loadCompanies();
-    }
+    function coNav(dir) { coPage = Math.max(1, coPage + dir); loadCompanies(); }
 
-    // Filter change handlers
     document.getElementById("co-search").addEventListener("input", () => {
       clearTimeout(coDebounce);
       coDebounce = setTimeout(() => { coPage = 1; loadCompanies(); }, 300);
@@ -546,7 +648,6 @@
     document.getElementById("co-vertical").addEventListener("change", () => { coPage = 1; loadCompanies(); });
     document.getElementById("co-url").addEventListener("change", () => { coPage = 1; loadCompanies(); });
 
-    // ── Excel export ──────────────────────────────────────────────────────────
     async function exportExcel() {
       try {
         const res = await fetch("/api/companies/export", { headers: { "X-API-Key": API_KEY } });
@@ -554,49 +655,34 @@
         const blob = await res.blob();
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
-        a.href = url;
-        a.download = "fursa_companies.xlsx";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
+        a.href = url; a.download = "fursa_companies.xlsx";
+        document.body.appendChild(a); a.click(); a.remove();
         URL.revokeObjectURL(url);
-      } catch (err) {
-        alert("Export failed: " + err.message);
-      }
+      } catch (err) { alert("Export failed: " + err.message); }
     }
 
-    // ── Excel import ──────────────────────────────────────────────────────────
     async function importExcel(input) {
       const file = input.files[0];
       if (!file) return;
-      input.value = "";                        // reset so same file can be re-selected
-
+      input.value = "";
       const status = document.getElementById("import-status");
       status.textContent = "Uploading…";
       status.className = "text-xs text-gray-400";
       status.classList.remove("hidden");
-
       const formData = new FormData();
       formData.append("file", file);
-
       try {
         const res = await fetch("/api/companies/import", {
-          method: "POST",
-          headers: { "X-API-Key": API_KEY },
-          body: formData,
+          method: "POST", headers: { "X-API-Key": API_KEY }, body: formData,
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.detail || `HTTP ${res.status}`);
-
         const parts = [`✓ ${data.updated} updated`, `${data.deleted} deleted`];
         if (data.not_found?.length) parts.push(`${data.not_found.length} not found`);
         status.textContent = parts.join(" · ");
         status.className = "text-xs text-green-400";
-
-        loadCompanies();   // refresh table
-        if (data.not_found?.length) {
-          console.warn("Companies not found in DB:", data.not_found);
-        }
+        loadCompanies();
+        if (data.not_found?.length) console.warn("Companies not found in DB:", data.not_found);
       } catch (err) {
         status.textContent = "Import failed: " + err.message;
         status.className = "text-xs text-red-400";
@@ -625,15 +711,12 @@
     async function saveCompany() {
       if (!_editCompanyId) return;
       const btn = document.getElementById("edit-save-btn");
-      btn.disabled = true;
-      btn.textContent = "Saving…";
-
+      btn.disabled = true; btn.textContent = "Saving…";
       const payload = {
         website_url: document.getElementById("edit-website-url").value.trim() || null,
-        career_url: document.getElementById("edit-career-url").value.trim() || null,
-        is_enabled: document.getElementById("edit-enabled").checked,
+        career_url:  document.getElementById("edit-career-url").value.trim()  || null,
+        is_enabled:  document.getElementById("edit-enabled").checked,
       };
-
       try {
         const res = await fetch(`/api/companies/${_editCompanyId}`, {
           method: "PATCH",
@@ -644,23 +727,325 @@
           const err = await res.json().catch(() => ({ detail: res.statusText }));
           throw new Error(err.detail || `HTTP ${res.status}`);
         }
-        closeEditModal();
-        loadCompanies();
+        closeEditModal(); loadCompanies();
       } catch (err) {
         document.getElementById("edit-modal-error").textContent = err.message;
       } finally {
-        btn.disabled = false;
-        btn.textContent = "Save";
+        btn.disabled = false; btn.textContent = "Save";
       }
     }
 
-    // Close modal on backdrop click
     document.getElementById("edit-modal").addEventListener("click", function(e) {
       if (e.target === this) closeEditModal();
     });
 
+    // ══════════════════════════════════════════════════════════════════════════
+    // DATABASE QUALITY
+    // ══════════════════════════════════════════════════════════════════════════
+
+    const DISC_STORAGE_KEY = "career_discovery_results";
+    const discResults = {};
+    let discCompanies = [];
+    let discSelectedIds = new Set();
+    let discSearchRunning = false;
+    let discStopRequested = false;
+
+    function timeAgo(isoStr) {
+      if (!isoStr) return `<span class="text-gray-300 text-xs">never</span>`;
+      const diff = Math.floor((Date.now() - new Date(isoStr).getTime()) / 1000);
+      let label;
+      if (diff < 60)         label = "just now";
+      else if (diff < 3600)  label = `${Math.floor(diff / 60)}m ago`;
+      else if (diff < 86400) label = `${Math.floor(diff / 3600)}h ago`;
+      else                   label = `${Math.floor(diff / 86400)}d ago`;
+      return `<span class="text-xs text-gray-400" title="${esc(isoStr)}">${label}</span>`;
+    }
+
+    function discUrlCell(url, error, colorClass, companyId) {
+      if (error) return `<span class="text-xs text-red-400 italic" title="${esc(error)}">Error</span>`;
+      if (url) {
+        const useBtn = companyId
+          ? `<button data-company="${esc(companyId)}" data-url="${esc(url)}"
+               onclick="applyCareerUrl(this)"
+               class="shrink-0 text-[10px] bg-gray-100 hover:bg-brand-500 hover:text-white text-gray-400 px-1.5 py-0.5 rounded transition-colors"
+               title="Set as career URL">Use</button>`
+          : "";
+        return `<div class="flex items-center gap-1 min-w-0 overflow-hidden">
+          ${useBtn}
+          <a href="${esc(url)}" target="_blank" rel="noopener"
+            class="${colorClass} hover:underline url-cell"
+            title="${esc(url)}">${esc(truncUrl(url, 40))}</a>
+        </div>`;
+      }
+      return `<span class="text-gray-300 text-xs">—</span>`;
+    }
+
+    function discLastRunCell(c) {
+      const r = discResults[c.id] || {};
+      if (r.status === "searching") {
+        return `<svg class="spinner inline-block text-amber-500" xmlns="http://www.w3.org/2000/svg"
+          width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2.5"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>`;
+      }
+      if (r.status === "pending") return `<span class="text-gray-300 text-xs">waiting</span>`;
+      return timeAgo(c.last_discovery_attempt);
+    }
+
+    function discCareerCell(c) {
+      if (c.current_career_url) {
+        return `<a href="${esc(c.current_career_url)}" target="_blank" rel="noopener"
+          class="text-brand-500 hover:underline url-cell block text-xs"
+          title="${esc(c.current_career_url)}">${esc(truncUrl(c.current_career_url, 32))}</a>`;
+      }
+      return `<span class="text-gray-300 text-xs">not set</span>`;
+    }
+
+    function buildDiscRow(c) {
+      const r = discResults[c.id] || {};
+      const checked = discSelectedIds.has(c.id) ? "checked" : "";
+      return `
+        <tr id="disc-row-${c.id}" class="hover:bg-gray-50/50 transition-colors">
+          <td class="py-3 px-4">
+            <input type="checkbox" id="disc-chk-${c.id}" ${checked}
+              onchange="discToggleSelect('${c.id}')"
+              class="w-4 h-4 rounded border-gray-300 cursor-pointer accent-gray-900">
+          </td>
+          <td class="py-3 px-4 font-medium text-gray-900">${esc(c.name)}</td>
+          <td class="py-3 px-4 text-gray-500">
+            ${c.website_url
+              ? `<a href="${esc(c.website_url)}" target="_blank" rel="noopener"
+                  class="text-blue-500 hover:underline url-cell block"
+                  title="${esc(c.website_url)}">${esc(truncUrl(c.website_url, 28))}</a>`
+              : '<span class="text-gray-300 text-xs">—</span>'}
+          </td>
+          <td class="py-3 px-4" id="disc-career-${c.id}">${discCareerCell(c)}</td>
+          <td class="py-3 px-4" id="disc-sonar-${c.id}">
+            ${discUrlCell(r.sonar_url, r.sonar_error, "text-blue-600 text-xs", c.id)}
+          </td>
+          <td class="py-3 px-4" id="disc-gemini-${c.id}">
+            ${discUrlCell(r.gemini_url, r.gemini_error, "text-green-600 text-xs", c.id)}
+          </td>
+          <td class="py-3 px-4 text-center" id="disc-lastrun-${c.id}">${discLastRunCell(c)}</td>
+        </tr>`;
+    }
+
+    function updateDiscRow(c) {
+      const r = discResults[c.id] || {};
+      const careerEl  = document.getElementById(`disc-career-${c.id}`);
+      const sonarEl   = document.getElementById(`disc-sonar-${c.id}`);
+      const geminiEl  = document.getElementById(`disc-gemini-${c.id}`);
+      const lastRunEl = document.getElementById(`disc-lastrun-${c.id}`);
+      if (careerEl)  careerEl.innerHTML  = discCareerCell(c);
+      if (sonarEl)   sonarEl.innerHTML   = discUrlCell(r.sonar_url,  r.sonar_error,  "text-blue-600 text-xs",  c.id);
+      if (geminiEl)  geminiEl.innerHTML  = discUrlCell(r.gemini_url, r.gemini_error, "text-green-600 text-xs", c.id);
+      if (lastRunEl) lastRunEl.innerHTML = discLastRunCell(c);
+    }
+
+    function discToggleSelect(id) {
+      if (discSelectedIds.has(id)) discSelectedIds.delete(id);
+      else discSelectedIds.add(id);
+      discSyncSelectAll();
+    }
+
+    function discToggleSelectAll(checked) {
+      discSelectedIds.clear();
+      if (checked) discCompanies.forEach(c => discSelectedIds.add(c.id));
+      discCompanies.forEach(c => {
+        const chk = document.getElementById(`disc-chk-${c.id}`);
+        if (chk) chk.checked = checked;
+      });
+    }
+
+    function discSyncSelectAll() {
+      const chkAll = document.getElementById("disc-chk-all");
+      if (!chkAll) return;
+      if (discSelectedIds.size === 0) {
+        chkAll.checked = false; chkAll.indeterminate = false;
+      } else if (discSelectedIds.size === discCompanies.length) {
+        chkAll.checked = true; chkAll.indeterminate = false;
+      } else {
+        chkAll.checked = false; chkAll.indeterminate = true;
+      }
+    }
+
+    function discSaveProgress() {
+      try { localStorage.setItem(DISC_STORAGE_KEY, JSON.stringify(discResults)); } catch(e) {}
+    }
+
+    function discRestoreProgress() {
+      try {
+        const saved = localStorage.getItem(DISC_STORAGE_KEY);
+        if (saved) Object.assign(discResults, JSON.parse(saved));
+      } catch(e) {}
+    }
+
+    async function loadDiscoveryCompanies() {
+      try {
+        const res = await fetch("/api/career-discovery/companies", { headers: { "X-API-Key": API_KEY } });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        discCompanies = await res.json();
+        discRestoreProgress();
+        const tbody = document.getElementById("disc-tbody");
+        tbody.innerHTML = discCompanies.map(c => buildDiscRow(c)).join("");
+        document.getElementById("disc-footer-count").textContent = discCompanies.length.toLocaleString();
+        document.getElementById("disc-page-loading").classList.add("hidden");
+        document.getElementById("disc-table-wrap").classList.remove("hidden");
+      } catch (err) {
+        document.getElementById("disc-page-loading").innerHTML =
+          `<p class="text-red-400 text-sm text-center">Failed to load companies: ${esc(err.message)}</p>`;
+      }
+    }
+
+    function discStopSearch() {
+      if (!discSearchRunning) return;
+      discStopRequested = true;
+      document.getElementById("disc-progress-label").textContent = "Stopping…";
+    }
+
+    async function discLaunchSearch() {
+      if (discSearchRunning) return;
+      const selected = discCompanies.filter(c => discSelectedIds.has(c.id));
+      if (selected.length === 0) { alert("Select at least one company to run the search."); return; }
+
+      discSearchRunning = true;
+      discStopRequested = false;
+
+      const btn      = document.getElementById("disc-btn-launch");
+      const btnLabel = document.getElementById("disc-btn-label");
+      const btnIcon  = document.getElementById("disc-btn-icon");
+      const btnStop  = document.getElementById("disc-btn-stop");
+      btn.disabled = true;
+      btnLabel.textContent = "Searching…";
+      btnIcon.innerHTML = `<path d="M21 12a9 9 0 1 1-6.219-8.56"/>`;
+      btnIcon.classList.add("spinner");
+      btnStop.classList.remove("hidden");
+
+      const progressWrap  = document.getElementById("disc-progress-wrap");
+      const progressBar   = document.getElementById("disc-progress-bar");
+      const progressCount = document.getElementById("disc-progress-count");
+      const progressLabel = document.getElementById("disc-progress-label");
+      progressWrap.classList.remove("hidden");
+      progressLabel.textContent = "Searching…";
+
+      for (const c of selected) {
+        if (!discResults[c.id] || discResults[c.id].status !== "done") {
+          discResults[c.id] = { status: "pending" };
+          updateDiscRow(c);
+        }
+      }
+
+      let done = 0;
+      const total = selected.length;
+
+      const updateProgress = () => {
+        const pct = total > 0 ? ((done / total) * 100).toFixed(0) : 0;
+        progressBar.style.width = `${pct}%`;
+        progressCount.textContent = `${done} / ${total}`;
+        if (!discStopRequested) progressLabel.textContent = done < total ? "Searching…" : "Done!";
+      };
+      updateProgress();
+
+      const queue = [...selected];
+
+      async function processOne(c) {
+        discResults[c.id] = { ...(discResults[c.id] || {}), status: "searching" };
+        updateDiscRow(c);
+        try {
+          const res = await fetch("/api/career-discovery/search", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-API-Key": API_KEY },
+            body: JSON.stringify({ company_id: c.id, company_name: c.name, website_url: c.website_url || null }),
+          });
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({ detail: `HTTP ${res.status}` }));
+            throw new Error(err.detail || `HTTP ${res.status}`);
+          }
+          const data = await res.json();
+          discResults[c.id] = {
+            status: "done",
+            sonar_url:    data.sonar?.url   || null,
+            sonar_error:  data.sonar?.error || null,
+            gemini_url:   data.gemini?.url  || null,
+            gemini_error: data.gemini?.error || null,
+          };
+          c.last_discovery_attempt = new Date().toISOString();
+        } catch (err) {
+          discResults[c.id] = { status: "error", sonar_error: err.message, gemini_error: err.message };
+          c.last_discovery_attempt = new Date().toISOString();
+        }
+        done++;
+        updateDiscRow(c);
+        updateProgress();
+        discSaveProgress();
+      }
+
+      while (queue.length > 0) {
+        if (discStopRequested) break;
+        const c = queue.shift();
+        if (c) await processOne(c);
+      }
+
+      discSearchRunning = false;
+      btn.disabled = false;
+      btnIcon.classList.remove("spinner");
+      btnIcon.innerHTML = `<polygon points="5 3 19 12 5 21 5 3"/>`;
+      btnStop.classList.add("hidden");
+      btnLabel.textContent = "Launch Search";
+      progressLabel.textContent = discStopRequested ? "Stopped" : "Done!";
+      discStopRequested = false;
+    }
+
+    async function applyCareerUrl(btn) {
+      const companyId = btn.dataset.company;
+      const url = btn.dataset.url;
+      const c = discCompanies.find(x => x.id === companyId);
+      if (!c) return;
+      btn.disabled = true; btn.textContent = "…";
+      try {
+        const res = await fetch(`/api/companies/${companyId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json", "X-API-Key": API_KEY },
+          body: JSON.stringify({ career_url: url }),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({ detail: `HTTP ${res.status}` }));
+          throw new Error(err.detail || `HTTP ${res.status}`);
+        }
+        c.current_career_url = url;
+        updateDiscRow(c);
+      } catch (err) {
+        alert(`Failed to update career URL: ${err.message}`);
+        btn.disabled = false; btn.textContent = "Use";
+      }
+    }
+
+    function exportDiscoveryExcel() {
+      if (!discCompanies.length) { alert("No data to export yet."); return; }
+      const rows = discCompanies.map(c => {
+        const r = discResults[c.id] || {};
+        return {
+          "Company":            c.name,
+          "Website":            c.website_url || "",
+          "Current Career URL": c.current_career_url || "",
+          "Sonar Career URL":   r.sonar_url   || "",
+          "Sonar Error":        r.sonar_error || "",
+          "Gemini Career URL":  r.gemini_url  || "",
+          "Gemini Error":       r.gemini_error || "",
+          "Status":             r.status || "",
+        };
+      });
+      const ws = XLSX.utils.json_to_sheet(rows);
+      ws["!cols"] = Object.keys(rows[0] || {}).map(key => ({
+        wch: Math.max(key.length, ...rows.map(r => String(r[key] || "").length), 10)
+      }));
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Database quality");
+      XLSX.writeFile(wb, `database_quality_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    }
+
     // ── Init ──────────────────────────────────────────────────────────────────
     loadAdmin();
+    switchTab(location.hash === "#quality" ? "quality" : "scrape");
   </script>
 </body>
 </html>
