@@ -43,7 +43,7 @@
   <!-- Header -->
   <header class="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
     <div class="max-w-screen-xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
-      <span class="text-2xl text-brand-600" style="font-family:'Lora',serif;font-style:italic;">else</span>
+      <a href="/" class="text-2xl text-brand-600 hover:opacity-70 transition-opacity" style="font-family:'Lora',serif;font-style:italic;">else</a>
       <div class="flex items-center gap-3">
         <a href="/admin" class="text-sm text-gray-500 hover:text-gray-900 transition-colors">← Admin</a>
       </div>
@@ -118,7 +118,7 @@
               <th class="py-3 px-4 font-semibold">
                 <div class="flex items-center gap-1.5">
                   <span class="inline-block w-2 h-2 rounded-full bg-blue-400"></span>
-                  Sonar
+                  Perplexity
                 </div>
               </th>
               <th class="py-3 px-4 font-semibold">
@@ -127,7 +127,7 @@
                   Gemini
                 </div>
               </th>
-              <th class="py-3 px-4 font-semibold text-center">Status</th>
+              <th class="py-3 px-4 font-semibold text-center">Last run</th>
             </tr>
           </thead>
           <tbody id="disc-tbody" class="divide-y divide-gray-50"></tbody>
@@ -165,32 +165,65 @@
       return url.length > max ? url.slice(0, max) + "…" : url;
     }
 
-    function urlCell(url, error, colorClass) {
+    function timeAgo(isoStr) {
+      if (!isoStr) return `<span class="text-gray-300 text-xs">never</span>`;
+      const diff = Math.floor((Date.now() - new Date(isoStr).getTime()) / 1000);
+      let label;
+      if (diff < 60)    label = "just now";
+      else if (diff < 3600)  label = `${Math.floor(diff / 60)}m ago`;
+      else if (diff < 86400) label = `${Math.floor(diff / 3600)}h ago`;
+      else               label = `${Math.floor(diff / 86400)}d ago`;
+      return `<span class="text-xs text-gray-400" title="${esc(isoStr)}">${label}</span>`;
+    }
+
+    function urlCell(url, error, colorClass, companyId) {
       if (error) {
         return `<span class="text-xs text-red-400 italic" title="${esc(error)}">Error</span>`;
       }
       if (url) {
-        return `<a href="${esc(url)}" target="_blank" rel="noopener"
-          class="${colorClass} hover:underline url-cell block"
-          title="${esc(url)}">${esc(truncUrl(url, 35))}</a>`;
+        const useBtn = companyId
+          ? `<button data-company="${esc(companyId)}" data-url="${esc(url)}"
+               onclick="applyCareerUrl(this)"
+               class="ml-1 shrink-0 text-[10px] bg-gray-100 hover:bg-brand-500 hover:text-white text-gray-400 px-1.5 py-0.5 rounded transition-colors"
+               title="Set as career URL">Use</button>`
+          : "";
+        return `<div class="flex items-center gap-1">
+          <a href="${esc(url)}" target="_blank" rel="noopener"
+            class="${colorClass} hover:underline url-cell"
+            title="${esc(url)}">${esc(truncUrl(url, 32))}</a>
+          ${useBtn}
+        </div>`;
       }
       return `<span class="text-gray-300 text-xs">—</span>`;
     }
 
-    function statusBadge(status) {
-      if (status === "pending")   return `<span class="status-pending text-xs">waiting</span>`;
-      if (status === "searching") return `
-        <svg class="spinner inline-block text-amber-500" xmlns="http://www.w3.org/2000/svg"
+    function lastRunCell(c) {
+      const r = results[c.id] || {};
+      if (r.status === "searching") {
+        return `<svg class="spinner inline-block text-amber-500" xmlns="http://www.w3.org/2000/svg"
           width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
           stroke-width="2.5"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>`;
-      if (status === "done")      return `<span class="status-done text-xs font-medium">✓</span>`;
-      if (status === "error")     return `<span class="status-error text-xs">✗</span>`;
-      return "";
+      }
+      if (r.status === "pending") {
+        return `<span class="text-gray-300 text-xs">waiting</span>`;
+      }
+      if (r.status === "done" || r.status === "error") {
+        return timeAgo(c.last_discovery_attempt);
+      }
+      return timeAgo(c.last_discovery_attempt);
+    }
+
+    function careerCell(c) {
+      if (c.current_career_url) {
+        return `<a href="${esc(c.current_career_url)}" target="_blank" rel="noopener"
+          class="text-brand-500 hover:underline url-cell block text-xs"
+          title="${esc(c.current_career_url)}">${esc(truncUrl(c.current_career_url, 32))}</a>`;
+      }
+      return `<span class="text-gray-300 text-xs">not set</span>`;
     }
 
     function buildRow(c) {
       const r = results[c.id] || {};
-      const status = r.status || "";
       const checked = selectedIds.has(c.id) ? "checked" : "";
       return `
         <tr id="row-${c.id}" class="hover:bg-gray-50/50 transition-colors">
@@ -207,33 +240,31 @@
                   title="${esc(c.website_url)}">${esc(truncUrl(c.website_url, 28))}</a>`
               : '<span class="text-gray-300 text-xs">—</span>'}
           </td>
-          <td class="py-3 px-4">
-            ${c.current_career_url
-              ? `<a href="${esc(c.current_career_url)}" target="_blank" rel="noopener"
-                  class="text-brand-500 hover:underline url-cell block text-xs"
-                  title="${esc(c.current_career_url)}">${esc(truncUrl(c.current_career_url, 32))}</a>`
-              : '<span class="text-gray-300 text-xs">not set</span>'}
+          <td class="py-3 px-4" id="career-${c.id}">
+            ${careerCell(c)}
           </td>
           <td class="py-3 px-4" id="sonar-${c.id}">
-            ${urlCell(r.sonar_url, r.sonar_error, "text-blue-600 text-xs")}
+            ${urlCell(r.sonar_url, r.sonar_error, "text-blue-600 text-xs", c.id)}
           </td>
           <td class="py-3 px-4" id="gemini-${c.id}">
-            ${urlCell(r.gemini_url, r.gemini_error, "text-green-600 text-xs")}
+            ${urlCell(r.gemini_url, r.gemini_error, "text-green-600 text-xs", c.id)}
           </td>
-          <td class="py-3 px-4 text-center" id="status-${c.id}">
-            ${statusBadge(status)}
+          <td class="py-3 px-4 text-center" id="lastrun-${c.id}">
+            ${lastRunCell(c)}
           </td>
         </tr>`;
     }
 
     function updateRow(c) {
       const r = results[c.id] || {};
+      const careerEl = document.getElementById(`career-${c.id}`);
       const sonarEl  = document.getElementById(`sonar-${c.id}`);
       const geminiEl = document.getElementById(`gemini-${c.id}`);
-      const statusEl = document.getElementById(`status-${c.id}`);
-      if (sonarEl)  sonarEl.innerHTML  = urlCell(r.sonar_url,  r.sonar_error,  "text-blue-600 text-xs");
-      if (geminiEl) geminiEl.innerHTML = urlCell(r.gemini_url, r.gemini_error, "text-green-600 text-xs");
-      if (statusEl) statusEl.innerHTML = statusBadge(r.status || "");
+      const lastRunEl = document.getElementById(`lastrun-${c.id}`);
+      if (careerEl) careerEl.innerHTML = careerCell(c);
+      if (sonarEl)  sonarEl.innerHTML  = urlCell(r.sonar_url,  r.sonar_error,  "text-blue-600 text-xs",  c.id);
+      if (geminiEl) geminiEl.innerHTML = urlCell(r.gemini_url, r.gemini_error, "text-green-600 text-xs", c.id);
+      if (lastRunEl) lastRunEl.innerHTML = lastRunCell(c);
     }
 
     // ── Selection ─────────────────────────────────────────────────────────────
@@ -399,12 +430,14 @@
             gemini_url:   data.gemini?.url  || null,
             gemini_error: data.gemini?.error || null,
           };
+          c.last_discovery_attempt = new Date().toISOString();
         } catch (err) {
           results[c.id] = {
             status: "error",
             sonar_error:  err.message,
             gemini_error: err.message,
           };
+          c.last_discovery_attempt = new Date().toISOString();
         }
 
         done++;
@@ -437,6 +470,36 @@
         progressLabel.textContent = "Done!";
       }
       stopRequested = false;
+    }
+
+    // ── Apply suggested URL ───────────────────────────────────────────────────
+
+    async function applyCareerUrl(btn) {
+      const companyId = btn.dataset.company;
+      const url = btn.dataset.url;
+      const c = allCompanies.find(x => x.id === companyId);
+      if (!c) return;
+
+      btn.disabled = true;
+      btn.textContent = "…";
+
+      try {
+        const res = await fetch(`/api/companies/${companyId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json", "X-API-Key": API_KEY },
+          body: JSON.stringify({ career_url: url }),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({ detail: `HTTP ${res.status}` }));
+          throw new Error(err.detail || `HTTP ${res.status}`);
+        }
+        c.current_career_url = url;
+        updateRow(c);
+      } catch (err) {
+        alert(`Failed to update career URL: ${err.message}`);
+        btn.disabled = false;
+        btn.textContent = "Use";
+      }
     }
 
     // ── Excel export ─────────────────────────────────────────────────────────
