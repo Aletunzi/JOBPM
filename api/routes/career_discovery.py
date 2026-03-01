@@ -52,8 +52,13 @@ async def get_all_companies(
 ):
     """Return all companies with id, name and website_url for the career discovery page."""
     result = await db.execute(
-        select(Company.id, Company.name, Company.website_url, Company.career_url)
-        .order_by(Company.name.asc())
+        select(
+            Company.id,
+            Company.name,
+            Company.website_url,
+            Company.career_url,
+            Company.last_discovery_attempt,
+        ).order_by(Company.name.asc())
     )
     rows = result.all()
     return [
@@ -62,6 +67,9 @@ async def get_all_companies(
             "name": r.name,
             "website_url": r.website_url,
             "current_career_url": r.career_url,
+            "last_discovery_attempt": (
+                r.last_discovery_attempt.isoformat() if r.last_discovery_attempt else None
+            ),
         }
         for r in rows
     ]
