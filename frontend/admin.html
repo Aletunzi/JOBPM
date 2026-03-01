@@ -251,30 +251,30 @@
 
       <!-- Table -->
       <div id="disc-table-wrap" class="hidden bg-white border border-gray-200 rounded-xl">
-        <div class="overflow-x-auto">
+        <div id="disc-table-scroll" class="overflow-x-auto overflow-y-auto">
           <table class="w-full text-sm table-fixed">
             <thead>
-              <tr class="border-b border-gray-100 text-left text-xs text-gray-400 uppercase tracking-wider">
-                <th class="py-3 px-4 w-[4%] sticky bg-white z-10">
+              <tr class="text-left text-xs text-gray-400 uppercase tracking-wider">
+                <th class="py-3 px-4 w-[4%] sticky top-0 bg-white z-10 border-b border-gray-100">
                   <input type="checkbox" id="disc-chk-all" onchange="discToggleSelectAll(this.checked)"
                     class="w-4 h-4 rounded border-gray-300 cursor-pointer accent-gray-900">
                 </th>
-                <th class="py-3 px-4 font-semibold w-[18%] sticky bg-white z-10">Company</th>
-                <th class="py-3 px-4 font-semibold w-[11%] sticky bg-white z-10">Website</th>
-                <th class="py-3 px-4 font-semibold w-[13%] sticky bg-white z-10">Current Career URL</th>
-                <th class="py-3 px-4 font-semibold w-[19%] sticky bg-white z-10">
+                <th class="py-3 px-4 font-semibold w-[18%] sticky top-0 bg-white z-10 border-b border-gray-100">Company</th>
+                <th class="py-3 px-4 font-semibold w-[11%] sticky top-0 bg-white z-10 border-b border-gray-100">Website</th>
+                <th class="py-3 px-4 font-semibold w-[13%] sticky top-0 bg-white z-10 border-b border-gray-100">Current Career URL</th>
+                <th class="py-3 px-4 font-semibold w-[19%] sticky top-0 bg-white z-10 border-b border-gray-100">
                   <div class="flex items-center gap-1.5">
                     <span class="inline-block w-2 h-2 rounded-full bg-blue-400"></span>
                     Perplexity
                   </div>
                 </th>
-                <th class="py-3 px-4 font-semibold w-[19%] sticky bg-white z-10">
+                <th class="py-3 px-4 font-semibold w-[19%] sticky top-0 bg-white z-10 border-b border-gray-100">
                   <div class="flex items-center gap-1.5">
                     <span class="inline-block w-2 h-2 rounded-full bg-green-400"></span>
                     Gemini
                   </div>
                 </th>
-                <th class="py-3 px-4 font-semibold w-[16%] text-center sticky bg-white z-10">Last run</th>
+                <th class="py-3 px-4 font-semibold w-[16%] text-center sticky top-0 bg-white z-10 border-b border-gray-100">Last run</th>
               </tr>
             </thead>
             <tbody id="disc-tbody" class="divide-y divide-gray-50"></tbody>
@@ -345,10 +345,13 @@
     let qualityInitialized = false;
 
     function updateTHeadSticky() {
-      const top = document.getElementById("sticky-top");
-      if (!top) return;
-      const offset = top.offsetHeight + "px";
-      document.querySelectorAll("#disc-table-wrap thead th").forEach(th => { th.style.top = offset; });
+      const scroll = document.getElementById("disc-table-scroll");
+      const footer = document.getElementById("disc-table-footer");
+      if (!scroll || !footer) return;
+      if (document.getElementById("disc-table-wrap").classList.contains("hidden")) return;
+      const rect = scroll.getBoundingClientRect();
+      const maxH = window.innerHeight - rect.top - footer.offsetHeight - 8;
+      if (maxH > 100) scroll.style.maxHeight = maxH + "px";
     }
 
     function switchTab(tab) {
