@@ -94,7 +94,7 @@ async def _search_sonar(company_name: str, website_url: Optional[str]) -> Provid
         "   - BambooHR:   https://{company}.bamboohr.com/jobs/\n"
         "2. A company-hosted jobs page (e.g. /jobs, /careers/open-roles, /positions, /vacancies)\n\n"
         "STRICTLY EXCLUDED — do NOT return:\n"
-        "- The company homepage or any root domain URL\n"
+        "- The company homepage or any root domain URL, with or without trailing slash (e.g. https://example.com or https://example.com/)\n"
         "- A generic /careers or /work-with-us landing page (intro text, no job list)\n"
         "- Any 'About us', 'Culture', 'Benefits', or 'Team' page\n"
         "- A LinkedIn, Glassdoor, Indeed, or any third-party aggregator page\n"
@@ -117,7 +117,7 @@ async def _search_sonar(company_name: str, website_url: Optional[str]) -> Provid
                         "Content-Type": "application/json",
                     },
                     json={
-                        "model": "sonar",
+                        "model": "sonar-pro",
                         "messages": [{"role": "user", "content": prompt}],
                         "max_tokens": 300,
                         "temperature": 0.0,
@@ -159,7 +159,7 @@ async def _search_gemini(company_name: str, website_url: Optional[str]) -> Provi
         "   - BambooHR:   https://{company}.bamboohr.com/jobs/\n"
         "2. A company-hosted jobs page (e.g. /jobs, /careers/open-roles, /positions, /vacancies)\n\n"
         "STRICTLY EXCLUDED — do NOT return:\n"
-        "- The company homepage or any root domain URL\n"
+        "- The company homepage or any root domain URL, with or without trailing slash (e.g. https://example.com or https://example.com/)\n"
         "- A generic /careers or /work-with-us landing page (intro text, no job list)\n"
         "- Any 'About us', 'Culture', 'Benefits', or 'Team' page\n"
         "- A LinkedIn, Glassdoor, Indeed, or any third-party aggregator page\n"
@@ -174,7 +174,7 @@ async def _search_gemini(company_name: str, website_url: Optional[str]) -> Provi
 
     endpoint = (
         f"https://generativelanguage.googleapis.com/v1beta/models/"
-        f"gemini-2.5-flash:generateContent?key={api_key}"
+        f"gemini-2.5-pro:generateContent?key={api_key}"
     )
     base_payload: dict = {
         "contents": [{"parts": [{"text": prompt}]}],
