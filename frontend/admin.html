@@ -42,7 +42,7 @@
     <div class="max-w-screen-xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
       <a href="/" class="text-2xl text-brand-600 hover:opacity-70 transition-opacity" style="font-family:'Satoshi',sans-serif;font-weight:500;">else</a>
       <div class="flex items-center gap-3">
-        <a href="/" class="text-sm text-gray-500 hover:text-gray-900 transition-colors">← Back to jobs</a>
+        <a href="/" class="btn-apply">Home</a>
       </div>
     </div>
   </header>
@@ -51,13 +51,13 @@
 
     <!-- Tabs -->
     <div class="flex border-b border-gray-200 mb-6">
-      <button id="tab-scrape" onclick="switchTab('scrape')"
-        class="px-5 py-3 text-sm font-medium -mb-px border-b-2 transition-colors">
-        Scrape overview
-      </button>
       <button id="tab-quality" onclick="switchTab('quality')"
         class="px-5 py-3 text-sm font-medium -mb-px border-b-2 transition-colors">
         Database quality
+      </button>
+      <button id="tab-scrape" onclick="switchTab('scrape')"
+        class="px-5 py-3 text-sm font-medium -mb-px border-b-2 transition-colors">
+        Scrape overview
       </button>
     </div>
 
@@ -215,13 +215,14 @@
         <div class="flex items-center gap-2">
           <button id="disc-btn-launch"
             onclick="discLaunchSearch()"
-            class="text-sm font-medium bg-brand-500 text-white px-4 py-2 rounded-lg hover:bg-brand-700 transition-colors flex items-center gap-2 disabled:opacity-50">
+            disabled
+            class="text-sm font-medium bg-brand-500 text-white px-4 py-2 rounded-lg hover:bg-brand-700 transition-colors flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
             <svg id="disc-btn-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
               width="15" height="15">
               <polygon points="5 3 19 12 5 21 5 3"/>
             </svg>
-            <span id="disc-btn-label">Launch Search</span>
+            <span id="disc-btn-label">Scrape</span>
           </button>
           <button id="disc-btn-stop" onclick="discStopSearch()"
             class="hidden text-sm font-medium bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors">
@@ -841,10 +842,16 @@
       if (lastRunEl) lastRunEl.innerHTML = discLastRunCell(c);
     }
 
+    function syncScrapeBtn() {
+      const btn = document.getElementById("disc-btn-launch");
+      if (btn && !discSearchRunning) btn.disabled = discSelectedIds.size === 0;
+    }
+
     function discToggleSelect(id) {
       if (discSelectedIds.has(id)) discSelectedIds.delete(id);
       else discSelectedIds.add(id);
       discSyncSelectAll();
+      syncScrapeBtn();
     }
 
     function discToggleSelectAll(checked) {
@@ -854,6 +861,7 @@
         const chk = document.getElementById(`disc-chk-${c.id}`);
         if (chk) chk.checked = checked;
       });
+      syncScrapeBtn();
     }
 
     function discSyncSelectAll() {
@@ -915,7 +923,7 @@
       const btnIcon  = document.getElementById("disc-btn-icon");
       const btnStop  = document.getElementById("disc-btn-stop");
       btn.disabled = true;
-      btnLabel.textContent = "Searching…";
+      btnLabel.textContent = "Scraping…";
       btnIcon.innerHTML = `<path d="M21 12a9 9 0 1 1-6.219-8.56"/>`;
       btnIcon.classList.add("spinner");
       btnStop.classList.remove("hidden");
@@ -925,7 +933,7 @@
       const progressCount = document.getElementById("disc-progress-count");
       const progressLabel = document.getElementById("disc-progress-label");
       progressWrap.classList.remove("hidden");
-      progressLabel.textContent = "Searching…";
+      progressLabel.textContent = "Scraping…";
 
       for (const c of selected) {
         if (!discResults[c.id] || discResults[c.id].status !== "done") {
@@ -941,7 +949,7 @@
         const pct = total > 0 ? ((done / total) * 100).toFixed(0) : 0;
         progressBar.style.width = `${pct}%`;
         progressCount.textContent = `${done} / ${total}`;
-        if (!discStopRequested) progressLabel.textContent = done < total ? "Searching…" : "Done!";
+        if (!discStopRequested) progressLabel.textContent = done < total ? "Scraping…" : "Done!";
       };
       updateProgress();
 
@@ -990,7 +998,8 @@
       btnIcon.classList.remove("spinner");
       btnIcon.innerHTML = `<polygon points="5 3 19 12 5 21 5 3"/>`;
       btnStop.classList.add("hidden");
-      btnLabel.textContent = "Launch Search";
+      btnLabel.textContent = "Scrape";
+      syncScrapeBtn();
       progressLabel.textContent = discStopRequested ? "Stopped" : "Done!";
       discStopRequested = false;
     }
@@ -1045,7 +1054,7 @@
 
     // ── Init ──────────────────────────────────────────────────────────────────
     loadAdmin();
-    switchTab(location.hash === "#quality" ? "quality" : "scrape");
+    switchTab(location.hash === "#scrape" ? "scrape" : "quality");
   </script>
 </body>
 </html>
