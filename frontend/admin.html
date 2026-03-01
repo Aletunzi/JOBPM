@@ -259,22 +259,23 @@
                   <input type="checkbox" id="disc-chk-all" onchange="discToggleSelectAll(this.checked)"
                     class="w-4 h-4 rounded border-gray-300 cursor-pointer accent-gray-900">
                 </th>
-                <th class="py-3 px-4 font-semibold w-[18%] sticky top-0 bg-white z-10 border-b border-gray-100">Company</th>
-                <th class="py-3 px-4 font-semibold w-[11%] sticky top-0 bg-white z-10 border-b border-gray-100">Website</th>
-                <th class="py-3 px-4 font-semibold w-[13%] sticky top-0 bg-white z-10 border-b border-gray-100">Current Career URL</th>
-                <th class="py-3 px-4 font-semibold w-[19%] sticky top-0 bg-white z-10 border-b border-gray-100">
+                <th class="py-3 px-4 font-semibold w-[5%] text-center sticky top-0 bg-white z-10 border-b border-gray-100">Status</th>
+                <th class="py-3 px-4 font-semibold w-[17%] sticky top-0 bg-white z-10 border-b border-gray-100">Company</th>
+                <th class="py-3 px-4 font-semibold w-[17%] sticky top-0 bg-white z-10 border-b border-gray-100">Website</th>
+                <th class="py-3 px-4 font-semibold w-[17%] sticky top-0 bg-white z-10 border-b border-gray-100">Current Career URL</th>
+                <th class="py-3 px-4 font-semibold w-[17%] sticky top-0 bg-white z-10 border-b border-gray-100">
                   <div class="flex items-center gap-1.5">
                     <span class="inline-block w-2 h-2 rounded-full bg-blue-400"></span>
                     Perplexity
                   </div>
                 </th>
-                <th class="py-3 px-4 font-semibold w-[19%] sticky top-0 bg-white z-10 border-b border-gray-100">
+                <th class="py-3 px-4 font-semibold w-[17%] sticky top-0 bg-white z-10 border-b border-gray-100">
                   <div class="flex items-center gap-1.5">
                     <span class="inline-block w-2 h-2 rounded-full bg-green-400"></span>
                     Gemini
                   </div>
                 </th>
-                <th class="py-3 px-4 font-semibold w-[16%] text-center sticky top-0 bg-white z-10 border-b border-gray-100">Last run</th>
+                <th class="py-3 px-4 font-semibold w-[6%] text-center sticky top-0 bg-white z-10 border-b border-gray-100">Last run</th>
               </tr>
             </thead>
             <tbody id="disc-tbody" class="divide-y divide-gray-50"></tbody>
@@ -768,6 +769,18 @@
       return `<span class="text-xs text-gray-400" title="${esc(isoStr)}">${label}</span>`;
     }
 
+    function discStatusCell(c) {
+      const s = (c.scrape_status || "").toUpperCase();
+      if (!s) return `<span class="text-gray-200 text-base leading-none" title="No data">●</span>`;
+      if (s === "OK" || s === "UNCHANGED") {
+        return `<span class="text-green-500 text-base leading-none" title="${esc(c.scrape_status)}">●</span>`;
+      }
+      if (s === "EMPTY") {
+        return `<span class="text-yellow-400 text-base leading-none" title="${esc(c.scrape_status)}">●</span>`;
+      }
+      return `<span class="text-red-500 text-base leading-none" title="${esc(c.scrape_status)}">●</span>`;
+    }
+
     function discUrlCell(url, error, colorClass, companyId) {
       if (error) return `<span class="text-xs text-red-400 italic" title="${esc(error)}">Error</span>`;
       if (url) {
@@ -817,6 +830,7 @@
               onchange="discToggleSelect('${c.id}')"
               class="w-4 h-4 rounded border-gray-300 cursor-pointer accent-gray-900">
           </td>
+          <td class="py-3 px-4 text-center" id="disc-status-${c.id}">${discStatusCell(c)}</td>
           <td class="py-3 px-4 font-medium text-gray-900">${esc(c.name)}</td>
           <td class="py-3 px-4 text-gray-500">
             ${c.website_url
@@ -838,10 +852,12 @@
 
     function updateDiscRow(c) {
       const r = discResults[c.id] || {};
+      const statusEl  = document.getElementById(`disc-status-${c.id}`);
       const careerEl  = document.getElementById(`disc-career-${c.id}`);
       const sonarEl   = document.getElementById(`disc-sonar-${c.id}`);
       const geminiEl  = document.getElementById(`disc-gemini-${c.id}`);
       const lastRunEl = document.getElementById(`disc-lastrun-${c.id}`);
+      if (statusEl)  statusEl.innerHTML  = discStatusCell(c);
       if (careerEl)  careerEl.innerHTML  = discCareerCell(c);
       if (sonarEl)   sonarEl.innerHTML   = discUrlCell(r.sonar_url,  r.sonar_error,  "text-blue-600 text-xs",  c.id);
       if (geminiEl)  geminiEl.innerHTML  = discUrlCell(r.gemini_url, r.gemini_error, "text-green-600 text-xs", c.id);
