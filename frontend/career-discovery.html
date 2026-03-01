@@ -36,7 +36,7 @@
     .status-searching { color: #d97706; }
     .status-done { color: #16a34a; }
     .status-error { color: #dc2626; }
-    .url-cell { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .url-cell { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   </style>
 </head>
 <body class="bg-gray-50 min-h-screen font-sans text-gray-900">
@@ -106,29 +106,29 @@
     <!-- Table -->
     <div id="table-wrap" class="hidden bg-white border border-gray-200 rounded-xl">
       <div class="overflow-x-auto">
-        <table class="w-full text-sm">
+        <table class="w-full text-sm table-fixed">
           <thead>
             <tr class="border-b border-gray-100 text-left text-xs text-gray-400 uppercase tracking-wider">
-              <th class="py-3 px-4 w-10">
+              <th class="py-3 px-4 w-[4%]">
                 <input type="checkbox" id="chk-all" onchange="toggleSelectAll(this.checked)"
                   class="w-4 h-4 rounded border-gray-300 cursor-pointer accent-gray-900">
               </th>
-              <th class="py-3 px-4 font-semibold">Company</th>
-              <th class="py-3 px-4 font-semibold">Website</th>
-              <th class="py-3 px-4 font-semibold">Current Career URL</th>
-              <th class="py-3 px-4 font-semibold">
+              <th class="py-3 px-4 font-semibold w-[18%]">Company</th>
+              <th class="py-3 px-4 font-semibold w-[11%]">Website</th>
+              <th class="py-3 px-4 font-semibold w-[13%]">Current Career URL</th>
+              <th class="py-3 px-4 font-semibold w-[19%]">
                 <div class="flex items-center gap-1.5">
                   <span class="inline-block w-2 h-2 rounded-full bg-blue-400"></span>
                   Perplexity
                 </div>
               </th>
-              <th class="py-3 px-4 font-semibold">
+              <th class="py-3 px-4 font-semibold w-[19%]">
                 <div class="flex items-center gap-1.5">
                   <span class="inline-block w-2 h-2 rounded-full bg-green-400"></span>
                   Gemini
                 </div>
               </th>
-              <th class="py-3 px-4 font-semibold text-center">Last run</th>
+              <th class="py-3 px-4 font-semibold w-[16%] text-center">Last run</th>
             </tr>
           </thead>
           <tbody id="disc-tbody" class="divide-y divide-gray-50"></tbody>
@@ -185,14 +185,14 @@
         const useBtn = companyId
           ? `<button data-company="${esc(companyId)}" data-url="${esc(url)}"
                onclick="applyCareerUrl(this)"
-               class="ml-1 shrink-0 text-[10px] bg-gray-100 hover:bg-brand-500 hover:text-white text-gray-400 px-1.5 py-0.5 rounded transition-colors"
+               class="shrink-0 text-[10px] bg-gray-100 hover:bg-brand-500 hover:text-white text-gray-400 px-1.5 py-0.5 rounded transition-colors"
                title="Set as career URL">Use</button>`
           : "";
-        return `<div class="flex items-center gap-1">
+        return `<div class="flex items-center gap-1 min-w-0 overflow-hidden">
+          ${useBtn}
           <a href="${esc(url)}" target="_blank" rel="noopener"
             class="${colorClass} hover:underline url-cell"
-            title="${esc(url)}">${esc(truncUrl(url, 32))}</a>
-          ${useBtn}
+            title="${esc(url)}">${esc(truncUrl(url, 40))}</a>
         </div>`;
       }
       return `<span class="text-gray-300 text-xs">—</span>`;
