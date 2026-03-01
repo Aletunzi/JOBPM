@@ -884,7 +884,7 @@
       try {
         const saved = localStorage.getItem(DISC_STORAGE_KEY);
         if (saved) Object.assign(discResults, JSON.parse(saved));
-      } catch(e) {}
+      } catch(e) { console.warn("Could not restore discovery results from localStorage:", e); }
     }
 
     async function loadDiscoveryCompanies() {
