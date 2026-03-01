@@ -1,4 +1,4 @@
-name: Fursa Scraper
+name: Scraper else 250
 
 on:
   schedule:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   scrape:
-    name: Fursa Daily Scrape
+    name: Scraper else 250
     runs-on: ubuntu-latest
     timeout-minutes: 45
 
