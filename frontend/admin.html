@@ -98,17 +98,6 @@
           </button>
           <input id="import-file-input" type="file" accept=".xlsx,.xls" class="hidden" onchange="importExcel(this)">
           <span id="import-status" class="text-xs text-gray-400 hidden"></span>
-          <button onclick="exportDiscoveryExcel()" title="Export discovery Excel"
-            class="p-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-100 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-              <polyline points="14 2 14 8 20 8"/>
-              <line x1="16" y1="13" x2="8" y2="13"/>
-              <line x1="16" y1="17" x2="8" y2="17"/>
-              <polyline points="10 9 9 9 8 9"/>
-            </svg>
-          </button>
         </div>
       </div>
     </div>
@@ -358,7 +347,7 @@
     }
 
     function switchTab(tab) {
-      history.replaceState(null, "", "#" + tab);
+      sessionStorage.setItem("adminTab", tab);
       ["scrape", "quality"].forEach(t => {
         const btn   = document.getElementById("tab-" + t);
         const panel = document.getElementById("panel-" + t);
@@ -660,7 +649,7 @@
         const blob = await res.blob();
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
-        a.href = url; a.download = "fursa_companies.xlsx";
+        a.href = url; a.download = "else_companies.xlsx";
         document.body.appendChild(a); a.click(); a.remove();
         URL.revokeObjectURL(url);
       } catch (err) { alert("Export failed: " + err.message); }
@@ -1056,34 +1045,10 @@
       }
     }
 
-    function exportDiscoveryExcel() {
-      if (!discCompanies.length) { alert("No data to export yet."); return; }
-      const rows = discCompanies.map(c => {
-        const r = discResults[c.id] || {};
-        return {
-          "Company":            c.name,
-          "Website":            c.website_url || "",
-          "Current Career URL": c.current_career_url || "",
-          "Sonar Career URL":   r.sonar_url   || "",
-          "Sonar Error":        r.sonar_error || "",
-          "Gemini Career URL":  r.gemini_url  || "",
-          "Gemini Error":       r.gemini_error || "",
-          "Status":             r.status || "",
-        };
-      });
-      const ws = XLSX.utils.json_to_sheet(rows);
-      ws["!cols"] = Object.keys(rows[0] || {}).map(key => ({
-        wch: Math.max(key.length, ...rows.map(r => String(r[key] || "").length), 10)
-      }));
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Database quality");
-      XLSX.writeFile(wb, `database_quality_${new Date().toISOString().slice(0, 10)}.xlsx`);
-    }
-
     // ── Init ──────────────────────────────────────────────────────────────────
     window.addEventListener("resize", updateTHeadSticky);
     loadAdmin();
-    switchTab(location.hash === "#scrape" ? "scrape" : "quality");
+    switchTab(sessionStorage.getItem("adminTab") || "quality");
   </script>
 </body>
 </html>
