@@ -1,0 +1,41 @@
+name: Scraper - Targeted
+
+on:
+  workflow_dispatch:
+    inputs:
+      companies:
+        description: 'Comma-separated company names (e.g. "Nokia,Autodesk,VMware,Finastra")'
+        required: true
+        type: string
+
+jobs:
+  scrape-targeted:
+    name: Targeted Scrape
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run targeted scraper
+        run: python run_targeted.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          TARGET_COMPANIES: ${{ inputs.companies }}
+
+      - name: Invalidate API cache
+        if: always()
+        run: |
+          curl -sf -X POST "${{ secrets.API_BASE_URL }}/api/admin/cache-clear" \
+            -H "X-API-Key: ${{ secrets.API_KEY }}" || true

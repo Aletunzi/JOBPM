@@ -1,0 +1,34 @@
+name: Cleanup - Delete Disabled Companies
+
+on:
+  workflow_dispatch:
+
+jobs:
+  cleanup:
+    name: Delete Disabled Companies
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Delete disabled companies and their jobs
+        run: python cleanup_disabled.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Invalidate API cache
+        if: always()
+        run: |
+          curl -sf -X POST "${{ secrets.API_BASE_URL }}/api/admin/cache-clear" \
+            -H "X-API-Key: ${{ secrets.API_KEY }}" || true
