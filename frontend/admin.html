@@ -78,13 +78,35 @@
             class="hidden text-sm font-medium bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors">
             Stop
           </button>
-          <button onclick="exportDiscoveryExcel()" title="Export Excel"
+          <button onclick="exportExcel()" title="Export companies Excel"
+            class="p-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-100 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+          </button>
+          <button onclick="document.getElementById('import-file-input').click()" title="Import companies Excel"
             class="p-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-100 transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
               <polyline points="17 8 12 3 7 8"/>
               <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+          </button>
+          <input id="import-file-input" type="file" accept=".xlsx,.xls" class="hidden" onchange="importExcel(this)">
+          <span id="import-status" class="text-xs text-gray-400 hidden"></span>
+          <button onclick="exportDiscoveryExcel()" title="Export discovery Excel"
+            class="p-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-100 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+              <polyline points="10 9 9 9 8 9"/>
             </svg>
           </button>
         </div>
@@ -159,43 +181,14 @@
         <!-- Row 4: Companies List -->
         <div class="bg-white border border-gray-200 rounded-xl p-5">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-            <div class="flex items-center gap-3">
-              <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                Companies <span id="companies-count" class="text-gray-300"></span>
-              </h2>
-              <div class="flex items-center gap-2">
-                <button onclick="exportExcel()"
-                  class="text-xs font-medium bg-brand-500 text-white px-3 py-1 rounded-lg hover:bg-brand-700 transition-colors">
-                  Export Excel
-                </button>
-                <button onclick="document.getElementById('import-file-input').click()"
-                  class="text-xs font-medium bg-gray-600 text-white px-3 py-1 rounded-lg hover:bg-gray-500 transition-colors">
-                  Import Excel
-                </button>
-                <input id="import-file-input" type="file" accept=".xlsx,.xls" class="hidden"
-                  onchange="importExcel(this)">
-                <span id="import-status" class="text-xs text-gray-400 hidden"></span>
-              </div>
-            </div>
-            <div class="flex flex-wrap items-center gap-2">
+            <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              Companies <span id="companies-count" class="text-gray-300"></span>
+            </h2>
+            <div class="relative inline-flex items-center">
               <input id="co-search" type="text" placeholder="Search by name…"
-                class="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-500 w-44" />
-              <select id="co-vertical"
-                class="text-sm border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-500">
-                <option value="">All verticals</option>
-                <option value="saas">SaaS</option><option value="fintech">Fintech</option>
-                <option value="ai">AI</option><option value="data">Data</option>
-                <option value="devtools">DevTools</option><option value="security">Security</option>
-                <option value="marketplace">Marketplace</option><option value="consumer">Consumer</option>
-                <option value="healthcare">Healthcare</option><option value="hr">HR</option>
-                <option value="ecommerce">E-commerce</option><option value="logistics">Logistics</option>
-              </select>
-              <select id="co-url"
-                class="text-sm border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-500">
-                <option value="">All</option>
-                <option value="true">Has URL</option>
-                <option value="false">No URL</option>
-              </select>
+                class="text-sm border border-gray-200 rounded-lg px-3 py-1.5 pr-7 focus:outline-none focus:ring-1 focus:ring-brand-500 w-44" />
+              <button id="co-search-clear" onclick="coClearSearch()"
+                class="absolute right-2 text-gray-400 hover:text-gray-700 hidden text-sm leading-none" title="Clear">✕</button>
             </div>
           </div>
 
@@ -251,6 +244,15 @@
 
       <!-- Table -->
       <div id="disc-table-wrap" class="hidden bg-white border border-gray-200 rounded-xl">
+        <div class="px-4 py-3 border-b border-gray-100">
+          <div class="relative inline-flex items-center">
+            <input id="disc-search" type="text" placeholder="Search by name…"
+              oninput="discFilterRows()"
+              class="text-sm border border-gray-200 rounded-lg px-3 py-1.5 pr-7 focus:outline-none focus:ring-1 focus:ring-brand-500 w-52" />
+            <button id="disc-search-clear" onclick="discClearSearch()"
+              class="absolute right-2 text-gray-400 hover:text-gray-700 hidden text-sm leading-none" title="Clear">✕</button>
+          </div>
+        </div>
         <div id="disc-table-scroll" class="overflow-x-auto overflow-y-auto">
           <table class="w-full text-sm table-fixed">
             <thead>
@@ -548,10 +550,6 @@
       params.set("limit", CO_LIMIT);
       const search = document.getElementById("co-search").value.trim();
       if (search) params.set("search", search);
-      const vertical = document.getElementById("co-vertical").value;
-      if (vertical) params.set("vertical", vertical);
-      const hasUrl = document.getElementById("co-url").value;
-      if (hasUrl) params.set("has_url", hasUrl);
       if (coSort) params.set("sort", coSort);
       params.set("enabled", "true");
       return params.toString();
@@ -650,11 +648,10 @@
     function coNav(dir) { coPage = Math.max(1, coPage + dir); loadCompanies(); }
 
     document.getElementById("co-search").addEventListener("input", () => {
+      document.getElementById("co-search-clear").classList.toggle("hidden", !document.getElementById("co-search").value);
       clearTimeout(coDebounce);
       coDebounce = setTimeout(() => { coPage = 1; loadCompanies(); }, 300);
     });
-    document.getElementById("co-vertical").addEventListener("change", () => { coPage = 1; loadCompanies(); });
-    document.getElementById("co-url").addEventListener("change", () => { coPage = 1; loadCompanies(); });
 
     async function exportExcel() {
       try {
@@ -695,6 +692,14 @@
         status.textContent = "Import failed: " + err.message;
         status.className = "text-xs text-red-400";
       }
+    }
+
+    function coClearSearch() {
+      const inp = document.getElementById("co-search");
+      inp.value = "";
+      document.getElementById("co-search-clear").classList.add("hidden");
+      coPage = 1;
+      loadCompanies();
     }
 
     // ── Edit modal ────────────────────────────────────────────────────────────
@@ -902,6 +907,28 @@
       try { localStorage.setItem(DISC_STORAGE_KEY, JSON.stringify(discResults)); } catch(e) {}
     }
 
+    function discFilterRows() {
+      const term = (document.getElementById("disc-search")?.value || "").toLowerCase().trim();
+      const clearBtn = document.getElementById("disc-search-clear");
+      if (clearBtn) clearBtn.classList.toggle("hidden", !term);
+      let visible = 0;
+      discCompanies.forEach(c => {
+        const row = document.getElementById(`disc-row-${c.id}`);
+        const show = !term || c.name.toLowerCase().includes(term);
+        if (row) row.classList.toggle("hidden", !show);
+        if (show) visible++;
+      });
+      const footerEl = document.getElementById("disc-footer-count");
+      if (footerEl) footerEl.textContent = term
+        ? `${visible} / ${discCompanies.length}`
+        : discCompanies.length.toLocaleString();
+    }
+
+    function discClearSearch() {
+      const inp = document.getElementById("disc-search");
+      if (inp) { inp.value = ""; discFilterRows(); }
+    }
+
     function discRestoreProgress() {
       try {
         const saved = localStorage.getItem(DISC_STORAGE_KEY);
@@ -917,7 +944,7 @@
         discRestoreProgress();
         const tbody = document.getElementById("disc-tbody");
         tbody.innerHTML = discCompanies.map(c => buildDiscRow(c)).join("");
-        document.getElementById("disc-footer-count").textContent = discCompanies.length.toLocaleString();
+        discFilterRows();
         document.getElementById("disc-page-loading").classList.add("hidden");
         document.getElementById("disc-table-wrap").classList.remove("hidden");
         updateTHeadSticky();

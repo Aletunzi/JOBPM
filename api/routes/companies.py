@@ -112,17 +112,17 @@ async def list_companies(
     )
 
     if sort == "name_desc":
-        order_by = [Company.name.desc()]
+        order_by = [func.lower(Company.name).desc()]
     elif sort == "last_scraped_asc":
-        order_by = [Company.last_scraped.asc().nulls_last()]
+        order_by = [Company.last_scraped.asc().nulls_last(), func.lower(Company.name).asc()]
     elif sort == "last_scraped_desc":
-        order_by = [Company.last_scraped.desc().nulls_last()]
+        order_by = [Company.last_scraped.desc().nulls_last(), func.lower(Company.name).asc()]
     elif sort == "scrape_status_asc":
-        order_by = [Company.scrape_status.asc().nulls_last()]
+        order_by = [Company.scrape_status.asc().nulls_last(), func.lower(Company.name).asc()]
     elif sort == "scrape_status_desc":
-        order_by = [Company.scrape_status.desc().nulls_last()]
+        order_by = [Company.scrape_status.desc().nulls_last(), func.lower(Company.name).asc()]
     else:  # default + name_asc
-        order_by = [Company.name.asc()]
+        order_by = [func.lower(Company.name).asc()]
 
     stmt = (
         select(Company, active_jobs_subq.label("active_jobs"))
@@ -160,7 +160,7 @@ async def export_companies_excel(
 
     stmt = (
         select(Company, active_jobs_subq.label("active_jobs"))
-        .order_by(Company.tier.asc(), Company.name.asc())
+        .order_by(func.lower(Company.name).asc())
     )
     result = await db.execute(stmt)
     rows = result.all()

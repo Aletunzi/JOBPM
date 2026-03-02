@@ -6,7 +6,7 @@ from typing import Optional
 import httpx
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.auth import require_api_key
@@ -59,7 +59,7 @@ async def get_all_companies(
             Company.career_url,
             Company.last_discovery_attempt,
             Company.scrape_status,
-        ).order_by(Company.name.asc())
+        ).order_by(func.lower(Company.name).asc())
     )
     rows = result.all()
     return [
