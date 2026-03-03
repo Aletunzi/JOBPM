@@ -351,3 +351,34 @@ async def delete_company(
     await db.delete(company)
     await db.commit()
     cache_clear()
+
+
+@router.post("/{company_id}/scrape", status_code=202, tags=["admin"])
+async def scrape_company_endpoint(
+    company_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    _key: str = Depends(require_api_key),
+):
+    """Trigger a targeted scrape for a single company (runs in background)."""
+    import asyncio
+    from api.database import AsyncSessionLocal
+    from run_scraper import scrape_company
+
+    company = await db.get(Company, company_id)
+    if company is None:
+        raise HTTPException(status_code=404, detail="Company not found")
+    if not company.career_url:
+        raise HTTPException(status_code=400, detail="Company has no career URL — scrape cannot run")
+
+    async def _run():
+        sem = asyncio.Semaphore(1)
+        await scrape_company(
+            AsyncSessionLocal,
+            company.id,
+            {"career_url": company.career_url, "name": company.name, "page_hash": company.page_hash},
+            sem,
+        )
+        cache_clear()
+
+    asyncio.create_task(_run())
+    return {"status": "scrape started", "company": company.name}

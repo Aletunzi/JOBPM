@@ -1,11 +1,11 @@
-name: Cleanup - Delete Disabled Companies
+name: Cleanup - Disabled companies
 
 on:
   workflow_dispatch:
 
 jobs:
   cleanup:
-    name: Delete Disabled Companies
+    name: Disabled companies
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
