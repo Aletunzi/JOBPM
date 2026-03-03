@@ -1,5 +1,5 @@
 /* Prevent overscroll bounce effect */
-body {
+html, body {
   overscroll-behavior: none;
 }
 
