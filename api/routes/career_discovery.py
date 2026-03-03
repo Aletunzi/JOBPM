@@ -58,6 +58,7 @@ async def get_all_companies(
             Company.website_url,
             Company.career_url,
             Company.last_discovery_attempt,
+            Company.last_scraped,
             Company.scrape_status,
         ).order_by(func.lower(Company.name).asc())
     )
@@ -71,6 +72,7 @@ async def get_all_companies(
             "last_discovery_attempt": (
                 r.last_discovery_attempt.isoformat() if r.last_discovery_attempt else None
             ),
+            "last_scraped": r.last_scraped.isoformat() if r.last_scraped else None,
             "scrape_status": r.scrape_status,
         }
         for r in rows
