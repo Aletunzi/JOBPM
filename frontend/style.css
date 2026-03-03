@@ -1,3 +1,8 @@
+/* Prevent overscroll bounce effect */
+body {
+  overscroll-behavior: none;
+}
+
 /* Filter checkboxes */
 .filter-check {
   display: flex;
