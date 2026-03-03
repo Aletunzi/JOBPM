@@ -174,6 +174,17 @@
             </div>
           </div>
 
+          <!-- Status filter pills -->
+          <div class="flex flex-wrap items-center gap-1.5 mb-4">
+            <span class="text-xs text-gray-400 mr-0.5">Status:</span>
+            <button id="co-status-all"          onclick="coSetStatus(null)"           class="co-status-pill">All</button>
+            <button id="co-status-OK"           onclick="coSetStatus('OK')"           class="co-status-pill">● OK</button>
+            <button id="co-status-EMPTY"        onclick="coSetStatus('EMPTY')"        class="co-status-pill">● Empty</button>
+            <button id="co-status-HTTP_ERROR"   onclick="coSetStatus('HTTP_ERROR')"   class="co-status-pill">● HTTP error</button>
+            <button id="co-status-SPA_DETECTED" onclick="coSetStatus('SPA_DETECTED')" class="co-status-pill">● SPA</button>
+            <button id="co-status-TIMEOUT"      onclick="coSetStatus('TIMEOUT')"      class="co-status-pill">● Timeout</button>
+          </div>
+
           <!-- Table -->
           <div id="co-table-scroll" class="overflow-x-auto overflow-y-auto">
             <table class="w-full text-sm">
@@ -574,6 +585,7 @@
     const CO_LIMIT = 50;
     let coDebounce = null;
     let coSort = "name_asc";
+    let coStatusFilter = null;
 
     function coFilters() {
       const params = new URLSearchParams();
@@ -582,8 +594,35 @@
       const search = document.getElementById("co-search").value.trim();
       if (search) params.set("search", search);
       if (coSort) params.set("sort", coSort);
+      if (coStatusFilter) params.set("status", coStatusFilter);
       params.set("enabled", "true");
       return params.toString();
+    }
+
+    function coSetStatus(status) {
+      coStatusFilter = status;
+      coPage = 1;
+      updateStatusPills();
+      loadCompanies();
+    }
+
+    function updateStatusPills() {
+      const pills = [
+        { id: "co-status-all",          s: null,           base: "text-gray-600 border-gray-200 hover:border-gray-400" },
+        { id: "co-status-OK",           s: "OK",           base: "text-green-600 border-green-200 hover:border-green-400" },
+        { id: "co-status-EMPTY",        s: "EMPTY",        base: "text-gray-400 border-gray-200 hover:border-gray-400" },
+        { id: "co-status-HTTP_ERROR",   s: "HTTP_ERROR",   base: "text-red-500 border-red-200 hover:border-red-400" },
+        { id: "co-status-SPA_DETECTED", s: "SPA_DETECTED", base: "text-red-500 border-red-200 hover:border-red-400" },
+        { id: "co-status-TIMEOUT",      s: "TIMEOUT",      base: "text-orange-500 border-orange-200 hover:border-orange-400" },
+      ];
+      pills.forEach(({ id, s, base }) => {
+        const btn = document.getElementById(id);
+        if (!btn) return;
+        const active = s === coStatusFilter;
+        btn.className = `co-status-pill px-2.5 py-0.5 rounded-full text-xs border font-medium transition-colors ${
+          active ? "bg-brand-500 text-white border-brand-500" : base
+        }`;
+      });
     }
 
     function coGoTo(page) { coPage = page; loadCompanies(); }
@@ -1101,6 +1140,7 @@
     window.addEventListener("resize", updateTHeadSticky);
     window.addEventListener("resize", updateCoTableHeight);
     loadAdmin();
+    updateStatusPills();
     switchTab(sessionStorage.getItem("adminTab") || "overview");
   </script>
 </body>
