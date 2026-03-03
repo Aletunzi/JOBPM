@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="18 12 64 64">
+  <!-- Upper C-ring: outer CCW large arc, inner CW large arc, aperture on right -->
+  <!-- Center (50,44), outer R=28, inner r=13, aperture ±15° from horizontal right -->
+  <path fill="#0C1422" d="M77,36.8 A28,28 0 1 0 77,51.2 L62.5,47.4 A13,13 0 1 1 62.5,40.6Z"/>
+  <!-- Lower smile: outer CW short arc (40°→90°→140°), inner CCW short arc back -->
+  <path fill="#0C1422" d="M71.4,62 A28,28 0 0 1 28.6,62 L40.1,52.4 A13,13 0 0 0 59.9,52.4Z"/>
+</svg>
