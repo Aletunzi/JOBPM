@@ -35,7 +35,7 @@
     .url-cell { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   </style>
 </head>
-<body class="bg-gray-50 min-h-screen font-sans text-gray-900">
+<body class="bg-white min-h-screen font-sans text-gray-900">
 
   <!-- Unified sticky top: header + tabs + quality action bar -->
   <div id="sticky-top" class="sticky top-0 z-20">
@@ -49,7 +49,7 @@
       </div>
     </header>
 
-    <div class="bg-gray-50 border-b border-gray-200">
+    <div class="bg-white border-b border-gray-200">
       <div class="max-w-screen-xl mx-auto px-4 flex items-center justify-between">
         <div class="flex">
           <button id="tab-quality" onclick="switchTab('quality')"
@@ -182,23 +182,23 @@
           </div>
 
           <!-- Table -->
-          <div class="overflow-x-auto">
+          <div id="co-table-scroll" class="overflow-x-auto overflow-y-auto">
             <table class="w-full text-sm">
               <thead>
-                <tr class="border-b border-gray-100 text-left text-xs text-gray-400 uppercase tracking-wider">
-                  <th class="py-2 pr-3 cursor-pointer select-none hover:text-gray-600" onclick="coSortBy('name')">
+                <tr class="text-left text-xs text-gray-400 uppercase tracking-wider">
+                  <th class="py-2 pr-3 cursor-pointer select-none hover:text-gray-600 sticky top-0 bg-white z-10 border-b border-gray-100" onclick="coSortBy('name')">
                     Name <span id="sort-name-icon" class="ml-0.5">⇅</span>
                   </th>
-                  <th class="py-2 pr-3">Website</th>
-                  <th class="py-2 pr-3">Career URL</th>
-                  <th class="py-2 pr-3 cursor-pointer select-none hover:text-gray-600" onclick="coSortBy('last_scraped')">
+                  <th class="py-2 pr-3 sticky top-0 bg-white z-10 border-b border-gray-100">Website</th>
+                  <th class="py-2 pr-3 sticky top-0 bg-white z-10 border-b border-gray-100">Career URL</th>
+                  <th class="py-2 pr-3 cursor-pointer select-none hover:text-gray-600 sticky top-0 bg-white z-10 border-b border-gray-100" onclick="coSortBy('last_scraped')">
                     Last Scraped <span id="sort-last_scraped-icon" class="ml-0.5">⇅</span>
                   </th>
-                  <th class="py-2 pr-3 cursor-pointer select-none hover:text-gray-600" onclick="coSortBy('scrape_status')">
+                  <th class="py-2 pr-3 cursor-pointer select-none hover:text-gray-600 sticky top-0 bg-white z-10 border-b border-gray-100" onclick="coSortBy('scrape_status')">
                     Status <span id="sort-scrape_status-icon" class="ml-0.5">⇅</span>
                   </th>
-                  <th class="py-2 text-center">Jobs</th>
-                  <th class="py-2 w-6"></th>
+                  <th class="py-2 text-center sticky top-0 bg-white z-10 border-b border-gray-100">Jobs</th>
+                  <th class="py-2 w-6 sticky top-0 bg-white z-10 border-b border-gray-100"></th>
                 </tr>
               </thead>
               <tbody id="co-tbody" class="divide-y divide-gray-50"></tbody>
@@ -206,7 +206,7 @@
           </div>
 
           <!-- Pagination -->
-          <div class="flex items-center justify-center gap-1 mt-4 pt-3 border-t border-gray-100">
+          <div id="co-pagination" class="flex items-center justify-center gap-1 mt-4 pt-3 border-t border-gray-100">
             <button id="co-prev" onclick="coNav(-1)"
               class="w-7 h-7 flex items-center justify-center rounded text-gray-400 hover:text-gray-900 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-default transition-colors">←</button>
             <div id="co-page-info" class="flex items-center gap-1"></div>
@@ -232,7 +232,7 @@
 
       <!-- Table -->
       <div id="disc-table-wrap" class="hidden bg-white border border-gray-200 rounded-xl">
-        <div class="px-4 py-3 border-b border-gray-100">
+        <div class="px-4 py-3 border-b border-gray-100 flex justify-end">
           <div class="relative inline-flex items-center">
             <input id="disc-search" type="text" placeholder="Search by name…"
               oninput="discFilterRows()"
@@ -335,6 +335,17 @@
 
     let qualityInitialized = false;
 
+    function updateCoTableHeight() {
+      const scroll = document.getElementById("co-table-scroll");
+      const pagination = document.getElementById("co-pagination");
+      if (!scroll) return;
+      if (document.getElementById("panel-scrape").classList.contains("hidden")) return;
+      const rect = scroll.getBoundingClientRect();
+      const paginationH = pagination ? pagination.offsetHeight : 56;
+      const maxH = window.innerHeight - rect.top - paginationH - 8;
+      if (maxH > 100) scroll.style.maxHeight = maxH + "px";
+    }
+
     function updateTHeadSticky() {
       const scroll = document.getElementById("disc-table-scroll");
       const footer = document.getElementById("disc-table-footer");
@@ -360,6 +371,7 @@
       const actionBar = document.getElementById("disc-action-bar");
       if (actionBar) actionBar.style.display = tab === "quality" ? "flex" : "none";
       if (tab === "quality") requestAnimationFrame(updateTHeadSticky);
+      if (tab === "scrape") requestAnimationFrame(updateCoTableHeight);
       if (tab === "quality" && !qualityInitialized) {
         qualityInitialized = true;
         loadDiscoveryCompanies();
@@ -412,7 +424,7 @@
         OK:           ["#16a34a", "OK"],
         HTTP_ERROR:   ["#dc2626", "HTTP error"],
         TIMEOUT:      ["#dc2626", "Timeout"],
-        EMPTY:        ["#d97706", "Empty"],
+        EMPTY:        ["#6b7280", "Empty"],
         SPA_DETECTED: ["#d97706", "SPA"],
       };
       const [color, label] = cfg[status] || ["#6b7280", status];
@@ -630,6 +642,7 @@
         document.getElementById("co-page-info").innerHTML = renderPagination(d.page, d.pages);
         document.getElementById("co-prev").disabled = d.page <= 1;
         document.getElementById("co-next").disabled = d.page >= d.pages;
+        requestAnimationFrame(updateCoTableHeight);
 
       } catch (err) {
         document.getElementById("co-tbody").innerHTML =
@@ -1085,6 +1098,7 @@
 
     // ── Init ──────────────────────────────────────────────────────────────────
     window.addEventListener("resize", updateTHeadSticky);
+    window.addEventListener("resize", updateCoTableHeight);
     loadAdmin();
     switchTab(sessionStorage.getItem("adminTab") || "quality");
   </script>
