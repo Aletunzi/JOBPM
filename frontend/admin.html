@@ -606,12 +606,20 @@
               <td class="py-2.5 pr-3 text-gray-500">${timeSince(c.last_scraped)}</td>
               <td class="py-2.5 pr-3">${scrapeStatusBadge(c.scrape_status)}</td>
               <td class="py-2.5 text-center tabular-nums font-medium">${c.active_jobs}</td>
-              <td class="py-2.5 pl-2">
+              <td class="py-2.5 pl-2 flex items-center gap-2">
                 <button onclick="openEditModal(${JSON.stringify(c).replace(/"/g, '&quot;')})"
                   class="text-gray-500 hover:text-gray-800 transition-colors" title="Edit">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15">
                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  </svg>
+                </button>
+                <button id="scrape-btn-${c.id}" onclick="scrapeCompany('${c.id}', ${JSON.stringify(c.name).replace(/"/g, '&quot;')}, ${!!c.career_url})"
+                  class="text-gray-400 hover:text-brand-500 transition-colors" title="${c.career_url ? 'Scrape jobs for this company' : 'No career URL set'}">
+                  <svg id="scrape-icon-${c.id}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15">
+                    <polyline points="23 4 23 10 17 10"/>
+                    <polyline points="1 20 1 14 7 14"/>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
                   </svg>
                 </button>
               </td>
@@ -625,11 +633,46 @@
 
       } catch (err) {
         document.getElementById("co-tbody").innerHTML =
-          `<tr><td colspan="8" class="py-8 text-center text-red-400 text-sm">Error: ${esc(err.message)}</td></tr>`;
+          `<tr><td colspan="7" class="py-8 text-center text-red-400 text-sm">Error: ${esc(err.message)}</td></tr>`;
       }
     }
 
     function coNav(dir) { coPage = Math.max(1, coPage + dir); loadCompanies(); }
+
+    async function scrapeCompany(id, name, hasCareerUrl) {
+      if (!hasCareerUrl) {
+        alert(`"${name}" has no career URL — cannot scrape.`);
+        return;
+      }
+      const btn = document.getElementById(`scrape-btn-${id}`);
+      const icon = document.getElementById(`scrape-icon-${id}`);
+      if (!btn || btn.disabled) return;
+
+      btn.disabled = true;
+      icon.style.animation = "spin 1s linear infinite";
+
+      try {
+        const res = await fetch(`/api/companies/${id}/scrape`, {
+          method: "POST",
+          headers: { "X-API-Key": API_KEY },
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.detail || `HTTP ${res.status}`);
+        }
+        icon.style.stroke = "var(--color-brand-500, #6366f1)";
+        // Reload table after ~25s to show updated results
+        setTimeout(() => loadCompanies(), 25000);
+      } catch (err) {
+        alert(`Scrape failed for "${name}": ${err.message}`);
+      } finally {
+        setTimeout(() => {
+          icon.style.animation = "";
+          icon.style.stroke = "";
+          btn.disabled = false;
+        }, 25000);
+      }
+    }
 
     document.getElementById("co-search").addEventListener("input", () => {
       document.getElementById("co-search-clear").classList.toggle("hidden", !document.getElementById("co-search").value);
