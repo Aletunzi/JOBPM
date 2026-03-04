@@ -167,7 +167,7 @@
           <table class="w-full text-sm">
             <thead>
               <tr class="text-left text-xs text-gray-400 uppercase tracking-wider">
-                <th class="py-2 pr-3 cursor-pointer select-none hover:text-gray-600 sticky top-0 bg-white z-10 border-b border-gray-100"
+                <th class="py-2 pl-4 pr-3 cursor-pointer select-none hover:text-gray-600 sticky top-0 bg-white z-10 border-b border-gray-100"
                     onclick="discSortBy('name')">
                   Company <span id="disc-sort-name-icon" class="ml-0.5">⇅</span>
                 </th>
@@ -228,9 +228,12 @@
 
       <!-- Header -->
       <div class="flex items-center justify-between mb-5">
-        <h3 class="text-sm font-semibold text-gray-800 truncate" id="edit-modal-title"></h3>
+        <h3 class="text-base font-semibold text-gray-800 truncate" id="edit-modal-title"></h3>
         <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600 text-lg leading-none shrink-0 ml-2">✕</button>
       </div>
+
+      <!-- Company Information -->
+      <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Company Information</p>
 
       <!-- Website URL -->
       <div class="mb-4">
@@ -679,7 +682,7 @@
 
       return `
         <tr class="${c.is_enabled ? '' : 'opacity-50'}">
-          <td class="py-2.5 pr-3 font-medium text-gray-900">${esc(c.name)}</td>
+          <td class="py-2.5 pl-4 pr-3 font-medium text-gray-900">${esc(c.name)}</td>
           <td class="py-2.5 pr-3 text-gray-500 truncate max-w-[140px]" title="${esc(c.website_url || '')}">
             ${c.website_url
               ? `<a href="${esc(c.website_url)}" target="_blank" rel="noopener" class="text-blue-500 hover:underline">${esc(truncUrl(c.website_url, 25))}</a>`
