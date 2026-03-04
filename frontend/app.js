@@ -347,7 +347,7 @@ function updatePillLabels() {
 
   // Location (work type)
   const wtCount = getCheckedByName("work_type").length;
-  document.getElementById("fplbl-worktype").textContent = wtCount > 0 ? `Location (${wtCount})` : "Location";
+  document.getElementById("fplbl-worktype").textContent = wtCount > 0 ? `Type (${wtCount})` : "Type";
   document.getElementById("fpbtn-worktype").classList.toggle("active", wtCount > 0);
 
   // Experience
@@ -459,10 +459,25 @@ document.addEventListener("change", (e) => {
   }
 });
 
-// Text input filters with debounce
+// Text input filters with debounce + clear button visibility
 ["filter-keyword", "filter-city"].forEach(id => {
-  document.getElementById(id)?.addEventListener("input", () => debounce(resetAndLoad));
+  const input = document.getElementById(id);
+  if (!input) return;
+  const clearId = id === "filter-keyword" ? "clear-keyword" : "clear-city";
+  const clearBtn = document.getElementById(clearId);
+  input.addEventListener("input", () => {
+    if (clearBtn) clearBtn.style.display = input.value ? "block" : "none";
+    debounce(resetAndLoad);
+  });
 });
+
+function fpClearInput(field) {
+  const input = document.getElementById("filter-" + field);
+  const btn   = document.getElementById("clear-" + field);
+  if (input) { input.value = ""; input.focus(); }
+  if (btn)   btn.style.display = "none";
+  debounce(resetAndLoad);
+}
 
 // Reset button
 document.getElementById("btn-reset").addEventListener("click", () => {
@@ -471,6 +486,8 @@ document.getElementById("btn-reset").addEventListener("click", () => {
   if (defaultDate) defaultDate.checked = true;
   document.getElementById("filter-keyword").value = "";
   document.getElementById("filter-city").value = "";
+  document.getElementById("clear-keyword").style.display = "none";
+  document.getElementById("clear-city").style.display = "none";
   closePanels();
   updatePillLabels();
   resetAndLoad();
