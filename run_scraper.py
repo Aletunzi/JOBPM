@@ -178,6 +178,13 @@ async def scrape_company(session_factory, company_id: int, company_data: dict, s
 
         except Exception as exc:
             logger.error("  %s: error — %s", company_data["name"], exc)
+            async with session_factory() as session:
+                from api.models import Company
+                company = await session.get(Company, company_id)
+                if company:
+                    company.scrape_status = "ERROR"
+                    company.last_scraped = now
+                    await session.commit()
             return 0, "ERROR"
 
         finally:
