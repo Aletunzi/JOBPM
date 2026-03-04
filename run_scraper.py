@@ -127,6 +127,12 @@ async def scrape_company(session_factory, company_id: int, company_data: dict, s
                 else:
                     company.scrape_status = "EMPTY"
 
+                if company.scrape_status == "EMPTY":
+                    await session.execute(
+                        text("UPDATE jobs SET is_active = false WHERE company_id = :cid AND is_active = true"),
+                        {"cid": company.id},
+                    )
+
                 company.last_scraped = now
                 company.page_hash = new_hash
                 await session.commit()
