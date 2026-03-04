@@ -11,6 +11,7 @@
   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@500&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -117,6 +118,15 @@
               </svg>
             </button>
             <div id="card-database" class="space-y-2.5"></div>
+          </div>
+        </div>
+
+        <!-- Row 1b: Trend chart -->
+        <div class="bg-white border border-gray-200 rounded-xl p-5">
+          <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Trend</h2>
+          <div id="trend-empty" class="hidden text-center py-6 text-gray-300 text-sm">No historical data yet — chart will populate after the next scraper run.</div>
+          <div id="trend-wrap" style="position:relative; height:220px;">
+            <canvas id="trend-chart"></canvas>
           </div>
         </div>
 
@@ -556,12 +566,61 @@
 
         document.getElementById("admin-loading").classList.add("hidden");
         document.getElementById("admin-content").classList.remove("hidden");
+        loadTrendChart();
       } catch (err) {
         document.getElementById("admin-loading").classList.add("hidden");
         const el = document.getElementById("admin-error");
         el.textContent = `Failed to load admin stats: ${err.message}`;
         el.classList.remove("hidden");
       }
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // TREND CHART
+    // ══════════════════════════════════════════════════════════════════════════
+
+    let trendChartInstance = null;
+
+    async function loadTrendChart() {
+      try {
+        const res = await fetch("/api/stats/history", { headers: { "X-API-Key": API_KEY } });
+        if (!res.ok) return;
+        const data = await res.json();
+
+        if (!data || data.length === 0) {
+          document.getElementById("trend-wrap").classList.add("hidden");
+          document.getElementById("trend-empty").classList.remove("hidden");
+          return;
+        }
+
+        const labels = data.map(r => r.date);
+        const datasets = [
+          { label: "Total active",  data: data.map(r => r.total_active),   borderColor: "#2563eb", backgroundColor: "transparent", tension: 0.3, pointRadius: 3 },
+          { label: "OK",            data: data.map(r => r.status_ok),       borderColor: "#16a34a", backgroundColor: "transparent", tension: 0.3, pointRadius: 3 },
+          { label: "Empty",         data: data.map(r => r.status_empty),    borderColor: "#9ca3af", backgroundColor: "transparent", tension: 0.3, pointRadius: 3 },
+          { label: "Error",         data: data.map(r => r.status_error),    borderColor: "#dc2626", backgroundColor: "transparent", tension: 0.3, pointRadius: 3 },
+          { label: "HTTP error",    data: data.map(r => r.status_http_error), borderColor: "#f97316", backgroundColor: "transparent", tension: 0.3, pointRadius: 3 },
+          { label: "SPA",           data: data.map(r => r.status_spa),      borderColor: "#7c3aed", backgroundColor: "transparent", tension: 0.3, pointRadius: 3 },
+        ];
+
+        if (trendChartInstance) trendChartInstance.destroy();
+        trendChartInstance = new Chart(document.getElementById("trend-chart"), {
+          type: "line",
+          data: { labels, datasets },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: "index", intersect: false },
+            plugins: {
+              legend: { position: "bottom", labels: { boxWidth: 12, font: { size: 11 } } },
+            },
+            scales: {
+              x: { ticks: { font: { size: 11 }, maxTicksLimit: 14 }, grid: { display: false } },
+              y: { beginAtZero: true, ticks: { font: { size: 11 } }, grid: { color: "#f3f4f6" } },
+            },
+          },
+        });
+      } catch (_) {}
     }
 
     // ══════════════════════════════════════════════════════════════════════════

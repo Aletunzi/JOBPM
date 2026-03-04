@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 from typing import Optional
 from uuid import UUID
 from pydantic import BaseModel
@@ -71,6 +71,18 @@ class AdminStatsOut(BaseModel):
     companies_active: int = 0     # enabled companies with career_url (actively scraped)
     companies_due: int            # companies due for scraping today
     scrape_health: dict[str, int] = {}  # count by scrape_status (OK, EMPTY, HTTP_ERROR, SPA_DETECTED)
+
+
+class DailySnapshotOut(BaseModel):
+    date: date
+    total_active: int
+    status_ok: int
+    status_empty: int
+    status_error: int
+    status_http_error: int
+    status_spa: int
+
+    model_config = {"from_attributes": True}
 
 
 class CompanyPatch(BaseModel):
