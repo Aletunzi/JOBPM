@@ -34,6 +34,8 @@ class CompanyOut(BaseModel):
     last_scraped: Optional[datetime]
     scrape_status: Optional[str] = None
     active_jobs: int = 0
+    website_url_updated_at: Optional[datetime] = None
+    career_url_updated_at: Optional[datetime] = None
 
     model_config = {"from_attributes": True}
 
