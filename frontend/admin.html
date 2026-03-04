@@ -108,34 +108,22 @@
 
       <div id="admin-content" class="hidden space-y-4">
 
-        <!-- KPI Summary -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div class="bg-white border border-gray-200 rounded-xl p-4 text-center">
-            <div id="kpi-last-run" class="text-lg font-bold text-brand-600">—</div>
-            <div class="text-xs text-gray-400 mt-1">Last workflow run</div>
-          </div>
-          <div class="bg-white border border-gray-200 rounded-xl p-4 text-center">
-            <div id="kpi-companies" class="text-2xl font-bold text-brand-600">—</div>
-            <div class="text-xs text-gray-400 mt-1">Companies in DB</div>
-          </div>
-          <div class="bg-white border border-gray-200 rounded-xl p-4 text-center">
-            <div id="kpi-with-url" class="text-2xl font-bold text-brand-600">—</div>
-            <div class="text-xs text-gray-400 mt-1">With career URL</div>
-          </div>
-          <div class="bg-white border border-gray-200 rounded-xl p-4 text-center">
-            <div id="kpi-vacancies" class="text-2xl font-bold text-brand-600">—</div>
-            <div class="text-xs text-gray-400 mt-1">Vacancies found</div>
-          </div>
-        </div>
-
         <!-- Row 1: Scraper + DB -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="bg-white border border-gray-200 rounded-xl p-5">
-            <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Scraper Status</h2>
+            <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Scrape results</h2>
             <div id="card-scraper" class="space-y-2.5"></div>
           </div>
           <div class="bg-white border border-gray-200 rounded-xl p-5">
-            <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Database</h2>
+            <button onclick="switchTab('quality')"
+              class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4 hover:text-brand-500 transition-colors flex items-center gap-1 group">
+              Database status
+              <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                class="opacity-0 group-hover:opacity-100 transition-opacity -rotate-90">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </button>
             <div id="card-database" class="space-y-2.5"></div>
           </div>
         </div>
@@ -146,15 +134,15 @@
           <div id="card-source" class="divide-y divide-gray-50"></div>
         </div>
 
-        <!-- Row 3: By Region + Top Locations -->
+        <!-- Row 3: By Continent + By Country -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div class="bg-white border border-gray-200 rounded-xl p-5">
-            <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">By Continent</h2>
-            <div id="card-geo" class="divide-y divide-gray-50"></div>
+          <div class="bg-white border border-gray-200 rounded-xl p-5 flex flex-col">
+            <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4 shrink-0">By Continent</h2>
+            <div id="card-geo" class="divide-y divide-gray-50 overflow-y-auto" style="max-height:260px"></div>
           </div>
-          <div class="bg-white border border-gray-200 rounded-xl p-5">
-            <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Top Locations</h2>
-            <div id="card-locations" class="divide-y divide-gray-50"></div>
+          <div class="bg-white border border-gray-200 rounded-xl p-5 flex flex-col">
+            <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4 shrink-0">By Country</h2>
+            <div id="card-locations" class="divide-y divide-gray-50 overflow-y-auto" style="max-height:260px"></div>
           </div>
         </div>
 
@@ -505,19 +493,18 @@
             statRow("Schedule",           parseCronHuman(d.schedule_cron)),
             statRow("Last run",           timeSince(d.last_run)),
             statRow("Last run (exact)",   fmtDatetime(d.last_run)),
-            statRow("Added in last 24 h", `+${d.new_24h.toLocaleString()}`),
             statRow("Companies total",    d.total_companies.toLocaleString()),
             statRow("With website URL",   (d.companies_with_website || 0).toLocaleString()),
             statRow("With career URL",    d.companies_with_url.toLocaleString()),
-            statRow("Due for scraping",   d.companies_due.toLocaleString()),
-            ...(d.scrape_health ? Object.entries(d.scrape_health).map(([k, v]) =>
-              statRow(`Scrape: ${k}`, v.toLocaleString())
-            ) : []),
+            statRow("Jobs found",         d.total_jobs.toLocaleString()),
+            statRow("Added in last 24 h", `+${d.new_24h.toLocaleString()}`),
           ].join("");
 
         document.getElementById("card-database").innerHTML = [
-          statRow("Active jobs",        d.total_jobs.toLocaleString()),
-          statRow("Added in last 24 h", `+${d.new_24h.toLocaleString()}`),
+          statRow("Due for scraping", d.companies_due.toLocaleString()),
+          ...(d.scrape_health ? Object.entries(d.scrape_health).map(([k, v]) =>
+            statRow(`Scrape: ${k}`, v.toLocaleString())
+          ) : []),
         ].join("");
 
         const srcEntries = Object.entries(d.by_source).sort((a, b) => b[1] - a[1]);
@@ -539,12 +526,6 @@
           d.top_locations.length
             ? d.top_locations.map(loc => locRow(loc.name, loc.count)).join("")
             : `<p class="text-sm text-gray-400 py-4 text-center">No data yet</p>`;
-
-        document.getElementById("kpi-last-run").textContent = timeSince(d.last_run);
-        document.getElementById("kpi-last-run").title = fmtDatetime(d.last_run);
-        document.getElementById("kpi-companies").textContent = d.total_companies.toLocaleString();
-        document.getElementById("kpi-with-url").textContent = d.companies_with_url.toLocaleString();
-        document.getElementById("kpi-vacancies").textContent = d.total_active.toLocaleString();
 
         document.getElementById("admin-loading").classList.add("hidden");
         document.getElementById("admin-content").classList.remove("hidden");
