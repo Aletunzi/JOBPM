@@ -39,6 +39,8 @@ async def _company_to_out(c: Company, active_jobs: int) -> CompanyOut:
         last_scraped=c.last_scraped,
         scrape_status=getattr(c, "scrape_status", None),
         active_jobs=active_jobs,
+        website_url_updated_at=getattr(c, "website_url_updated_at", None),
+        career_url_updated_at=getattr(c, "career_url_updated_at", None),
     )
 
 
@@ -268,15 +270,18 @@ async def import_companies_excel(
 
         # Apply editable fields
         changed = False
+        now = datetime.now(timezone.utc)
         if idx_website is not None and row[idx_website] is not None:
             website = str(row[idx_website]).strip()
             if website != (company.website_url or ""):
                 company.website_url = website or None
+                company.website_url_updated_at = now
                 changed = True
         if idx_career is not None and row[idx_career] is not None:
             career = str(row[idx_career]).strip()
             if career != (company.career_url or ""):
                 company.career_url = career or None
+                company.career_url_updated_at = now
                 company.career_url_source = "manual" if career else "auto"
                 if not career:
                     company.page_hash = None
@@ -312,11 +317,17 @@ async def patch_company(
 
     fields_set = patch.model_fields_set
 
+    now = datetime.now(timezone.utc)
+
     if "website_url" in fields_set:
-        company.website_url = patch.website_url
+        if patch.website_url != company.website_url:
+            company.website_url = patch.website_url
+            company.website_url_updated_at = now
 
     if "career_url" in fields_set:
-        company.career_url = patch.career_url
+        if patch.career_url != company.career_url:
+            company.career_url = patch.career_url
+            company.career_url_updated_at = now
         # Track provenance: manual if setting a URL, auto if clearing (allow rediscovery)
         company.career_url_source = "manual" if patch.career_url else "auto"
         if not patch.career_url:

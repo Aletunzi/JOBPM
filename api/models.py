@@ -33,6 +33,8 @@ class Company(Base):
     scrape_interval_days = Column(Integer, nullable=False, default=5)
     last_discovery_attempt = Column(DateTime(timezone=True), nullable=True)
     scrape_status = Column(String(30), nullable=True)     # OK | HTTP_ERROR | EMPTY | SPA_DETECTED | TIMEOUT
+    website_url_updated_at = Column(DateTime(timezone=True), nullable=True)
+    career_url_updated_at  = Column(DateTime(timezone=True), nullable=True)
 
     jobs = relationship("Job", back_populates="company", lazy="select")
 

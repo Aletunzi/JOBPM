@@ -37,7 +37,7 @@
 </head>
 <body class="bg-white min-h-screen font-sans text-gray-900">
 
-  <!-- Unified sticky top: header + tabs + quality action bar -->
+  <!-- Unified sticky top: header + tabs + action bar -->
   <div id="sticky-top" class="sticky top-0 z-20">
 
     <header class="bg-white">
@@ -65,7 +65,7 @@
             Database
           </button>
         </div>
-        <!-- Quality tab actions (shown only when Database quality is active) -->
+        <!-- Database tab actions (shown only when Database tab is active) -->
         <div id="disc-action-bar" style="display:none" class="items-center gap-2 py-2">
           <button onclick="exportExcel()" title="Export companies Excel"
             class="p-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-100 transition-colors">
@@ -97,17 +97,15 @@
 
     <!-- ══════════════════ PANEL: Overview ══════════════════ -->
     <div id="panel-overview" class="hidden">
-    </div><!-- /panel-overview -->
+    </div>
 
     <!-- ══════════════════ PANEL: Scraping ══════════════════ -->
     <div id="panel-scrape">
 
-      <!-- Loading -->
       <div id="admin-loading" class="flex justify-center py-20">
         <div class="w-8 h-8 border-4 border-brand-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
 
-      <!-- Content -->
       <div id="admin-content" class="hidden space-y-4">
 
         <!-- KPI Summary -->
@@ -160,68 +158,8 @@
           </div>
         </div>
 
-        <!-- Row 4: Companies List -->
-        <div class="bg-white border border-gray-200 rounded-xl p-5">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-            <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-              Companies <span id="companies-count" class="text-gray-300"></span>
-            </h2>
-            <div class="relative inline-flex items-center">
-              <input id="co-search" type="text" placeholder="Search by name…"
-                class="text-sm border border-gray-200 rounded-lg px-3 py-1.5 pr-7 focus:outline-none focus:ring-1 focus:ring-brand-500 w-44" />
-              <button id="co-search-clear" onclick="coClearSearch()"
-                class="absolute right-2 text-gray-400 hover:text-gray-700 hidden text-sm leading-none" title="Clear">✕</button>
-            </div>
-          </div>
-
-          <!-- Status filter pills -->
-          <div class="flex flex-wrap items-center gap-1.5 mb-4">
-            <span class="text-xs text-gray-400 mr-0.5">Status:</span>
-            <button id="co-status-all"          onclick="coSetStatus(null)"           class="co-status-pill">All</button>
-            <button id="co-status-OK"           onclick="coSetStatus('OK')"           class="co-status-pill">● OK</button>
-            <button id="co-status-EMPTY"        onclick="coSetStatus('EMPTY')"        class="co-status-pill">● Empty</button>
-            <button id="co-status-HTTP_ERROR"   onclick="coSetStatus('HTTP_ERROR')"   class="co-status-pill">● HTTP error</button>
-            <button id="co-status-SPA_DETECTED" onclick="coSetStatus('SPA_DETECTED')" class="co-status-pill">● SPA</button>
-            <button id="co-status-TIMEOUT"      onclick="coSetStatus('TIMEOUT')"      class="co-status-pill">● Timeout</button>
-          </div>
-
-          <!-- Table -->
-          <div id="co-table-scroll" class="overflow-x-auto overflow-y-auto">
-            <table class="w-full text-sm">
-              <thead>
-                <tr class="text-left text-xs text-gray-400 uppercase tracking-wider">
-                  <th class="py-2 pr-3 cursor-pointer select-none hover:text-gray-600 sticky top-0 bg-white z-10 border-b border-gray-100" onclick="coSortBy('name')">
-                    Name <span id="sort-name-icon" class="ml-0.5">⇅</span>
-                  </th>
-                  <th class="py-2 pr-3 sticky top-0 bg-white z-10 border-b border-gray-100">Website</th>
-                  <th class="py-2 pr-3 sticky top-0 bg-white z-10 border-b border-gray-100">Career URL</th>
-                  <th class="py-2 pr-3 cursor-pointer select-none hover:text-gray-600 sticky top-0 bg-white z-10 border-b border-gray-100" onclick="coSortBy('last_scraped')">
-                    Last Scraped <span id="sort-last_scraped-icon" class="ml-0.5">⇅</span>
-                  </th>
-                  <th class="py-2 pr-3 cursor-pointer select-none hover:text-gray-600 sticky top-0 bg-white z-10 border-b border-gray-100" onclick="coSortBy('scrape_status')">
-                    Status <span id="sort-scrape_status-icon" class="ml-0.5">⇅</span>
-                  </th>
-                  <th class="py-2 text-center sticky top-0 bg-white z-10 border-b border-gray-100">Jobs</th>
-                  <th class="py-2 w-6 sticky top-0 bg-white z-10 border-b border-gray-100"></th>
-                </tr>
-              </thead>
-              <tbody id="co-tbody" class="divide-y divide-gray-50"></tbody>
-            </table>
-          </div>
-
-          <!-- Pagination -->
-          <div id="co-pagination" class="flex items-center justify-center gap-1 mt-4 pt-3 border-t border-gray-100">
-            <button id="co-prev" onclick="coNav(-1)"
-              class="w-7 h-7 flex items-center justify-center rounded text-gray-400 hover:text-gray-900 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-default transition-colors">←</button>
-            <div id="co-page-info" class="flex items-center gap-1"></div>
-            <button id="co-next" onclick="coNav(1)"
-              class="w-7 h-7 flex items-center justify-center rounded text-gray-400 hover:text-gray-900 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-default transition-colors">→</button>
-          </div>
-        </div>
-
       </div>
 
-      <!-- Error -->
       <div id="admin-error" class="hidden text-center py-20 text-red-400 text-sm"></div>
 
     </div><!-- /panel-scrape -->
@@ -239,29 +177,52 @@
         <div class="px-4 py-3 border-b border-gray-100 flex justify-end">
           <div class="relative inline-flex items-center">
             <input id="disc-search" type="text" placeholder="Search by name…"
-              oninput="discFilterRows()"
               class="text-sm border border-gray-200 rounded-lg px-3 py-1.5 pr-7 focus:outline-none focus:ring-1 focus:ring-brand-500 w-52" />
             <button id="disc-search-clear" onclick="discClearSearch()"
               class="absolute right-2 text-gray-400 hover:text-gray-700 hidden text-sm leading-none" title="Clear">✕</button>
           </div>
         </div>
+
         <div id="disc-table-scroll" class="overflow-x-auto overflow-y-auto">
-          <table class="w-full text-sm table-fixed">
+          <table class="w-full text-sm">
             <thead>
               <tr class="text-left text-xs text-gray-400 uppercase tracking-wider">
-                <th class="py-3 px-4 font-semibold w-[5%] text-center sticky top-0 bg-white z-10 border-b border-gray-100">Status</th>
-                <th class="py-3 px-4 font-semibold w-[27%] sticky top-0 bg-white z-10 border-b border-gray-100">Company</th>
-                <th class="py-3 px-4 font-semibold w-[27%] sticky top-0 bg-white z-10 border-b border-gray-100">Website</th>
-                <th class="py-3 px-4 font-semibold w-[30%] sticky top-0 bg-white z-10 border-b border-gray-100">Current Career URL</th>
-                <th class="py-3 px-4 font-semibold w-[8%] text-center sticky top-0 bg-white z-10 border-b border-gray-100 whitespace-nowrap">Last update</th>
-                <th class="py-3 px-4 w-[3%] sticky top-0 bg-white z-10 border-b border-gray-100"></th>
+                <th class="py-2 pr-3 cursor-pointer select-none hover:text-gray-600 sticky top-0 bg-white z-10 border-b border-gray-100"
+                    onclick="discSortBy('name')">
+                  Company <span id="disc-sort-name-icon" class="ml-0.5">⇅</span>
+                </th>
+                <th class="py-2 pr-3 sticky top-0 bg-white z-10 border-b border-gray-100">Website</th>
+                <th class="py-2 pr-3 sticky top-0 bg-white z-10 border-b border-gray-100">Career URL</th>
+                <th class="py-2 pr-3 cursor-pointer select-none hover:text-gray-600 sticky top-0 bg-white z-10 border-b border-gray-100"
+                    onclick="discSortBy('last_scraped')">
+                  Last Scrape <span id="disc-sort-last_scraped-icon" class="ml-0.5">⇅</span>
+                </th>
+                <th id="disc-status-th" class="py-2 pr-3 cursor-pointer select-none sticky top-0 bg-white z-10 border-b border-gray-100 relative"
+                    onclick="toggleStatusFilterModal(event)">
+                  <span class="flex items-center gap-1 hover:text-gray-600">
+                    Status
+                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="6 9 12 15 18 9"/>
+                    </svg>
+                    <span id="disc-status-filter-badge" class="hidden text-[10px] font-semibold bg-brand-500 text-white rounded-full px-1.5 py-0.5 leading-none"></span>
+                  </span>
+                </th>
+                <th class="py-2 pr-3 text-center sticky top-0 bg-white z-10 border-b border-gray-100">Jobs</th>
+                <th class="py-2 w-8 sticky top-0 bg-white z-10 border-b border-gray-100"></th>
               </tr>
             </thead>
             <tbody id="disc-tbody" class="divide-y divide-gray-50"></tbody>
           </table>
         </div>
-        <div id="disc-table-footer" class="px-4 py-2 text-xs text-gray-400 border-t border-gray-100">
-          <span id="disc-footer-count">—</span> companies loaded
+
+        <!-- Pagination -->
+        <div id="disc-pagination" class="flex items-center justify-center gap-1 px-4 py-3 border-t border-gray-100">
+          <button id="disc-prev" onclick="discNav(-1)"
+            class="w-7 h-7 flex items-center justify-center rounded text-gray-400 hover:text-gray-900 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-default transition-colors">←</button>
+          <div id="disc-page-info" class="flex items-center gap-1"></div>
+          <button id="disc-next" onclick="discNav(1)"
+            class="w-7 h-7 flex items-center justify-center rounded text-gray-400 hover:text-gray-900 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-default transition-colors">→</button>
         </div>
       </div>
 
@@ -269,27 +230,75 @@
 
   </div>
 
-  <!-- DB Quality — Discovery edit modal -->
-  <div id="disc-edit-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-    <div class="bg-white rounded-xl shadow-xl w-full max-w-lg mx-4 p-6">
+  <!-- ══ Status filter modal (dropdown) ══ -->
+  <div id="status-filter-modal" class="hidden fixed z-50 bg-white border border-gray-200 rounded-xl shadow-xl p-3 w-44">
+    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-1">Filter by status</p>
+    <div class="space-y-0.5">
+      <button onclick="discSetStatus(null)"    class="disc-status-opt w-full text-left px-2 py-1.5 rounded text-sm hover:bg-gray-50" data-s="">All</button>
+      <button onclick="discSetStatus('OK')"    class="disc-status-opt w-full text-left px-2 py-1.5 rounded text-sm hover:bg-gray-50" data-s="OK"><span class="text-green-500 mr-1">●</span>OK</button>
+      <button onclick="discSetStatus('EMPTY')" class="disc-status-opt w-full text-left px-2 py-1.5 rounded text-sm hover:bg-gray-50" data-s="EMPTY"><span class="text-gray-400 mr-1">●</span>Empty</button>
+      <button onclick="discSetStatus('HTTP_ERROR')" class="disc-status-opt w-full text-left px-2 py-1.5 rounded text-sm hover:bg-gray-50" data-s="HTTP_ERROR"><span class="text-red-500 mr-1">●</span>HTTP error</button>
+      <button onclick="discSetStatus('SPA_DETECTED')" class="disc-status-opt w-full text-left px-2 py-1.5 rounded text-sm hover:bg-gray-50" data-s="SPA_DETECTED"><span class="text-red-500 mr-1">●</span>SPA</button>
+      <button onclick="discSetStatus('TIMEOUT')" class="disc-status-opt w-full text-left px-2 py-1.5 rounded text-sm hover:bg-gray-50" data-s="TIMEOUT"><span class="text-orange-500 mr-1">●</span>Timeout</button>
+    </div>
+  </div>
+
+  <!-- ══ Unified Edit Modal ══ -->
+  <div id="edit-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-lg mx-4 p-6 max-h-[90vh] overflow-y-auto">
+
+      <!-- Header -->
       <div class="flex items-center justify-between mb-5">
-        <h3 class="text-sm font-semibold text-gray-800 truncate" id="dem-title"></h3>
-        <button onclick="discCloseEditModal()" class="text-gray-400 hover:text-gray-600 text-lg leading-none">✕</button>
+        <h3 class="text-sm font-semibold text-gray-800 truncate" id="edit-modal-title"></h3>
+        <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600 text-lg leading-none shrink-0 ml-2">✕</button>
       </div>
 
-      <div class="space-y-2.5 mb-5">
-        <div class="flex items-start gap-3">
-          <span class="text-xs text-gray-400 w-24 shrink-0 pt-0.5">Website</span>
-          <span id="dem-website" class="text-sm min-w-0 break-all"></span>
+      <!-- Website URL -->
+      <div class="mb-4">
+        <div class="flex items-center justify-between mb-1">
+          <span class="text-xs font-medium text-gray-500">Website URL</span>
+          <span id="edit-website-updated" class="text-xs text-gray-300"></span>
         </div>
-        <div class="flex items-start gap-3">
-          <span class="text-xs text-gray-400 w-24 shrink-0 pt-0.5">Career URL</span>
-          <span id="dem-career" class="text-sm min-w-0 break-all"></span>
+        <div class="flex items-center gap-2">
+          <span id="edit-website-display" class="text-sm text-gray-700 truncate flex-1 min-w-0"></span>
+          <input id="edit-website-input" type="url" placeholder="https://example.com"
+            class="hidden flex-1 text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-500" />
+          <button id="edit-website-edit-btn" onclick="toggleUrlEdit('website')" title="Edit"
+            class="shrink-0 text-gray-400 hover:text-gray-700 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+          </button>
         </div>
+      </div>
+
+      <!-- Career URL -->
+      <div class="mb-5">
+        <div class="flex items-center justify-between mb-1">
+          <span class="text-xs font-medium text-gray-500">Career URL</span>
+          <span id="edit-career-updated" class="text-xs text-gray-300"></span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span id="edit-career-display" class="text-sm text-gray-700 truncate flex-1 min-w-0"></span>
+          <input id="edit-career-input" type="url" placeholder="https://example.com/careers"
+            class="hidden flex-1 text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-500" />
+          <button id="edit-career-edit-btn" onclick="toggleUrlEdit('career')" title="Edit"
+            class="shrink-0 text-gray-400 hover:text-gray-700 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+          </button>
+        </div>
+        <p class="text-xs text-gray-400 mt-1">Leave blank to trigger auto-discovery on next run.</p>
       </div>
 
       <div class="border-t border-gray-100 mb-4"></div>
 
+      <!-- Suggested Career URLs -->
       <div class="flex items-center justify-between mb-4">
         <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Suggested Career URLs</span>
         <button id="dem-run-btn" onclick="discModalRun()"
@@ -310,7 +319,7 @@
         <div id="dem-sonar-result" class="pl-3.5 text-xs"><span class="text-gray-300">—</span></div>
       </div>
 
-      <div>
+      <div class="mb-5">
         <div class="flex items-center gap-1.5 mb-1.5">
           <span class="inline-block w-2 h-2 rounded-full bg-green-400 shrink-0"></span>
           <span class="text-xs font-medium text-gray-500">Gemini</span>
@@ -318,36 +327,18 @@
         <div id="dem-gemini-result" class="pl-3.5 text-xs"><span class="text-gray-300">—</span></div>
       </div>
 
-      <p id="dem-error" class="text-xs text-red-500 mt-3 min-h-[1rem]"></p>
-    </div>
-  </div>
+      <div class="border-t border-gray-100 mb-4"></div>
 
-  <!-- Edit Company Modal -->
-  <div id="edit-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-    <div class="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-6">
-      <div class="flex items-center justify-between mb-5">
-        <h3 class="text-sm font-semibold text-gray-800 truncate" id="edit-modal-title"></h3>
-        <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600 text-lg leading-none">✕</button>
+      <!-- Enabled toggle -->
+      <div class="flex items-center gap-2 mb-4">
+        <input id="edit-enabled" type="checkbox" class="rounded border-gray-300 text-brand-500 focus:ring-brand-500" />
+        <label for="edit-enabled" class="text-sm text-gray-600">Enabled</label>
       </div>
-      <div class="space-y-4">
-        <div>
-          <label class="block text-xs font-medium text-gray-500 mb-1">Website URL</label>
-          <input id="edit-website-url" type="url" placeholder="https://example.com"
-            class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand-500" />
-        </div>
-        <div>
-          <label class="block text-xs font-medium text-gray-500 mb-1">Career URL</label>
-          <input id="edit-career-url" type="url" placeholder="https://example.com/careers"
-            class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand-500" />
-          <p class="text-xs text-gray-400 mt-1">Leave blank to trigger auto-discovery on next run.</p>
-        </div>
-        <div class="flex items-center gap-2">
-          <input id="edit-enabled" type="checkbox" class="rounded border-gray-300 text-brand-500 focus:ring-brand-500" />
-          <label for="edit-enabled" class="text-sm text-gray-600">Enabled</label>
-        </div>
-      </div>
-      <p id="edit-modal-error" class="text-xs text-red-500 mt-3 min-h-[1rem]"></p>
-      <div class="flex justify-end gap-2 mt-5">
+
+      <p id="edit-modal-error" class="text-xs text-red-500 mb-3 min-h-[1rem]"></p>
+
+      <!-- Actions -->
+      <div class="flex justify-end gap-2">
         <button onclick="closeEditModal()"
           class="text-sm px-4 py-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors">Cancel</button>
         <button id="edit-save-btn" onclick="saveCompany()"
@@ -372,61 +363,6 @@
       if (!url) return "";
       return url.length > max ? url.slice(0, max) + "…" : url;
     }
-
-    // ── Tab routing ────────────────────────────────────────────────────────────
-
-    let qualityInitialized = false;
-
-    function updateCoTableHeight() {
-      const scroll = document.getElementById("co-table-scroll");
-      const pagination = document.getElementById("co-pagination");
-      if (!scroll) return;
-      if (document.getElementById("panel-scrape").classList.contains("hidden")) return;
-      const rect = scroll.getBoundingClientRect();
-      const paginationH = pagination ? pagination.offsetHeight : 56;
-      const maxH = window.innerHeight - rect.top - paginationH - 8;
-      if (maxH > 100) scroll.style.maxHeight = maxH + "px";
-    }
-
-    function updateTHeadSticky() {
-      const scroll = document.getElementById("disc-table-scroll");
-      const footer = document.getElementById("disc-table-footer");
-      if (!scroll || !footer) return;
-      if (document.getElementById("disc-table-wrap").classList.contains("hidden")) return;
-      const rect = scroll.getBoundingClientRect();
-      const maxH = window.innerHeight - rect.top - footer.offsetHeight - 8;
-      if (maxH > 100) scroll.style.maxHeight = maxH + "px";
-    }
-
-    function switchTab(tab) {
-      sessionStorage.setItem("adminTab", tab);
-      ["overview", "scrape", "quality"].forEach(t => {
-        const btn   = document.getElementById("tab-" + t);
-        const panel = document.getElementById("panel-" + t);
-        const active = t === tab;
-        btn.classList.toggle("border-brand-500", active);
-        btn.classList.toggle("text-gray-900", active);
-        btn.classList.toggle("border-transparent", !active);
-        btn.classList.toggle("text-gray-400", !active);
-        panel.classList.toggle("hidden", !active);
-      });
-      const actionBar = document.getElementById("disc-action-bar");
-      if (actionBar) actionBar.style.display = tab === "quality" ? "flex" : "none";
-      if (tab === "quality") requestAnimationFrame(updateTHeadSticky);
-      if (tab === "scrape") requestAnimationFrame(updateCoTableHeight);
-      if (tab === "quality" && !qualityInitialized) {
-        qualityInitialized = true;
-        loadDiscoveryCompanies();
-      }
-    }
-
-    // ══════════════════════════════════════════════════════════════════════════
-    // SCRAPE OVERVIEW
-    // ══════════════════════════════════════════════════════════════════════════
-
-    const SOURCE_LABELS = { custom: "Else Agent" };
-
-    function capFirst(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
 
     function timeSince(iso) {
       if (!iso) return "—";
@@ -514,6 +450,49 @@
         </div>`;
     }
 
+    // ── Tab routing ────────────────────────────────────────────────────────────
+
+    let qualityInitialized = false;
+
+    function updateDiscTableHeight() {
+      const scroll = document.getElementById("disc-table-scroll");
+      const pagination = document.getElementById("disc-pagination");
+      if (!scroll || !pagination) return;
+      if (document.getElementById("panel-quality").classList.contains("hidden")) return;
+      const rect = scroll.getBoundingClientRect();
+      const paginationH = pagination.offsetHeight;
+      const maxH = window.innerHeight - rect.top - paginationH - 8;
+      if (maxH > 100) scroll.style.maxHeight = maxH + "px";
+    }
+
+    function switchTab(tab) {
+      sessionStorage.setItem("adminTab", tab);
+      ["overview", "scrape", "quality"].forEach(t => {
+        const btn   = document.getElementById("tab-" + t);
+        const panel = document.getElementById("panel-" + t);
+        const active = t === tab;
+        btn.classList.toggle("border-brand-500", active);
+        btn.classList.toggle("text-gray-900", active);
+        btn.classList.toggle("border-transparent", !active);
+        btn.classList.toggle("text-gray-400", !active);
+        panel.classList.toggle("hidden", !active);
+      });
+      const actionBar = document.getElementById("disc-action-bar");
+      if (actionBar) actionBar.style.display = tab === "quality" ? "flex" : "none";
+      if (tab === "quality") requestAnimationFrame(updateDiscTableHeight);
+      if (tab === "quality" && !qualityInitialized) {
+        qualityInitialized = true;
+        loadDiscoveryCompanies();
+      }
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // SCRAPE OVERVIEW (stats cards only)
+    // ══════════════════════════════════════════════════════════════════════════
+
+    const SOURCE_LABELS = { custom: "Else Agent" };
+    function capFirst(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+
     async function loadAdmin() {
       try {
         const res = await fetch("/api/stats/admin", { headers: { "X-API-Key": API_KEY } });
@@ -569,8 +548,6 @@
 
         document.getElementById("admin-loading").classList.add("hidden");
         document.getElementById("admin-content").classList.remove("hidden");
-
-        loadCompanies();
       } catch (err) {
         document.getElementById("admin-loading").classList.add("hidden");
         const el = document.getElementById("admin-error");
@@ -579,55 +556,105 @@
       }
     }
 
-    // ── Companies table ───────────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════════════
+    // DATABASE TAB — unified companies table
+    // ══════════════════════════════════════════════════════════════════════════
 
-    let coPage = 1;
-    const CO_LIMIT = 50;
-    let coDebounce = null;
-    let coSort = "name_asc";
-    let coStatusFilter = null;
+    let discPage    = 1;
+    const DISC_LIMIT = 50;
+    let discDebounce = null;
+    let discSort     = "name_asc";
+    let discStatusFilter = null;
 
-    function coFilters() {
+    // Discovery results cache (persisted in localStorage)
+    const DISC_STORAGE_KEY = "career_discovery_results";
+    const discResults = {};
+    // Map of id → company data (populated from last API response)
+    const discById = {};
+
+    function discFilters() {
       const params = new URLSearchParams();
-      params.set("page", coPage);
-      params.set("limit", CO_LIMIT);
-      const search = document.getElementById("co-search").value.trim();
-      if (search) params.set("search", search);
-      if (coSort) params.set("sort", coSort);
-      if (coStatusFilter) params.set("status", coStatusFilter);
+      params.set("page", discPage);
+      params.set("limit", DISC_LIMIT);
       params.set("enabled", "true");
+      const search = document.getElementById("disc-search").value.trim();
+      if (search) params.set("search", search);
+      if (discSort) params.set("sort", discSort);
+      if (discStatusFilter) params.set("status", discStatusFilter);
       return params.toString();
     }
 
-    function coSetStatus(status) {
-      coStatusFilter = status;
-      coPage = 1;
-      updateStatusPills();
-      loadCompanies();
+    function discSortBy(field) {
+      discSort = discSort === field + "_asc" ? field + "_desc" : field + "_asc";
+      discPage = 1;
+      updateDiscSortIcons();
+      loadDiscoveryCompanies();
     }
 
-    function updateStatusPills() {
-      const pills = [
-        { id: "co-status-all",          s: null,           base: "text-gray-600 border-gray-200 hover:border-gray-400" },
-        { id: "co-status-OK",           s: "OK",           base: "text-green-600 border-green-200 hover:border-green-400" },
-        { id: "co-status-EMPTY",        s: "EMPTY",        base: "text-gray-400 border-gray-200 hover:border-gray-400" },
-        { id: "co-status-HTTP_ERROR",   s: "HTTP_ERROR",   base: "text-red-500 border-red-200 hover:border-red-400" },
-        { id: "co-status-SPA_DETECTED", s: "SPA_DETECTED", base: "text-red-500 border-red-200 hover:border-red-400" },
-        { id: "co-status-TIMEOUT",      s: "TIMEOUT",      base: "text-orange-500 border-orange-200 hover:border-orange-400" },
-      ];
-      pills.forEach(({ id, s, base }) => {
-        const btn = document.getElementById(id);
-        if (!btn) return;
-        const active = s === coStatusFilter;
-        btn.className = `co-status-pill px-2.5 py-0.5 rounded-full text-xs border font-medium transition-colors ${
-          active ? "bg-brand-500 text-white border-brand-500" : base
-        }`;
+    function updateDiscSortIcons() {
+      ["name", "last_scraped"].forEach(f => {
+        const el = document.getElementById(`disc-sort-${f}-icon`);
+        if (!el) return;
+        if (discSort === f + "_asc") el.textContent = "↑";
+        else if (discSort === f + "_desc") el.textContent = "↓";
+        else el.textContent = "⇅";
       });
     }
 
-    function coGoTo(page) { coPage = page; loadCompanies(); }
+    // ── Status filter modal ────────────────────────────────────────────────────
 
-    function renderPagination(cur, total) {
+    function toggleStatusFilterModal(e) {
+      e.stopPropagation();
+      const modal = document.getElementById("status-filter-modal");
+      const th    = document.getElementById("disc-status-th");
+      if (modal.classList.contains("hidden")) {
+        const rect = th.getBoundingClientRect();
+        modal.style.top  = (rect.bottom + window.scrollY + 4) + "px";
+        modal.style.left = (rect.left + window.scrollX) + "px";
+        modal.classList.remove("hidden");
+        updateStatusFilterModalActive();
+      } else {
+        modal.classList.add("hidden");
+      }
+    }
+
+    function updateStatusFilterModalActive() {
+      document.querySelectorAll(".disc-status-opt").forEach(btn => {
+        const s = btn.dataset.s;
+        const active = (s === (discStatusFilter || ""));
+        btn.classList.toggle("bg-brand-500", active);
+        btn.classList.toggle("text-white", active);
+        btn.classList.toggle("font-semibold", active);
+      });
+    }
+
+    function discSetStatus(status) {
+      discStatusFilter = status;
+      discPage = 1;
+      document.getElementById("status-filter-modal").classList.add("hidden");
+      // Update badge on column header
+      const badge = document.getElementById("disc-status-filter-badge");
+      if (status) {
+        const labels = { OK: "OK", EMPTY: "Empty", HTTP_ERROR: "HTTP err", SPA_DETECTED: "SPA", TIMEOUT: "Timeout" };
+        badge.textContent = labels[status] || status;
+        badge.classList.remove("hidden");
+      } else {
+        badge.classList.add("hidden");
+      }
+      loadDiscoveryCompanies();
+    }
+
+    // Close status modal on outside click
+    document.addEventListener("click", (e) => {
+      const modal = document.getElementById("status-filter-modal");
+      if (!modal.classList.contains("hidden") && !modal.contains(e.target)) {
+        modal.classList.add("hidden");
+      }
+    });
+
+    // ── Table rendering ────────────────────────────────────────────────────────
+
+    function renderDiscPagination(cur, total) {
       if (total <= 1) return "";
       const items = [];
       if (total <= 7) {
@@ -642,97 +669,120 @@
       return items.map(p => {
         if (p === "…") return `<span class="text-xs text-gray-400 px-0.5 select-none">…</span>`;
         const active = p === cur;
-        return `<button onclick="coGoTo(${p})" class="text-xs w-7 h-7 rounded flex items-center justify-center transition-colors ${active ? 'bg-brand-500 text-white font-semibold' : 'text-gray-500 hover:bg-gray-100'}">${p}</button>`;
+        return `<button onclick="discGoTo(${p})" class="text-xs w-7 h-7 rounded flex items-center justify-center transition-colors ${active ? 'bg-brand-500 text-white font-semibold' : 'text-gray-500 hover:bg-gray-100'}">${p}</button>`;
       }).join("");
     }
 
-    function coSortBy(field) {
-      coSort = coSort === field + "_asc" ? field + "_desc" : field + "_asc";
-      coPage = 1;
-      updateSortIcons();
-      loadCompanies();
-    }
+    function discGoTo(page) { discPage = page; loadDiscoveryCompanies(); }
+    function discNav(dir)   { discPage = Math.max(1, discPage + dir); loadDiscoveryCompanies(); }
 
-    function updateSortIcons() {
-      ["name", "last_scraped", "scrape_status"].forEach(f => {
-        const el = document.getElementById(`sort-${f}-icon`);
-        if (!el) return;
-        if (coSort === f + "_asc") el.textContent = "↑";
-        else if (coSort === f + "_desc") el.textContent = "↓";
-        else el.textContent = "⇅";
-      });
-    }
-
-    async function loadCompanies() {
+    async function loadDiscoveryCompanies() {
       try {
-        const res = await fetch(`/api/companies?${coFilters()}`, { headers: { "X-API-Key": API_KEY } });
+        const res = await fetch(`/api/companies?${discFilters()}`, { headers: { "X-API-Key": API_KEY } });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const d = await res.json();
 
-        document.getElementById("companies-count").textContent = `(${d.total})`;
+        // Populate lookup map
+        d.items.forEach(c => { discById[String(c.id)] = c; });
 
-        const tbody = document.getElementById("co-tbody");
+        const tbody = document.getElementById("disc-tbody");
         if (d.items.length === 0) {
           tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-gray-400 text-sm">No companies found</td></tr>`;
         } else {
-          tbody.innerHTML = d.items.map(c => {
-            return `
-            <tr class="${c.is_enabled ? '' : 'opacity-50'}">
-              <td class="py-2.5 pr-3 font-medium text-gray-900">${esc(c.name)}</td>
-              <td class="py-2.5 pr-3 text-gray-500 truncate max-w-[140px]" title="${esc(c.website_url || '')}">
-                ${c.website_url ? `<a href="${esc(c.website_url)}" target="_blank" rel="noopener" class="text-blue-500 hover:underline">${esc(truncUrl(c.website_url, 25))}</a>` : '<span class="text-gray-300">—</span>'}
-              </td>
-              <td class="py-2.5 pr-3 text-gray-500 truncate max-w-[200px]" title="${esc(c.career_url || '')}">
-                ${c.career_url ? `<a href="${esc(c.career_url)}" target="_blank" rel="noopener" class="text-brand-500 hover:underline">${esc(truncUrl(c.career_url, 30))}</a>` : '<span class="text-gray-300">not set</span>'}
-              </td>
-              <td class="py-2.5 pr-3 text-gray-500">${timeSince(c.last_scraped)}</td>
-              <td class="py-2.5 pr-3">${scrapeStatusBadge(c.scrape_status)}</td>
-              <td class="py-2.5 text-center tabular-nums font-medium">${c.active_jobs}</td>
-              <td class="py-2.5 pl-2 flex items-center gap-2">
-                <button onclick="openEditModal(${JSON.stringify(c).replace(/"/g, '&quot;')})"
-                  class="text-gray-500 hover:text-gray-800 transition-colors" title="Edit">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15">
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                  </svg>
-                </button>
-                <button id="scrape-btn-${c.id}" onclick="scrapeCompany('${c.id}', ${JSON.stringify(c.name).replace(/"/g, '&quot;')}, ${!!c.career_url})"
-                  class="text-gray-400 hover:text-brand-500 transition-colors" title="${c.career_url ? 'Scrape jobs for this company' : 'No career URL set'}">
-                  <svg id="scrape-icon-${c.id}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15">
-                    <polyline points="23 4 23 10 17 10"/>
-                    <polyline points="1 20 1 14 7 14"/>
-                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
-                  </svg>
-                </button>
-              </td>
-            </tr>
-          `}).join("");
+          tbody.innerHTML = d.items.map(c => buildDiscRow(c)).join("");
         }
 
-        document.getElementById("co-page-info").innerHTML = renderPagination(d.page, d.pages);
-        document.getElementById("co-prev").disabled = d.page <= 1;
-        document.getElementById("co-next").disabled = d.page >= d.pages;
-        requestAnimationFrame(updateCoTableHeight);
+        document.getElementById("disc-page-info").innerHTML = renderDiscPagination(d.page, d.pages);
+        document.getElementById("disc-prev").disabled = d.page <= 1;
+        document.getElementById("disc-next").disabled = d.page >= d.pages;
 
+        document.getElementById("disc-page-loading").classList.add("hidden");
+        document.getElementById("disc-table-wrap").classList.remove("hidden");
+        requestAnimationFrame(updateDiscTableHeight);
       } catch (err) {
-        document.getElementById("co-tbody").innerHTML =
-          `<tr><td colspan="7" class="py-8 text-center text-red-400 text-sm">Error: ${esc(err.message)}</td></tr>`;
+        document.getElementById("disc-page-loading").innerHTML =
+          `<p class="text-red-400 text-sm text-center py-10">Failed to load companies: ${esc(err.message)}</p>`;
       }
     }
 
-    function coNav(dir) { coPage = Math.max(1, coPage + dir); loadCompanies(); }
+    function buildDiscRow(c) {
+      const syncIcon = `
+        <svg id="sync-icon-${c.id}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
+          <polyline points="23 4 23 10 17 10"/>
+          <polyline points="1 20 1 14 7 14"/>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+        </svg>`;
+
+      return `
+        <tr class="${c.is_enabled ? '' : 'opacity-50'}">
+          <td class="py-2.5 pr-3 font-medium text-gray-900">${esc(c.name)}</td>
+          <td class="py-2.5 pr-3 text-gray-500 truncate max-w-[140px]" title="${esc(c.website_url || '')}">
+            ${c.website_url
+              ? `<a href="${esc(c.website_url)}" target="_blank" rel="noopener" class="text-blue-500 hover:underline">${esc(truncUrl(c.website_url, 25))}</a>`
+              : '<span class="text-gray-300">—</span>'}
+          </td>
+          <td class="py-2.5 pr-3 text-gray-500 truncate max-w-[200px]" title="${esc(c.career_url || '')}">
+            ${c.career_url
+              ? `<a href="${esc(c.career_url)}" target="_blank" rel="noopener" class="text-brand-500 hover:underline">${esc(truncUrl(c.career_url, 30))}</a>`
+              : '<span class="text-gray-300">not set</span>'}
+          </td>
+          <td class="py-2.5 pr-3 text-gray-500 whitespace-nowrap">
+            <div class="flex items-center gap-2">
+              <span title="${esc(fmtDatetime(c.last_scraped))}">${timeSince(c.last_scraped)}</span>
+              <button id="sync-btn-${c.id}"
+                onclick="scrapeCompany('${c.id}', ${JSON.stringify(c.name).replace(/"/g, '&quot;')}, ${!!c.career_url})"
+                class="text-gray-400 hover:text-brand-500 transition-colors shrink-0"
+                title="${c.career_url ? 'Scrape now' : 'No career URL set'}">
+                ${syncIcon}
+              </button>
+            </div>
+          </td>
+          <td class="py-2.5 pr-3">${scrapeStatusBadge(c.scrape_status)}</td>
+          <td class="py-2.5 pr-3 text-center tabular-nums font-medium">${c.active_jobs}</td>
+          <td class="py-2.5 pl-1">
+            <button onclick="openEditModal(${JSON.stringify(c).replace(/"/g, '&quot;')})"
+              class="text-gray-400 hover:text-gray-700 transition-colors" title="Edit">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+            </button>
+          </td>
+        </tr>`;
+    }
+
+    // ── Search ─────────────────────────────────────────────────────────────────
+
+    document.getElementById("disc-search").addEventListener("input", () => {
+      const val = document.getElementById("disc-search").value;
+      document.getElementById("disc-search-clear").classList.toggle("hidden", !val);
+      clearTimeout(discDebounce);
+      discDebounce = setTimeout(() => { discPage = 1; loadDiscoveryCompanies(); }, 300);
+    });
+
+    function discClearSearch() {
+      const inp = document.getElementById("disc-search");
+      inp.value = "";
+      document.getElementById("disc-search-clear").classList.add("hidden");
+      discPage = 1;
+      loadDiscoveryCompanies();
+    }
+
+    // ── Scrape trigger (inline sync icon) ─────────────────────────────────────
 
     async function scrapeCompany(id, name, hasCareerUrl) {
       if (!hasCareerUrl) {
         alert(`"${name}" has no career URL — cannot scrape.`);
         return;
       }
-      const btn = document.getElementById(`scrape-btn-${id}`);
-      const icon = document.getElementById(`scrape-icon-${id}`);
+      const btn  = document.getElementById(`sync-btn-${id}`);
+      const icon = document.getElementById(`sync-icon-${id}`);
       if (!btn || btn.disabled) return;
 
       btn.disabled = true;
-      icon.style.animation = "spin 1s linear infinite";
+      if (icon) icon.style.animation = "spin 1s linear infinite";
 
       try {
         const res = await fetch(`/api/companies/${id}/scrape`, {
@@ -743,25 +793,18 @@
           const data = await res.json().catch(() => ({}));
           throw new Error(data.detail || `HTTP ${res.status}`);
         }
-        icon.style.stroke = "var(--color-brand-500, #6366f1)";
-        // Reload table after ~25s to show updated results
-        setTimeout(() => loadCompanies(), 25000);
+        setTimeout(() => loadDiscoveryCompanies(), 25000);
       } catch (err) {
         alert(`Scrape failed for "${name}": ${err.message}`);
       } finally {
         setTimeout(() => {
-          icon.style.animation = "";
-          icon.style.stroke = "";
-          btn.disabled = false;
+          if (icon) { icon.style.animation = ""; icon.style.stroke = ""; }
+          if (btn) btn.disabled = false;
         }, 25000);
       }
     }
 
-    document.getElementById("co-search").addEventListener("input", () => {
-      document.getElementById("co-search-clear").classList.toggle("hidden", !document.getElementById("co-search").value);
-      clearTimeout(coDebounce);
-      coDebounce = setTimeout(() => { coPage = 1; loadCompanies(); }, 300);
-    });
+    // ── Excel export / import ─────────────────────────────────────────────────
 
     async function exportExcel() {
       try {
@@ -796,7 +839,7 @@
         if (data.not_found?.length) parts.push(`${data.not_found.length} not found`);
         status.textContent = parts.join(" · ");
         status.className = "text-xs text-green-400";
-        loadCompanies();
+        loadDiscoveryCompanies();
         if (data.not_found?.length) console.warn("Companies not found in DB:", data.not_found);
       } catch (err) {
         status.textContent = "Import failed: " + err.message;
@@ -804,25 +847,86 @@
       }
     }
 
-    function coClearSearch() {
-      const inp = document.getElementById("co-search");
-      inp.value = "";
-      document.getElementById("co-search-clear").classList.add("hidden");
-      coPage = 1;
-      loadCompanies();
+    // ══════════════════════════════════════════════════════════════════════════
+    // UNIFIED EDIT MODAL
+    // ══════════════════════════════════════════════════════════════════════════
+
+    let _editCompanyId  = null;
+    let _demAppliedUrl  = null;
+    // Track which URL fields are in edit mode
+    let _websiteEditing = false;
+    let _careerEditing  = false;
+
+    function _urlDisplayHtml(url, type) {
+      if (!url) return `<span class="text-gray-400 text-sm">not set</span>`;
+      const cls = type === "website" ? "text-blue-500" : "text-brand-500";
+      return `<a href="${esc(url)}" target="_blank" rel="noopener"
+        class="${cls} hover:underline text-sm truncate" title="${esc(url)}">${esc(truncUrl(url, 48))}</a>`;
     }
 
-    // ── Edit modal ────────────────────────────────────────────────────────────
+    function toggleUrlEdit(type) {
+      const display = document.getElementById(`edit-${type}-display`);
+      const input   = document.getElementById(`edit-${type}-input`);
+      const editing = type === "website" ? _websiteEditing : _careerEditing;
 
-    let _editCompanyId = null;
+      if (!editing) {
+        // Switch to edit mode
+        display.classList.add("hidden");
+        input.classList.remove("hidden");
+        input.focus();
+        if (type === "website") _websiteEditing = true;
+        else _careerEditing = true;
+      } else {
+        // Switch back to display mode (discard)
+        const c = discById[_editCompanyId];
+        const url = c ? (type === "website" ? c.website_url : c.career_url) : null;
+        display.innerHTML = _urlDisplayHtml(url, type);
+        display.classList.remove("hidden");
+        input.classList.add("hidden");
+        input.value = url || "";
+        if (type === "website") _websiteEditing = false;
+        else _careerEditing = false;
+      }
+    }
 
     function openEditModal(c) {
-      _editCompanyId = c.id;
+      _editCompanyId  = String(c.id);
+      _demAppliedUrl  = null;
+      _websiteEditing = false;
+      _careerEditing  = false;
+
+      // Store/update local cache
+      discById[_editCompanyId] = c;
+
       document.getElementById("edit-modal-title").textContent = c.name;
-      document.getElementById("edit-website-url").value = c.website_url || "";
-      document.getElementById("edit-career-url").value = c.career_url || "";
-      document.getElementById("edit-enabled").checked = c.is_enabled;
       document.getElementById("edit-modal-error").textContent = "";
+
+      // Website URL
+      const wDisplay = document.getElementById("edit-website-display");
+      const wInput   = document.getElementById("edit-website-input");
+      wDisplay.innerHTML = _urlDisplayHtml(c.website_url, "website");
+      wDisplay.classList.remove("hidden");
+      wInput.value = c.website_url || "";
+      wInput.classList.add("hidden");
+      document.getElementById("edit-website-updated").textContent =
+        c.website_url_updated_at ? `Updated ${timeSince(c.website_url_updated_at)}` : "";
+
+      // Career URL
+      const cDisplay = document.getElementById("edit-career-display");
+      const cInput   = document.getElementById("edit-career-input");
+      cDisplay.innerHTML = _urlDisplayHtml(c.career_url, "career");
+      cDisplay.classList.remove("hidden");
+      cInput.value = c.career_url || "";
+      cInput.classList.add("hidden");
+      document.getElementById("edit-career-updated").textContent =
+        c.career_url_updated_at ? `Updated ${timeSince(c.career_url_updated_at)}` : "";
+
+      // Discovery results
+      _demRenderResults(_editCompanyId);
+
+      // Enabled
+      document.getElementById("edit-enabled").checked = c.is_enabled;
+
       document.getElementById("edit-modal").classList.remove("hidden");
     }
 
@@ -831,15 +935,28 @@
       _editCompanyId = null;
     }
 
+    document.getElementById("edit-modal").addEventListener("click", function(e) {
+      if (e.target === this) closeEditModal();
+    });
+
     async function saveCompany() {
       if (!_editCompanyId) return;
       const btn = document.getElementById("edit-save-btn");
       btn.disabled = true; btn.textContent = "Saving…";
+
+      const websiteVal = _websiteEditing
+        ? document.getElementById("edit-website-input").value.trim() || null
+        : (discById[_editCompanyId]?.website_url ?? null);
+      const careerVal = _careerEditing
+        ? document.getElementById("edit-career-input").value.trim() || null
+        : (discById[_editCompanyId]?.career_url ?? null);
+
       const payload = {
-        website_url: document.getElementById("edit-website-url").value.trim() || null,
-        career_url:  document.getElementById("edit-career-url").value.trim()  || null,
+        website_url: websiteVal,
+        career_url:  careerVal,
         is_enabled:  document.getElementById("edit-enabled").checked,
       };
+
       try {
         const res = await fetch(`/api/companies/${_editCompanyId}`, {
           method: "PATCH",
@@ -850,7 +967,8 @@
           const err = await res.json().catch(() => ({ detail: res.statusText }));
           throw new Error(err.detail || `HTTP ${res.status}`);
         }
-        closeEditModal(); loadCompanies();
+        closeEditModal();
+        loadDiscoveryCompanies();
       } catch (err) {
         document.getElementById("edit-modal-error").textContent = err.message;
       } finally {
@@ -858,175 +976,7 @@
       }
     }
 
-    document.getElementById("edit-modal").addEventListener("click", function(e) {
-      if (e.target === this) closeEditModal();
-    });
-
-    // ══════════════════════════════════════════════════════════════════════════
-    // DATABASE QUALITY
-    // ══════════════════════════════════════════════════════════════════════════
-
-    const DISC_STORAGE_KEY = "career_discovery_results";
-    const discResults = {};
-    let discCompanies = [];
-
-    function timeAgo(isoStr) {
-      if (!isoStr) return `<span class="text-gray-300 text-xs">never</span>`;
-      const diff = Math.floor((Date.now() - new Date(isoStr).getTime()) / 1000);
-      let label;
-      if (diff < 60)         label = "just now";
-      else if (diff < 3600)  label = `${Math.floor(diff / 60)}m ago`;
-      else if (diff < 86400) label = `${Math.floor(diff / 3600)}h ago`;
-      else                   label = `${Math.floor(diff / 86400)}d ago`;
-      return `<span class="text-xs text-gray-400" title="${esc(isoStr)}">${label}</span>`;
-    }
-
-    function discStatusCell(c) {
-      const s = (c.scrape_status || "").toUpperCase();
-      if (!s) return `<span class="text-gray-200 text-base leading-none" title="No data">●</span>`;
-      if (s === "OK" || s === "UNCHANGED") {
-        return `<span class="text-green-500 text-base leading-none" title="${esc(c.scrape_status)}">●</span>`;
-      }
-      if (s === "EMPTY") {
-        return `<span class="text-gray-400 text-base leading-none" title="${esc(c.scrape_status)}">●</span>`;
-      }
-      return `<span class="text-red-500 text-base leading-none" title="${esc(c.scrape_status)}">●</span>`;
-    }
-
-    function discLastUpdateCell(c) {
-      const candidates = [c.last_discovery_attempt, c.last_scraped].filter(Boolean);
-      const latest = candidates.length ? candidates.reduce((a, b) => (a > b ? a : b)) : null;
-      return timeAgo(latest);
-    }
-
-    function discCareerCell(c) {
-      if (c.current_career_url) {
-        return `<a href="${esc(c.current_career_url)}" target="_blank" rel="noopener"
-          class="text-brand-500 hover:underline url-cell block text-xs"
-          title="${esc(c.current_career_url)}">${esc(truncUrl(c.current_career_url, 32))}</a>`;
-      }
-      return `<span class="text-gray-300 text-xs">not set</span>`;
-    }
-
-    function buildDiscRow(c) {
-      return `
-        <tr id="disc-row-${c.id}" class="hover:bg-gray-50/50 transition-colors">
-          <td class="py-3 px-4 text-center" id="disc-status-${c.id}">${discStatusCell(c)}</td>
-          <td class="py-3 px-4 font-medium text-gray-900">${esc(c.name)}</td>
-          <td class="py-3 px-4 text-gray-500">
-            ${c.website_url
-              ? `<a href="${esc(c.website_url)}" target="_blank" rel="noopener"
-                  class="text-blue-500 hover:underline url-cell block"
-                  title="${esc(c.website_url)}">${esc(truncUrl(c.website_url, 28))}</a>`
-              : '<span class="text-gray-300 text-xs">—</span>'}
-          </td>
-          <td class="py-3 px-4" id="disc-career-${c.id}">${discCareerCell(c)}</td>
-          <td class="py-3 px-4 text-center whitespace-nowrap" id="disc-lastrun-${c.id}">${discLastUpdateCell(c)}</td>
-          <td class="py-3 px-4">
-            <button onclick="discOpenEditModal('${c.id}')"
-              class="text-gray-400 hover:text-gray-700 transition-colors" title="Edit / Run discovery">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-              </svg>
-            </button>
-          </td>
-        </tr>`;
-    }
-
-    function updateDiscRow(c) {
-      const statusEl  = document.getElementById(`disc-status-${c.id}`);
-      const careerEl  = document.getElementById(`disc-career-${c.id}`);
-      const lastRunEl = document.getElementById(`disc-lastrun-${c.id}`);
-      if (statusEl)  statusEl.innerHTML  = discStatusCell(c);
-      if (careerEl)  careerEl.innerHTML  = discCareerCell(c);
-      if (lastRunEl) lastRunEl.innerHTML = discLastUpdateCell(c);
-    }
-
-    function discSaveProgress() {
-      try { localStorage.setItem(DISC_STORAGE_KEY, JSON.stringify(discResults)); } catch(e) {}
-    }
-
-    function discFilterRows() {
-      const term = (document.getElementById("disc-search")?.value || "").toLowerCase().trim();
-      const clearBtn = document.getElementById("disc-search-clear");
-      if (clearBtn) clearBtn.classList.toggle("hidden", !term);
-      let visible = 0;
-      discCompanies.forEach(c => {
-        const row = document.getElementById(`disc-row-${c.id}`);
-        const show = !term || c.name.toLowerCase().includes(term);
-        if (row) row.classList.toggle("hidden", !show);
-        if (show) visible++;
-      });
-      const footerEl = document.getElementById("disc-footer-count");
-      if (footerEl) footerEl.textContent = term
-        ? `${visible} / ${discCompanies.length}`
-        : discCompanies.length.toLocaleString();
-    }
-
-    function discClearSearch() {
-      const inp = document.getElementById("disc-search");
-      if (inp) { inp.value = ""; discFilterRows(); }
-    }
-
-    function discRestoreProgress() {
-      try {
-        const saved = localStorage.getItem(DISC_STORAGE_KEY);
-        if (saved) Object.assign(discResults, JSON.parse(saved));
-      } catch(e) { console.warn("Could not restore discovery results from localStorage:", e); }
-    }
-
-    async function loadDiscoveryCompanies() {
-      try {
-        const res = await fetch("/api/career-discovery/companies", { headers: { "X-API-Key": API_KEY } });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        discCompanies = await res.json();
-        discRestoreProgress();
-        const tbody = document.getElementById("disc-tbody");
-        tbody.innerHTML = discCompanies.map(c => buildDiscRow(c)).join("");
-        discFilterRows();
-        document.getElementById("disc-page-loading").classList.add("hidden");
-        document.getElementById("disc-table-wrap").classList.remove("hidden");
-        updateTHeadSticky();
-      } catch (err) {
-        document.getElementById("disc-page-loading").innerHTML =
-          `<p class="text-red-400 text-sm text-center">Failed to load companies: ${esc(err.message)}</p>`;
-      }
-    }
-
-    // ── Discovery edit modal ──────────────────────────────────────────────────
-
-    let _demCompanyId  = null;
-    let _demAppliedUrl = null;
-
-    function discOpenEditModal(id) {
-      const c = discCompanies.find(x => x.id === id);
-      if (!c) return;
-      _demCompanyId  = id;
-      _demAppliedUrl = null;
-
-      document.getElementById("dem-title").textContent = c.name;
-      document.getElementById("dem-error").textContent = "";
-
-      document.getElementById("dem-website").innerHTML = c.website_url
-        ? `<a href="${esc(c.website_url)}" target="_blank" rel="noopener" class="text-blue-500 hover:underline">${esc(c.website_url)}</a>`
-        : `<span class="text-gray-300">—</span>`;
-
-      _demRenderCareer(c.current_career_url);
-      _demRenderResults(id);
-      document.getElementById("disc-edit-modal").classList.remove("hidden");
-    }
-
-    function discCloseEditModal() {
-      document.getElementById("disc-edit-modal").classList.add("hidden");
-      _demCompanyId = null;
-    }
-
-    function _demRenderCareer(url) {
-      document.getElementById("dem-career").innerHTML = url
-        ? `<a href="${esc(url)}" target="_blank" rel="noopener" class="text-brand-500 hover:underline">${esc(url)}</a>`
-        : `<span class="text-gray-400">not set</span>`;
-    }
+    // ── Discovery (Suggested Career URLs) ────────────────────────────────────
 
     function _demResultHtml(url, error, colorClass) {
       if (error) return `<span class="text-red-400 italic">${esc(error.slice(0, 100))}</span>`;
@@ -1051,6 +1001,7 @@
       const r = discResults[id] || {};
       const sonarEl  = document.getElementById("dem-sonar-result");
       const geminiEl = document.getElementById("dem-gemini-result");
+      if (!sonarEl || !geminiEl) return;
       if (r.status === "searching") {
         const spin = `<svg class="spinner inline-block text-amber-500 mr-1" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg><span class="text-gray-400">searching…</span>`;
         sonarEl.innerHTML  = spin;
@@ -1062,17 +1013,16 @@
     }
 
     async function discModalRun() {
-      if (!_demCompanyId) return;
-      const c = discCompanies.find(x => x.id === _demCompanyId);
+      if (!_editCompanyId) return;
+      const c = discById[_editCompanyId];
       if (!c) return;
       const btn  = document.getElementById("dem-run-btn");
       const icon = document.getElementById("dem-run-icon");
       btn.disabled = true;
       icon.innerHTML = `<path d="M21 12a9 9 0 1 1-6.219-8.56"/>`;
       icon.classList.add("spinner");
-      discResults[_demCompanyId] = { status: "searching" };
-      _demRenderResults(_demCompanyId);
-      updateDiscRow(c);
+      discResults[_editCompanyId] = { status: "searching" };
+      _demRenderResults(_editCompanyId);
       try {
         const res = await fetch("/api/career-discovery/search", {
           method: "POST",
@@ -1084,36 +1034,30 @@
           throw new Error(err.detail || `HTTP ${res.status}`);
         }
         const data = await res.json();
-        discResults[_demCompanyId] = {
-          status: "done",
+        discResults[_editCompanyId] = {
+          status:      "done",
           sonar_url:   data.sonar?.url   || null,
           sonar_error: data.sonar?.error || null,
           gemini_url:  data.gemini?.url  || null,
           gemini_error:data.gemini?.error|| null,
         };
-        c.last_discovery_attempt = new Date().toISOString();
+        try { localStorage.setItem(DISC_STORAGE_KEY, JSON.stringify(discResults)); } catch(e) {}
       } catch (err) {
-        discResults[_demCompanyId] = { status: "error", sonar_error: err.message, gemini_error: err.message };
-        document.getElementById("dem-error").textContent = err.message;
+        discResults[_editCompanyId] = { status: "error", sonar_error: err.message, gemini_error: err.message };
+        document.getElementById("edit-modal-error").textContent = err.message;
       } finally {
         icon.classList.remove("spinner");
         icon.innerHTML = `<polygon points="5 3 19 12 5 21 5 3"/>`;
         btn.disabled = false;
-        if (_demCompanyId) {
-          _demRenderResults(_demCompanyId);
-          const cFinal = discCompanies.find(x => x.id === _demCompanyId);
-          if (cFinal) { updateDiscRow(cFinal); discSaveProgress(); }
-        }
+        if (_editCompanyId) _demRenderResults(_editCompanyId);
       }
     }
 
     async function discModalUse(url) {
-      if (!_demCompanyId) return;
-      const c = discCompanies.find(x => x.id === _demCompanyId);
-      if (!c) return;
-      document.getElementById("dem-error").textContent = "";
+      if (!_editCompanyId) return;
+      document.getElementById("edit-modal-error").textContent = "";
       try {
-        const res = await fetch(`/api/companies/${_demCompanyId}`, {
+        const res = await fetch(`/api/companies/${_editCompanyId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json", "X-API-Key": API_KEY },
           body: JSON.stringify({ career_url: url }),
@@ -1122,25 +1066,33 @@
           const err = await res.json().catch(() => ({ detail: `HTTP ${res.status}` }));
           throw new Error(err.detail || `HTTP ${res.status}`);
         }
-        c.current_career_url = url;
+        const updated = await res.json();
+        // Update local cache
+        if (discById[_editCompanyId]) {
+          discById[_editCompanyId].career_url = url;
+          discById[_editCompanyId].career_url_updated_at = updated.career_url_updated_at;
+        }
         _demAppliedUrl = url;
-        _demRenderCareer(url);
-        _demRenderResults(_demCompanyId);
-        updateDiscRow(c);
+        // Refresh career URL display in modal
+        document.getElementById("edit-career-display").innerHTML = _urlDisplayHtml(url, "career");
+        document.getElementById("edit-career-input").value = url;
+        document.getElementById("edit-career-updated").textContent =
+          updated.career_url_updated_at ? `Updated ${timeSince(updated.career_url_updated_at)}` : "";
+        _demRenderResults(_editCompanyId);
       } catch (err) {
-        document.getElementById("dem-error").textContent = `Failed to update: ${err.message}`;
+        document.getElementById("edit-modal-error").textContent = `Failed to update: ${err.message}`;
       }
     }
 
-    document.getElementById("disc-edit-modal").addEventListener("click", function(e) {
-      if (e.target === this) discCloseEditModal();
-    });
+    // Restore cached discovery results
+    try {
+      const saved = localStorage.getItem(DISC_STORAGE_KEY);
+      if (saved) Object.assign(discResults, JSON.parse(saved));
+    } catch(e) {}
 
     // ── Init ──────────────────────────────────────────────────────────────────
-    window.addEventListener("resize", updateTHeadSticky);
-    window.addEventListener("resize", updateCoTableHeight);
+    window.addEventListener("resize", updateDiscTableHeight);
     loadAdmin();
-    updateStatusPills();
     switchTab(sessionStorage.getItem("adminTab") || "overview");
   </script>
 </body>
