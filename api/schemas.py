@@ -68,6 +68,7 @@ class AdminStatsOut(BaseModel):
     total_companies: int          # total companies in DB
     companies_with_url: int       # companies with career_url configured
     companies_with_website: int = 0  # companies with website_url
+    companies_active: int = 0     # enabled companies with career_url (actively scraped)
     companies_due: int            # companies due for scraping today
     scrape_health: dict[str, int] = {}  # count by scrape_status (OK, EMPTY, HTTP_ERROR, SPA_DETECTED)
 

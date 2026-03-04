@@ -131,6 +131,11 @@ async def get_admin_stats(
     companies_with_website = await db.scalar(
         select(func.count()).select_from(Company).where(Company.website_url.is_not(None))
     )
+    companies_active = await db.scalar(
+        select(func.count()).select_from(Company).where(
+            and_(Company.is_enabled == True, Company.career_url.is_not(None))
+        )
+    )
     # Due = enabled, has career_url, and (never scraped OR interval elapsed)
     cutoff_interval = now - timedelta(days=5)
     companies_due = await db.scalar(
@@ -167,6 +172,7 @@ async def get_admin_stats(
         total_companies=total_companies or 0,
         companies_with_url=companies_with_url or 0,
         companies_with_website=companies_with_website or 0,
+        companies_active=companies_active or 0,
         companies_due=companies_due or 0,
         scrape_health=scrape_health,
     )

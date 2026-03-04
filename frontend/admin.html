@@ -493,11 +493,25 @@
             statRow("Added in last 24 h", `+${d.new_24h.toLocaleString()}`),
           ].join("");
 
+        const STATUS_DESC = {
+          OK:           "Career page scraped, PM jobs found",
+          EMPTY:        "Career page scraped, no PM jobs found",
+          HTTP_ERROR:   "Career page returned an HTTP error",
+          SPA_DETECTED: "JS-rendered page, content not extractable",
+          TIMEOUT:      "Career page took too long to respond",
+          ERROR:        "Unexpected error during scraping",
+        };
+        const healthEntries = Object.entries(d.scrape_health || {}).sort((a, b) => b[1] - a[1]);
         document.getElementById("card-database").innerHTML = [
-          statRow("Due for scraping", d.companies_due.toLocaleString()),
-          ...(d.scrape_health ? Object.entries(d.scrape_health).map(([k, v]) =>
-            statRow(`Scrape: ${k}`, v.toLocaleString())
-          ) : []),
+          statRow("Total active in DB", (d.companies_active || 0).toLocaleString()),
+          ...healthEntries.map(([k, v]) => `
+            <div class="pt-1">
+              <div class="flex items-baseline justify-between gap-2">
+                <span class="text-sm text-gray-500">Status: ${esc(k)}</span>
+                <span class="text-sm font-semibold text-gray-900">${v.toLocaleString()}</span>
+              </div>
+              <p class="text-xs text-gray-300 mt-0.5">${esc(STATUS_DESC[k] || k)}</p>
+            </div>`),
         ].join("");
 
         const srcEntries = Object.entries(d.by_source).sort((a, b) => b[1] - a[1]);
