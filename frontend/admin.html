@@ -41,7 +41,7 @@
   <div id="sticky-top" class="sticky top-0 z-20">
 
     <header class="bg-white">
-      <div class="max-w-screen-xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+      <div class="max-w-screen-2xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
         <a href="/" class="hover:opacity-70 transition-opacity"><img src="/logo.svg" alt="else" class="h-8 w-auto"></a>
         <div class="flex items-center gap-3">
           <a href="/" class="btn-apply">Home</a>
@@ -50,15 +50,11 @@
     </header>
 
     <div class="bg-white border-b border-gray-200">
-      <div class="max-w-screen-xl mx-auto px-4 flex items-center justify-between">
+      <div class="max-w-screen-2xl mx-auto px-4 flex items-center justify-between">
         <div class="flex">
-          <button id="tab-overview" onclick="switchTab('overview')"
-            class="px-5 py-4 text-sm font-medium -mb-px border-b-2 transition-colors">
-            Overview
-          </button>
           <button id="tab-scrape" onclick="switchTab('scrape')"
             class="px-5 py-4 text-sm font-medium -mb-px border-b-2 transition-colors">
-            Scraping
+            Overview
           </button>
           <button id="tab-quality" onclick="switchTab('quality')"
             class="px-5 py-4 text-sm font-medium -mb-px border-b-2 transition-colors">
@@ -68,7 +64,7 @@
         <!-- Database tab actions (shown only when Database tab is active) -->
         <div id="disc-action-bar" style="display:none" class="items-center gap-2 py-2">
           <button onclick="exportExcel()" title="Export companies Excel"
-            class="p-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-100 transition-colors">
+            class="p-2 text-gray-500 rounded hover:bg-gray-100 transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -77,7 +73,7 @@
             </svg>
           </button>
           <button onclick="document.getElementById('import-file-input').click()" title="Import companies Excel"
-            class="p-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-100 transition-colors">
+            class="p-2 text-gray-500 rounded hover:bg-gray-100 transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -93,13 +89,9 @@
 
   </div><!-- /sticky-top -->
 
-  <div class="max-w-screen-xl mx-auto px-4 py-6">
+  <div class="max-w-screen-2xl mx-auto px-4 py-6">
 
-    <!-- ══════════════════ PANEL: Overview ══════════════════ -->
-    <div id="panel-overview" class="hidden">
-    </div>
-
-    <!-- ══════════════════ PANEL: Scraping ══════════════════ -->
+    <!-- ══════════════════ PANEL: Overview (stats) ══════════════════ -->
     <div id="panel-scrape">
 
       <div id="admin-loading" class="flex justify-center py-20">
@@ -193,7 +185,6 @@
                       stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                       <polyline points="6 9 12 15 18 9"/>
                     </svg>
-                    <span id="disc-status-filter-badge" class="hidden text-[10px] font-semibold bg-brand-500 text-white rounded-full px-1.5 py-0.5 leading-none"></span>
                   </span>
                 </th>
                 <th class="py-2 pr-3 text-center sticky top-0 bg-white z-10 border-b border-gray-100">Jobs</th>
@@ -455,7 +446,7 @@
 
     function switchTab(tab) {
       sessionStorage.setItem("adminTab", tab);
-      ["overview", "scrape", "quality"].forEach(t => {
+      ["scrape", "quality"].forEach(t => {
         const btn   = document.getElementById("tab-" + t);
         const panel = document.getElementById("panel-" + t);
         const active = t === tab;
@@ -613,15 +604,6 @@
       discStatusFilter = status;
       discPage = 1;
       document.getElementById("status-filter-modal").classList.add("hidden");
-      // Update badge on column header
-      const badge = document.getElementById("disc-status-filter-badge");
-      if (status) {
-        const labels = { OK: "OK", EMPTY: "Empty", HTTP_ERROR: "HTTP err", SPA_DETECTED: "SPA", TIMEOUT: "Timeout" };
-        badge.textContent = labels[status] || status;
-        badge.classList.remove("hidden");
-      } else {
-        badge.classList.add("hidden");
-      }
       loadDiscoveryCompanies();
     }
 
@@ -1074,7 +1056,8 @@
     // ── Init ──────────────────────────────────────────────────────────────────
     window.addEventListener("resize", updateDiscTableHeight);
     loadAdmin();
-    switchTab(sessionStorage.getItem("adminTab") || "overview");
+    const _saved = sessionStorage.getItem("adminTab");
+    switchTab((_saved === "scrape" || _saved === "quality") ? _saved : "scrape");
   </script>
 </body>
 </html>
