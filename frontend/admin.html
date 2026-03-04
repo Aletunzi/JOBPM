@@ -461,8 +461,8 @@
       const actionBar = document.getElementById("disc-action-bar");
       if (actionBar) actionBar.style.display = tab === "quality" ? "flex" : "none";
       if (tab === "quality") requestAnimationFrame(updateDiscTableHeight);
-      if (tab === "quality" && !qualityInitialized) {
-        qualityInitialized = true;
+      if (tab === "quality") {
+        if (!qualityInitialized) qualityInitialized = true;
         loadDiscoveryCompanies();
       }
     }
