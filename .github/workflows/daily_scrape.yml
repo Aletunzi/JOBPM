@@ -1,4 +1,4 @@
-name: Scraper else 250
+name: Scraper else 300
 
 on:
   schedule:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   scrape:
-    name: Scraper else 250
+    name: Scraper else 300
     runs-on: ubuntu-latest
     timeout-minutes: 45
 
