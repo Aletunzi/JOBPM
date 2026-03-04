@@ -30,8 +30,8 @@ logging.basicConfig(
 logger = logging.getLogger("scraper")
 
 CONCURRENCY = 5       # max parallel LLM requests
-MAX_PER_RUN = 200     # max companies per scrape run (rolling window)
-MANUAL_BATCH_SIZE = 250  # companies per manual run (ordered by oldest last_scraped)
+MAX_PER_RUN = 400     # max companies per scrape run (rolling window)
+MANUAL_BATCH_SIZE = 400  # companies per manual run (ordered by oldest last_scraped)
 DISCOVERY_BATCH = 250  # max companies per discovery run
 WEBSITE_BATCH = 500    # max companies per website discovery run
 DELAY_BETWEEN = 2     # seconds between LLM requests (rate limiting)
