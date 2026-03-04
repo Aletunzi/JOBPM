@@ -275,7 +275,6 @@
             </svg>
           </button>
         </div>
-        <p class="text-xs text-gray-400 mt-1">Leave blank to trigger auto-discovery on next run.</p>
       </div>
 
       <div class="border-t border-gray-100 mb-4"></div>
@@ -685,7 +684,7 @@
           <td class="py-2.5 pl-4 pr-3 font-medium text-gray-900">${esc(c.name)}</td>
           <td class="py-2.5 pr-3 text-gray-500 truncate max-w-[140px]" title="${esc(c.website_url || '')}">
             ${c.website_url
-              ? `<a href="${esc(c.website_url)}" target="_blank" rel="noopener" class="text-blue-500 hover:underline">${esc(truncUrl(c.website_url, 25))}</a>`
+              ? `<a href="${esc(c.website_url)}" target="_blank" rel="noopener" class="text-brand-500 hover:underline">${esc(truncUrl(c.website_url, 25))}</a>`
               : '<span class="text-gray-300">—</span>'}
           </td>
           <td class="py-2.5 pr-3 text-gray-500 truncate max-w-[200px]" title="${esc(c.career_url || '')}">
@@ -875,7 +874,7 @@
       wInput.value = c.website_url || "";
       wInput.classList.add("hidden");
       document.getElementById("edit-website-updated").textContent =
-        c.website_url_updated_at ? `Updated ${timeSince(c.website_url_updated_at)}` : "";
+        c.website_url_updated_at ? `Updated ${timeSince(c.website_url_updated_at)}` : "—";
 
       // Career URL
       const cDisplay = document.getElementById("edit-career-display");
@@ -885,7 +884,7 @@
       cInput.value = c.career_url || "";
       cInput.classList.add("hidden");
       document.getElementById("edit-career-updated").textContent =
-        c.career_url_updated_at ? `Updated ${timeSince(c.career_url_updated_at)}` : "";
+        c.career_url_updated_at ? `Updated ${timeSince(c.career_url_updated_at)}` : "—";
 
       // Discovery results
       _demRenderResults(_editCompanyId);
