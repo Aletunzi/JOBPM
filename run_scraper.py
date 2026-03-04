@@ -91,11 +91,51 @@ async def upsert_jobs(session, jobs: list, company_id=None):
 async def scrape_company(session_factory, company_id: int, company_data: dict, semaphore: asyncio.Semaphore) -> tuple[int, str]:
     """Scrape one company in its own isolated session. Returns (job_count, status_string)."""
     from scrapers.llm_career import fetch_custom
+    from scrapers.ats_router import detect_ats, try_ats_fallback
 
     now = datetime.now(timezone.utc)
 
     async with semaphore:
         try:
+            # ── ATS fast-path: skip LLM for known ATS boards ─────────────
+            # Ashby/Greenhouse/Lever/etc. are SPAs — going through the LLM
+            # is unreliable because SPA detection can miss them if the page
+            # has enough server-side bootstrap HTML (>100 chars).  Calling
+            # the JSON API directly is faster, more accurate, and avoids
+            # false EMPTY results that would deactivate existing jobs.
+            if detect_ats(company_data["career_url"]):
+                ats_jobs = await try_ats_fallback(
+                    company_data["career_url"], company_data["name"]
+                )
+
+                async with session_factory() as session:
+                    from api.models import Company
+                    company = await session.get(Company, company_id)
+
+                    if ats_jobs is not None:
+                        count = await upsert_jobs(session, ats_jobs, company_id=company.id)
+                        company.scrape_status = "OK" if count > 0 else "EMPTY"
+                        status = company.scrape_status
+                    else:
+                        count = 0
+                        company.scrape_status = "SPA_DETECTED"
+                        status = "SPA_DETECTED"
+
+                    if company.scrape_status == "EMPTY":
+                        await session.execute(
+                            text("UPDATE jobs SET is_active = false WHERE company_id = :cid AND is_active = true"),
+                            {"cid": company.id},
+                        )
+
+                    company.last_scraped = now
+                    # page_hash is not meaningful for API-scraped companies
+                    await session.commit()
+
+                if count:
+                    logger.info("  %s: %d PM jobs upserted (ATS fast-path)", company_data["name"], count)
+                return count, status
+
+            # ── LLM path: for companies without a recognised ATS URL ──────
             jobs, new_hash, status = await fetch_custom(
                 career_url=company_data["career_url"],
                 company_name=company_data["name"],
@@ -110,7 +150,6 @@ async def scrape_company(session_factory, company_id: int, company_data: dict, s
 
                 # ── Status tracking ──────────────────────────────────────────
                 if status == "SPA_DETECTED":
-                    from scrapers.ats_router import try_ats_fallback
                     ats_jobs = await try_ats_fallback(
                         company_data["career_url"], company_data["name"]
                     )
