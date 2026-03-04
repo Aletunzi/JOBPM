@@ -88,7 +88,7 @@ async def get_admin_stats(
 
     # ── By Source ───────────────────────────────────────────────────────────────
     src_rows = await db.execute(
-        select(Job.source, func.count().label("cnt")).group_by(Job.source)
+        select(Job.source, func.count().label("cnt")).where(Job.is_active == True).group_by(Job.source)
     )
     by_source: dict[str, int] = {src: 0 for src in KNOWN_SOURCES}
     for row in src_rows:
