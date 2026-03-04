@@ -4,7 +4,7 @@ appropriate API scraper when llm_career returns SPA_DETECTED.
 
 All supported ATS APIs are public and require no authentication.
 
-Supported: Greenhouse, Lever, Ashby, SmartRecruiters, TeamTailor, Workday.
+Supported: Greenhouse, Lever, Ashby, SmartRecruiters, TeamTailor, Workday, Personio.
 """
 import logging
 import re
@@ -54,6 +54,12 @@ _PATTERNS: list[tuple[str, re.Pattern, object]] = [
         "workday",
         re.compile(r"https?://([^.]+\.wd\d+\.myworkdayjobs\.com)/(?:[a-z]{2}(?:-[a-z]{2})?/)?([^/?#]+)", re.I),
         lambda m: f"{m.group(1)}/{m.group(2)}",
+    ),
+    # Personio: {slug}.jobs.personio.de  or  {slug}.jobs.personio.com
+    (
+        "personio",
+        re.compile(r"https?://([^.]+)\.jobs\.personio\.(?:de|com)", re.I),
+        lambda m: m.group(1),
     ),
 ]
 
@@ -117,6 +123,11 @@ async def try_ats_fallback(
     elif ats_name == "workday":
         from scrapers.workday import fetch_workday
         async for job in fetch_workday(slug, company_name):
+            jobs.append(job)
+
+    elif ats_name == "personio":
+        from scrapers.personio import fetch_personio
+        async for job in fetch_personio(slug, company_name):
             jobs.append(job)
 
     logger.info(
