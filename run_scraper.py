@@ -394,6 +394,40 @@ async def main():
         await mark_inactive_jobs(session)
         await refresh_search_vectors(session)
 
+        # ── Phase 2b: Daily snapshot ──────────────────────────────────
+        from api.models import DailySnapshot
+        from sqlalchemy import func as sqlfunc
+        today = datetime.now(timezone.utc).date()
+        snap_active = await session.scalar(select(sqlfunc.count()).where(Job.is_active == True))
+        snap_health_rows = await session.execute(
+            select(Company.scrape_status, sqlfunc.count().label("cnt"))
+            .where(Company.scrape_status.is_not(None))
+            .group_by(Company.scrape_status)
+        )
+        snap_health = {r.scrape_status: r.cnt for r in snap_health_rows}
+        snap_stmt = pg_insert(DailySnapshot).values(
+            date=today,
+            total_active=snap_active or 0,
+            status_ok=snap_health.get("OK", 0),
+            status_empty=snap_health.get("EMPTY", 0),
+            status_error=snap_health.get("ERROR", 0),
+            status_http_error=snap_health.get("HTTP_ERROR", 0),
+            status_spa=snap_health.get("SPA_DETECTED", 0),
+        ).on_conflict_do_update(
+            constraint="uq_snapshot_date",
+            set_={
+                "total_active": snap_active or 0,
+                "status_ok": snap_health.get("OK", 0),
+                "status_empty": snap_health.get("EMPTY", 0),
+                "status_error": snap_health.get("ERROR", 0),
+                "status_http_error": snap_health.get("HTTP_ERROR", 0),
+                "status_spa": snap_health.get("SPA_DETECTED", 0),
+            },
+        )
+        await session.execute(snap_stmt)
+        await session.commit()
+        logger.info("Daily snapshot saved for %s", today)
+
     # ── Health Report ────────────────────────────────────────────────────
     elapsed = (datetime.now(timezone.utc) - start).total_seconds()
     logger.info("=== Scrape Health Report ===")

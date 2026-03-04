@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 from sqlalchemy import (
-    Column, String, Boolean, DateTime, Integer, Text,
+    Column, String, Boolean, DateTime, Integer, Text, Date,
     UniqueConstraint, Index, ForeignKey,
 )
 from sqlalchemy.dialects.postgresql import UUID, TSVECTOR
@@ -74,6 +74,23 @@ class Job(Base):
         Index("idx_jobs_company", "company_id"),
         Index("idx_jobs_active_date", "is_active", "first_seen"),
         Index("idx_jobs_search", "search_vector", postgresql_using="gin"),
+    )
+
+
+class DailySnapshot(Base):
+    __tablename__ = "daily_snapshots"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    date = Column(Date, nullable=False)
+    total_active = Column(Integer, nullable=False, default=0)
+    status_ok = Column(Integer, nullable=False, default=0)
+    status_empty = Column(Integer, nullable=False, default=0)
+    status_error = Column(Integer, nullable=False, default=0)
+    status_http_error = Column(Integer, nullable=False, default=0)
+    status_spa = Column(Integer, nullable=False, default=0)
+
+    __table_args__ = (
+        UniqueConstraint("date", name="uq_snapshot_date"),
     )
 
 

@@ -7,8 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from api.auth import require_api_key
 from api.cache import cache_get, cache_set
 from api.database import get_db
-from api.models import Job, ApiUsage, Company, WorkflowRun
-from api.schemas import StatsOut, AdminStatsOut
+from api.models import Job, ApiUsage, Company, WorkflowRun, DailySnapshot
+from api.schemas import StatsOut, AdminStatsOut, DailySnapshotOut
 from scrapers.normalizer import infer_continent, extract_country
 
 KNOWN_SOURCES = ["custom"]
@@ -178,3 +178,14 @@ async def get_admin_stats(
     )
     cache_set("admin_stats", result)
     return result
+
+
+@router.get("/history", response_model=list[DailySnapshotOut])
+async def get_stats_history(
+    db: AsyncSession = Depends(get_db),
+    _key: str = Depends(require_api_key),
+):
+    rows = await db.execute(
+        select(DailySnapshot).order_by(DailySnapshot.date.asc())
+    )
+    return rows.scalars().all()
