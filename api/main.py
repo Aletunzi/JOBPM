@@ -6,6 +6,7 @@ from fastapi import FastAPI, Depends, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from sqlalchemy import text
 
 from api.auth import require_api_key
 from api.cache import cache_clear
@@ -18,6 +19,12 @@ from api.routes import jobs, companies, stats, career_discovery
 async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        # Idempotent column additions — safe to run on every startup
+        await conn.execute(text("""
+            ALTER TABLE companies
+            ADD COLUMN IF NOT EXISTS website_url_updated_at TIMESTAMPTZ,
+            ADD COLUMN IF NOT EXISTS career_url_updated_at  TIMESTAMPTZ
+        """))
     yield
 
 
