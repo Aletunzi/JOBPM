@@ -35,7 +35,7 @@ _openai_client: Optional[AsyncOpenAI] = None
 def _get_client() -> AsyncOpenAI:
     global _openai_client
     if _openai_client is None:
-        _openai_client = AsyncOpenAI()
+        _openai_client = AsyncOpenAI(max_retries=5)
     return _openai_client
 
 
