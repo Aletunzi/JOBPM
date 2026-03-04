@@ -58,10 +58,16 @@
     <div class="filter-bar mb-5">
 
       <!-- Search -->
-      <input id="filter-keyword" type="text" placeholder="Search roles" class="fp-input" style="min-width:180px" />
+      <div class="fp-input-wrap" style="min-width:180px">
+        <input id="filter-keyword" type="text" placeholder="Search roles" class="fp-input fp-input-w" />
+        <button id="clear-keyword" class="fp-clear" style="display:none" onclick="fpClearInput('keyword')" tabindex="-1">✕</button>
+      </div>
 
       <!-- City / Country free text -->
-      <input id="filter-city" type="text" placeholder="City or country" class="fp-input" style="min-width:150px" />
+      <div class="fp-input-wrap" style="min-width:150px">
+        <input id="filter-city" type="text" placeholder="City or country" class="fp-input fp-input-w" />
+        <button id="clear-city" class="fp-clear" style="display:none" onclick="fpClearInput('city')" tabindex="-1">✕</button>
+      </div>
 
       <!-- Date posted -->
       <div class="fp-wrap" id="fp-date">
@@ -80,7 +86,7 @@
       <!-- Location (work type) -->
       <div class="fp-wrap" id="fp-worktype">
         <button class="fp-btn" id="fpbtn-worktype" type="button">
-          <span id="fplbl-worktype">Location</span>
+          <span id="fplbl-worktype">Type</span>
           <svg class="fp-chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
         </button>
         <div class="fp-panel" id="fpp-worktype">
