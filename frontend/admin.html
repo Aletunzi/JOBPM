@@ -125,14 +125,14 @@
         <div class="bg-white border border-gray-200 rounded-xl p-5">
           <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Trend</h2>
           <div id="trend-empty" class="hidden text-center py-6 text-gray-300 text-sm">No historical data yet — chart will populate after the next scraper run.</div>
-          <div id="trend-wrap" style="position:relative; height:220px;">
+          <div id="trend-wrap" style="position:relative; height:340px;">
             <canvas id="trend-chart"></canvas>
           </div>
         </div>
 
         <!-- Row 2: By Source -->
         <div class="bg-white border border-gray-200 rounded-xl p-5">
-          <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">By Source</h2>
+          <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Jobs Found By Source</h2>
           <div id="card-source" class="divide-y divide-gray-50"></div>
         </div>
 
@@ -593,7 +593,10 @@
           return;
         }
 
-        const labels = data.map(r => r.date);
+        const labels = data.map(r => {
+          const [y, m, d] = r.date.split("-");
+          return `${parseInt(d)}/${parseInt(m)}/${y.slice(-2)}`;
+        });
         const datasets = [
           { label: "Total active",  data: data.map(r => r.total_active),   borderColor: "#2563eb", backgroundColor: "transparent", tension: 0.3, pointRadius: 3 },
           { label: "OK",            data: data.map(r => r.status_ok),       borderColor: "#16a34a", backgroundColor: "transparent", tension: 0.3, pointRadius: 3 },
@@ -612,11 +615,11 @@
             maintainAspectRatio: false,
             interaction: { mode: "index", intersect: false },
             plugins: {
-              legend: { position: "bottom", labels: { boxWidth: 12, font: { size: 11 } } },
+              legend: { position: "bottom", labels: { usePointStyle: true, pointStyle: "circle", boxWidth: 8, padding: 20, font: { size: 11, family: "Inter Tight, sans-serif" } } },
             },
             scales: {
-              x: { ticks: { font: { size: 11 }, maxTicksLimit: 14 }, grid: { display: false } },
-              y: { beginAtZero: true, ticks: { font: { size: 11 } }, grid: { color: "#f3f4f6" } },
+              x: { ticks: { font: { size: 11, family: "Inter Tight, sans-serif" }, maxTicksLimit: 14 }, grid: { display: false } },
+              y: { beginAtZero: true, ticks: { font: { size: 11, family: "Inter Tight, sans-serif" } }, grid: { color: "#f3f4f6" } },
             },
           },
         });
