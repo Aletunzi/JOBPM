@@ -398,7 +398,7 @@ async def main():
         from api.models import DailySnapshot
         from sqlalchemy import func as sqlfunc
         today = datetime.now(timezone.utc).date()
-        snap_active = await session.scalar(select(sqlfunc.count()).where(Job.is_active == True))
+        snap_active = await session.scalar(select(sqlfunc.count()).select_from(Company))
         snap_health_rows = await session.execute(
             select(Company.scrape_status, sqlfunc.count().label("cnt"))
             .where(Company.scrape_status.is_not(None))
