@@ -598,12 +598,12 @@
           return `${parseInt(d)}/${parseInt(m)}/${y.slice(-2)}`;
         });
         const datasets = [
-          { label: "Total active",  data: data.map(r => r.total_active),   borderColor: "#2563eb", backgroundColor: "transparent", tension: 0.3, pointRadius: 3 },
-          { label: "OK",            data: data.map(r => r.status_ok),       borderColor: "#16a34a", backgroundColor: "transparent", tension: 0.3, pointRadius: 3 },
-          { label: "Empty",         data: data.map(r => r.status_empty),    borderColor: "#9ca3af", backgroundColor: "transparent", tension: 0.3, pointRadius: 3 },
-          { label: "Error",         data: data.map(r => r.status_error),    borderColor: "#dc2626", backgroundColor: "transparent", tension: 0.3, pointRadius: 3 },
-          { label: "HTTP error",    data: data.map(r => r.status_http_error), borderColor: "#f97316", backgroundColor: "transparent", tension: 0.3, pointRadius: 3 },
-          { label: "SPA",           data: data.map(r => r.status_spa),      borderColor: "#7c3aed", backgroundColor: "transparent", tension: 0.3, pointRadius: 3 },
+          { label: "Total active in DB", data: data.map(r => r.total_active),      borderColor: "#2563eb", backgroundColor: "#2563eb", tension: 0.3, pointRadius: 3 },
+          { label: "OK",                 data: data.map(r => r.status_ok),          borderColor: "#16a34a", backgroundColor: "#16a34a", tension: 0.3, pointRadius: 3 },
+          { label: "Empty",              data: data.map(r => r.status_empty),       borderColor: "#9ca3af", backgroundColor: "#9ca3af", tension: 0.3, pointRadius: 3 },
+          { label: "Error",              data: data.map(r => r.status_error),       borderColor: "#dc2626", backgroundColor: "#dc2626", tension: 0.3, pointRadius: 3 },
+          { label: "HTTP error",         data: data.map(r => r.status_http_error),  borderColor: "#f97316", backgroundColor: "#f97316", tension: 0.3, pointRadius: 3 },
+          { label: "SPA",                data: data.map(r => r.status_spa),         borderColor: "#7c3aed", backgroundColor: "#7c3aed", tension: 0.3, pointRadius: 3 },
         ];
 
         if (trendChartInstance) trendChartInstance.destroy();
@@ -615,7 +615,7 @@
             maintainAspectRatio: false,
             interaction: { mode: "index", intersect: false },
             plugins: {
-              legend: { position: "bottom", labels: { usePointStyle: true, pointStyle: "circle", boxWidth: 8, padding: 20, font: { size: 11, family: "Inter Tight, sans-serif" } } },
+              legend: { position: "bottom", labels: { usePointStyle: true, pointStyle: "circle", pointStyleWidth: 6, boxWidth: 6, padding: 26, font: { size: 11, family: "Inter Tight, sans-serif" } } },
             },
             scales: {
               x: { ticks: { font: { size: 11, family: "Inter Tight, sans-serif" }, maxTicksLimit: 14 }, grid: { display: false } },
