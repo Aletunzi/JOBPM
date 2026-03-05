@@ -803,7 +803,7 @@
               </button>
             </div>
           </td>
-          <td class="py-2.5 pr-3">${scrapeStatusBadge(c.scrape_status, c.scrape_error)}</td>
+          <td id="status-cell-${c.id}" class="py-2.5 pr-3">${scrapeStatusBadge(c.scrape_status, c.scrape_error)}</td>
           <td class="py-2.5 pr-3 text-center tabular-nums font-medium">${c.active_jobs}</td>
           <td class="py-2.5 pl-1">
             <button onclick="openEditModal(${JSON.stringify(c).replace(/"/g, '&quot;')})"
@@ -846,8 +846,11 @@
       const icon = document.getElementById(`sync-icon-${id}`);
       if (!btn || btn.disabled) return;
 
+      // Snapshot last_scraped before triggering so we can detect completion
+      const lastScrapedBefore = discById[String(id)]?.last_scraped ?? null;
+
       btn.disabled = true;
-      if (icon) icon.style.animation = "spin 1s linear infinite";
+      if (icon) icon.classList.add("spinner");
 
       try {
         const res = await fetch(`/api/companies/${id}/scrape`, {
@@ -858,15 +861,55 @@
           const data = await res.json().catch(() => ({}));
           throw new Error(data.detail || `HTTP ${res.status}`);
         }
-        setTimeout(() => loadDiscoveryCompanies(), 25000);
+        pollScrapeStatus(id, lastScrapedBefore);
       } catch (err) {
+        if (icon) icon.classList.remove("spinner");
+        if (btn) btn.disabled = false;
         alert(`Scrape failed for "${name}": ${err.message}`);
-      } finally {
-        setTimeout(() => {
-          if (icon) { icon.style.animation = ""; icon.style.stroke = ""; }
-          if (btn) btn.disabled = false;
-        }, 25000);
       }
+    }
+
+    function pollScrapeStatus(id, lastScrapedBefore) {
+      const MAX_POLLS = 60; // 60 x 3s = 3 min max
+      const INTERVAL  = 3000;
+      let polls = 0;
+
+      const timer = setInterval(async () => {
+        polls++;
+        if (polls > MAX_POLLS) {
+          clearInterval(timer);
+          _finalizeScrapeIcon(id, null);
+          return;
+        }
+        try {
+          const res = await fetch(`/api/companies/${id}`, { headers: { "X-API-Key": API_KEY } });
+          if (!res.ok) return; // skip this tick, try again
+          const company = await res.json();
+          if (company.last_scraped !== lastScrapedBefore) {
+            clearInterval(timer);
+            _finalizeScrapeIcon(id, company);
+            const cell = document.getElementById(`status-cell-${id}`);
+            if (cell) cell.innerHTML = scrapeStatusBadge(company.scrape_status, company.scrape_error);
+            if (discById[String(id)]) discById[String(id)] = company;
+          }
+        } catch (_) { /* ignore network blips */ }
+      }, INTERVAL);
+    }
+
+    function _finalizeScrapeIcon(id, company) {
+      const btn  = document.getElementById(`sync-btn-${id}`);
+      const icon = document.getElementById(`sync-icon-${id}`);
+      if (icon) {
+        icon.classList.remove("spinner");
+        if (company) {
+          // Replace sync icon with checkmark; sparisce al prossimo reload della tabella
+          icon.outerHTML = `<svg id="sync-icon-${id}" xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round" width="14" height="14"
+            class="text-green-500"><polyline points="20 6 9 17 4 12"/></svg>`;
+        }
+      }
+      if (btn) btn.disabled = false;
     }
 
     // ── Excel export / import ─────────────────────────────────────────────────

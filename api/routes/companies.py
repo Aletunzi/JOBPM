@@ -303,6 +303,30 @@ async def import_companies_excel(
     return stats
 
 
+@router.get("/{company_id}", response_model=CompanyOut)
+async def get_company(
+    company_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    _key: str = Depends(require_api_key),
+):
+    """Get a single company by ID (no cache — used for polling scrape status)."""
+    active_jobs_subq = (
+        select(func.count(Job.id))
+        .where(and_(Job.company_id == company_id, Job.is_active == True))
+        .correlate(Company)
+        .scalar_subquery()
+    )
+    result = await db.execute(
+        select(Company, active_jobs_subq.label("active_jobs"))
+        .where(Company.id == company_id)
+    )
+    row = result.one_or_none()
+    if row is None:
+        raise HTTPException(status_code=404, detail="Company not found")
+    company, active_jobs = row
+    return await _company_to_out(company, active_jobs or 0)
+
+
 @router.patch("/{company_id}", response_model=CompanyOut)
 async def patch_company(
     company_id: UUID,
