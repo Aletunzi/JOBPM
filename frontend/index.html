@@ -55,11 +55,11 @@
   <div class="max-w-screen-xl mx-auto px-4 py-5">
 
     <!-- ── Filter bar (LinkedIn-style) ───────────────────────────────────── -->
-    <div class="filter-bar mb-5">
+    <div class="filter-bar mb-5" style="justify-content: flex-start; flex-wrap: wrap; gap: 8px;">
 
       <!-- Search -->
       <div class="fp-input-wrap" style="min-width:180px">
-        <input id="filter-keyword" type="text" placeholder="Search roles" class="fp-input fp-input-w" />
+        <input id="filter-keyword" type="text" placeholder="Search companies, roles" class="fp-input fp-input-w" />
         <button id="clear-keyword" class="fp-clear" style="display:none" onclick="fpClearInput('keyword')" tabindex="-1">✕</button>
       </div>
 
@@ -76,10 +76,10 @@
           <svg class="fp-chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
         </button>
         <div class="fp-panel" id="fpp-date">
-          <label class="dp-option"><input type="radio" name="date" value="7D" checked> Past week</label>
-          <label class="dp-option"><input type="radio" name="date" value="TODAY"> Past 24 hours</label>
-          <label class="dp-option"><input type="radio" name="date" value="30D"> Past month</label>
-          <label class="dp-option"><input type="radio" name="date" value="ALL"> Anytime</label>
+          <label class="dp-option"><input type="checkbox" name="date" value="7D" checked> Past week</label>
+          <label class="dp-option"><input type="checkbox" name="date" value="TODAY"> Past 24 hours</label>
+          <label class="dp-option"><input type="checkbox" name="date" value="30D"> Past month</label>
+          <label class="dp-option"><input type="checkbox" name="date" value="ALL"> Anytime</label>
         </div>
       </div>
 
@@ -112,6 +112,8 @@
         </div>
       </div>
 
+      <!-- Results count -->
+      <span id="results-count" class="ml-auto text-sm text-gray-400 self-center whitespace-nowrap"></span>
     </div>
 
     <!-- ── Job cards grid (full width, 3 cols) ────────────────────────────── -->
@@ -126,17 +128,16 @@
       <p class="text-sm mt-1">Try adjusting your filters</p>
     </div>
 
-    <!-- Infinite scroll sentinel -->
-    <div id="scroll-sentinel" class="h-4"></div>
-
     <!-- Loading spinner (initial load) -->
     <div id="loading" class="hidden flex justify-center py-12">
       <div class="w-8 h-8 border-4 border-brand-500 border-t-transparent rounded-full animate-spin"></div>
     </div>
 
-    <!-- Loading more spinner (scroll append) -->
-    <div id="loading-more" class="hidden flex justify-center py-6">
-      <div class="w-6 h-6 border-4 border-brand-500 border-t-transparent rounded-full animate-spin"></div>
+    <!-- Pagination controls -->
+    <div id="pagination" class="hidden flex items-center justify-center gap-3 py-8">
+      <button id="pagination-prev" class="btn-apply disabled:opacity-40 disabled:cursor-not-allowed" disabled>← Prev</button>
+      <span id="pagination-info" class="text-sm text-gray-500"></span>
+      <button id="pagination-next" class="btn-apply disabled:opacity-40 disabled:cursor-not-allowed">Next →</button>
     </div>
   </div>
 

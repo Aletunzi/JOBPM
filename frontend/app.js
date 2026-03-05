@@ -7,17 +7,16 @@
 
 const API_KEY = window.__API_KEY__ || "dev-insecure-key";
 const API_BASE = "";   // same origin; update to full URL when Lovable takes over
-const FETCH_SIZE = 50;
+const PAGE_SIZE = 40;
 
 // ── State ─────────────────────────────────────────────────────────────────────
 
 const state = {
-  nextCursor: null,
+  currentPage: 1,
+  cursorHistory: [],   // cursorHistory[i] = cursor to fetch page i+2
   hasMore: false,
   loading: false,
 };
-
-let scrollObserver = null;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -25,14 +24,20 @@ function getCheckedByName(name) {
   return [...document.querySelectorAll(`input[name="${name}"]:checked`)].map(el => el.value);
 }
 
-function getRadioValue(name) {
-  return document.querySelector(`input[name="${name}"]:checked`)?.value || "";
+// For the date multi-select: pick the most inclusive date range
+const DATE_DAYS = { "TODAY": 1, "7D": 7, "30D": 30, "ALL": Infinity };
+
+function resolveMultiDate(values) {
+  if (!values.length) return "7D";
+  if (values.includes("ALL")) return "ALL";
+  return values.reduce((best, v) => (DATE_DAYS[v] > DATE_DAYS[best] ? v : best), values[0]);
 }
 
 function buildParams(cursor = null) {
   const keyword   = document.getElementById("filter-keyword").value.trim();
   const rawCity   = document.getElementById("filter-city").value.trim();
-  const dateVal   = getRadioValue("date") || "7D";
+  const dateVals  = getCheckedByName("date");
+  const dateVal   = resolveMultiDate(dateVals);
   const seniority = getCheckedByName("seniority");
   const workType  = getCheckedByName("work_type");
 
@@ -45,7 +50,7 @@ function buildParams(cursor = null) {
   if (resolvedGeo)      p.set("geo",       resolvedGeo);
   if (resolvedCity)     p.set("city",      resolvedCity);
   if (dateVal && dateVal !== "ALL") p.set("date", dateVal);
-  p.set("limit", FETCH_SIZE);
+  p.set("limit", PAGE_SIZE);
   if (cursor) p.set("cursor", cursor);
   return p;
 }
@@ -339,18 +344,37 @@ function showLoading() {
   document.getElementById("loading").classList.remove("hidden");
   document.getElementById("jobs-grid").innerHTML = "";
   document.getElementById("empty-state").classList.add("hidden");
+  document.getElementById("pagination").classList.add("hidden");
 }
 
 function hideLoading() {
   document.getElementById("loading").classList.add("hidden");
 }
 
-function showLoadingMore() {
-  document.getElementById("loading-more").classList.remove("hidden");
+function updateResultsCount(total) {
+  const el = document.getElementById("results-count");
+  if (!el) return;
+  el.textContent = total != null ? `${total.toLocaleString()} jobs found` : "";
 }
 
-function hideLoadingMore() {
-  document.getElementById("loading-more").classList.add("hidden");
+function updatePagination(hasMore) {
+  const pagination = document.getElementById("pagination");
+  const prevBtn    = document.getElementById("pagination-prev");
+  const nextBtn    = document.getElementById("pagination-next");
+  const info       = document.getElementById("pagination-info");
+
+  if (!pagination) return;
+
+  // Show pagination only if there are multiple pages or we're past page 1
+  if (state.currentPage === 1 && !hasMore) {
+    pagination.classList.add("hidden");
+    return;
+  }
+
+  pagination.classList.remove("hidden");
+  info.textContent = `Page ${state.currentPage}`;
+  prevBtn.disabled = state.currentPage <= 1;
+  nextBtn.disabled = !hasMore;
 }
 
 // ── Dropdown filter pills ──────────────────────────────────────────────────────
@@ -390,10 +414,18 @@ const DATE_LABELS = {
 };
 
 function updatePillLabels() {
-  // Date
-  const dateVal = getRadioValue("date") || "7D";
-  document.getElementById("fplbl-date").textContent = DATE_LABELS[dateVal] || "Date posted";
-  document.getElementById("fpbtn-date").classList.toggle("active", dateVal !== "7D");
+  // Date (multi-select checkboxes)
+  const dateVals = getCheckedByName("date");
+  let dateLbl = "Date posted";
+  if (dateVals.length === 1) {
+    dateLbl = DATE_LABELS[dateVals[0]] || "Date posted";
+  } else if (dateVals.length > 1) {
+    dateLbl = `Date (${dateVals.length})`;
+  }
+  document.getElementById("fplbl-date").textContent = dateLbl;
+  // Active state: anything other than just "7D" checked
+  const isDefaultDate = dateVals.length === 1 && dateVals[0] === "7D";
+  document.getElementById("fpbtn-date").classList.toggle("active", !isDefaultDate && dateVals.length > 0);
 
   // Location (work type)
   const wtCount = getCheckedByName("work_type").length;
@@ -406,34 +438,15 @@ function updatePillLabels() {
   document.getElementById("fpbtn-seniority").classList.toggle("active", senCount > 0);
 }
 
-// ── Scroll observer ────────────────────────────────────────────────────────────
-
-function setupScrollObserver() {
-  if (scrollObserver) scrollObserver.disconnect();
-  const sentinel = document.getElementById("scroll-sentinel");
-  if (!sentinel) return;
-  scrollObserver = new IntersectionObserver(
-    (entries) => {
-      if (entries[0].isIntersecting && state.hasMore && !state.loading) {
-        appendJobs();
-      }
-    },
-    { rootMargin: "300px" }
-  );
-  scrollObserver.observe(sentinel);
-}
-
 // ── Fetch & render jobs ────────────────────────────────────────────────────────
 
-async function loadJobs() {
+async function loadPage(cursor = null) {
   if (state.loading) return;
   state.loading = true;
-  state.nextCursor = null;
-  state.hasMore = false;
   showLoading();
 
   try {
-    const data = await apiFetch("/api/jobs", buildParams());
+    const data = await apiFetch("/api/jobs", buildParams(cursor));
 
     const grid = document.getElementById("jobs-grid");
     const items = data.items || [];
@@ -441,12 +454,16 @@ async function loadJobs() {
     if (items.length === 0) {
       grid.innerHTML = "";
       document.getElementById("empty-state").classList.remove("hidden");
+      updateResultsCount(data.total_hint);
+      updatePagination(false);
     } else {
       grid.innerHTML = items.map(renderCard).join("");
       document.getElementById("empty-state").classList.add("hidden");
-      state.nextCursor = data.next_cursor || null;
       state.hasMore = !!data.next_cursor;
-      setupScrollObserver();
+      // Store cursor for "next" navigation
+      state.cursorHistory[state.currentPage - 1] = data.next_cursor || null;
+      updateResultsCount(data.total_hint);
+      updatePagination(state.hasMore);
     }
   } catch (err) {
     document.getElementById("jobs-grid").innerHTML =
@@ -454,35 +471,15 @@ async function loadJobs() {
   } finally {
     state.loading = false;
     hideLoading();
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 }
 
-async function appendJobs() {
-  if (state.loading || !state.nextCursor) return;
-  state.loading = true;
-  showLoadingMore();
-
-  try {
-    const data = await apiFetch("/api/jobs", buildParams(state.nextCursor));
-    const items = data.items || [];
-
-    if (items.length > 0) {
-      const grid = document.getElementById("jobs-grid");
-      grid.insertAdjacentHTML("beforeend", items.map(renderCard).join(""));
-    }
-
-    state.nextCursor = data.next_cursor || null;
-    state.hasMore = !!data.next_cursor;
-
-    if (!state.hasMore && scrollObserver) {
-      scrollObserver.disconnect();
-    }
-  } catch (err) {
-    console.error("Failed to load more jobs:", err);
-  } finally {
-    state.loading = false;
-    hideLoadingMore();
-  }
+async function loadJobs() {
+  state.currentPage = 1;
+  state.cursorHistory = [];
+  state.hasMore = false;
+  await loadPage(null);
 }
 
 // ── Event listeners ───────────────────────────────────────────────────────────
@@ -493,20 +490,28 @@ function debounce(fn, ms = 400) {
   debounceTimer = setTimeout(fn, ms);
 }
 
-function resetAndLoad() {
-  state.nextCursor = null;
-  state.hasMore = false;
-  loadJobs();
-}
-
-// Radio/checkbox filter changes
+// Checkbox filter changes
 document.addEventListener("change", (e) => {
   const name = e.target.name;
   if (["date", "seniority", "work_type"].includes(name)) {
     updatePillLabels();
-    resetAndLoad();
-    if (e.target.type === "radio") closePanels();
+    loadJobs();
   }
+});
+
+// Pagination buttons
+document.getElementById("pagination-next")?.addEventListener("click", () => {
+  if (!state.hasMore || state.loading) return;
+  const cursor = state.cursorHistory[state.currentPage - 1];
+  state.currentPage += 1;
+  loadPage(cursor);
+});
+
+document.getElementById("pagination-prev")?.addEventListener("click", () => {
+  if (state.currentPage <= 1 || state.loading) return;
+  state.currentPage -= 1;
+  const cursor = state.currentPage > 1 ? state.cursorHistory[state.currentPage - 2] : null;
+  loadPage(cursor);
 });
 
 // Text input filters with debounce + clear button visibility
@@ -517,7 +522,7 @@ document.addEventListener("change", (e) => {
   const clearBtn = document.getElementById(clearId);
   input.addEventListener("input", () => {
     if (clearBtn) clearBtn.style.display = input.value ? "block" : "none";
-    debounce(resetAndLoad);
+    debounce(loadJobs);
   });
 });
 

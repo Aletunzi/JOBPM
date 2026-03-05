@@ -127,6 +127,9 @@ async def list_jobs(
         if wt_cond is not None:
             conditions.append(wt_cond)
 
+    # Conditions without cursor (for count query)
+    conditions_no_cursor = list(conditions)
+
     if cursor:
         try:
             cursor_dt = datetime.fromisoformat(cursor)
@@ -141,20 +144,28 @@ async def list_jobs(
         .limit(limit + 1)
     )
 
+    count_stmt = select(func.count()).select_from(Job).where(and_(*conditions_no_cursor))
+
     # If vertical or tier filter: join with Company
     if vertical or tier:
         from api.models import Company
         stmt = stmt.join(Company, Job.company_id == Company.id, isouter=True)
+        count_stmt = count_stmt.join(Company, Job.company_id == Company.id, isouter=True)
         if vertical:
             v_list = [v.strip().lower() for v in vertical.split(",")]
             stmt = stmt.where(Company.vertical.in_(v_list))
+            count_stmt = count_stmt.where(Company.vertical.in_(v_list))
         if tier:
             t_list = [int(t.strip()) for t in tier.split(",") if t.strip().isdigit()]
             if t_list:
                 stmt = stmt.where(Company.tier.in_(t_list))
+                count_stmt = count_stmt.where(Company.tier.in_(t_list))
 
     result = await db.execute(stmt)
     jobs = result.scalars().all()
+
+    count_result = await db.execute(count_stmt)
+    total_count = count_result.scalar_one()
 
     has_more = len(jobs) > limit
     items = jobs[:limit]
@@ -163,7 +174,7 @@ async def list_jobs(
     response = JobsResponse(
         items=[_job_to_out(j) for j in items],
         next_cursor=next_cursor,
-        total_hint=None,
+        total_hint=total_count,
     )
     cache_set(cache_key, response)
     return response
