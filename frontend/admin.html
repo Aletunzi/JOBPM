@@ -388,18 +388,22 @@
       return cron;
     }
 
-    function scrapeStatusBadge(status) {
+    function scrapeStatusBadge(status, errorDetail) {
       if (!status) return '<span class="text-gray-300">—</span>';
       const cfg = {
         OK:           ["#16a34a", "OK"],
-        HTTP_ERROR:   ["#dc2626", "HTTP error"],
-        TIMEOUT:      ["#f97316", "Timeout"],
+        HTTP_ERROR:   ["#dc2626", "Error"],
+        TIMEOUT:      ["#f97316", "Error"],
         EMPTY:        ["#6b7280", "Empty"],
-        SPA_DETECTED: ["#dc2626", "SPA"],
+        SPA_DETECTED: ["#dc2626", "Error"],
         ERROR:        ["#dc2626", "Error"],
       };
       const [color, label] = cfg[status] || ["#6b7280", status];
-      return `<span class="text-xs font-medium" style="color:${color}">${label}</span>`;
+      const isError = label === "Error";
+      const tooltip = isError && errorDetail
+        ? ` title="${esc(errorDetail)}" style="color:${color};cursor:help"`
+        : ` style="color:${color}"`;
+      return `<span class="text-xs font-medium"${tooltip}>${label}</span>`;
     }
 
     function statRow(label, value, note) {
@@ -799,7 +803,7 @@
               </button>
             </div>
           </td>
-          <td class="py-2.5 pr-3">${scrapeStatusBadge(c.scrape_status)}</td>
+          <td class="py-2.5 pr-3">${scrapeStatusBadge(c.scrape_status, c.scrape_error)}</td>
           <td class="py-2.5 pr-3 text-center tabular-nums font-medium">${c.active_jobs}</td>
           <td class="py-2.5 pl-1">
             <button onclick="openEditModal(${JSON.stringify(c).replace(/"/g, '&quot;')})"
