@@ -23,7 +23,8 @@ async def lifespan(app: FastAPI):
         await conn.execute(text("""
             ALTER TABLE companies
             ADD COLUMN IF NOT EXISTS website_url_updated_at TIMESTAMPTZ,
-            ADD COLUMN IF NOT EXISTS career_url_updated_at  TIMESTAMPTZ
+            ADD COLUMN IF NOT EXISTS career_url_updated_at  TIMESTAMPTZ,
+            ADD COLUMN IF NOT EXISTS scrape_error           TEXT
         """))
     yield
 
