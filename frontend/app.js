@@ -479,20 +479,6 @@ function fpClearInput(field) {
   debounce(resetAndLoad);
 }
 
-// Reset button
-document.getElementById("btn-reset").addEventListener("click", () => {
-  document.querySelectorAll('input[name="seniority"], input[name="work_type"]').forEach(el => el.checked = false);
-  const defaultDate = document.querySelector('input[name="date"][value="7D"]');
-  if (defaultDate) defaultDate.checked = true;
-  document.getElementById("filter-keyword").value = "";
-  document.getElementById("filter-city").value = "";
-  document.getElementById("clear-keyword").style.display = "none";
-  document.getElementById("clear-city").style.display = "none";
-  closePanels();
-  updatePillLabels();
-  resetAndLoad();
-});
-
 // ── Init ──────────────────────────────────────────────────────────────────────
 
 updatePillLabels();
