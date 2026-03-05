@@ -258,7 +258,7 @@ async def refresh_search_vectors(session):
 
 async def main():
     from api.database import AsyncSessionLocal
-    from api.models import Company, WorkflowRun
+    from api.models import Company, WorkflowRun, Job
     from scrapers.url_discovery import discover_all
     from scrapers.website_discovery import discover_websites
 
