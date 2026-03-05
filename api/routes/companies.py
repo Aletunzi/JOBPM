@@ -38,6 +38,7 @@ async def _company_to_out(c: Company, active_jobs: int) -> CompanyOut:
         is_enabled=c.is_enabled,
         last_scraped=c.last_scraped,
         scrape_status=getattr(c, "scrape_status", None),
+        scrape_error=getattr(c, "scrape_error", None),
         active_jobs=active_jobs,
         website_url_updated_at=getattr(c, "website_url_updated_at", None),
         career_url_updated_at=getattr(c, "career_url_updated_at", None),
@@ -171,7 +172,7 @@ async def export_companies_excel(
     ws = wb.active
     ws.title = "Companies"
     ws.append(["Name", "Vertical", "Geo", "Tier", "Size", "Website URL", "Career URL", "Source",
-               "Status", "Last Scraped", "Active Jobs", "Enabled", "Action"])
+               "Status", "Error Detail", "Last Scraped", "Active Jobs", "Enabled", "Action"])
 
     for company, active_jobs in rows:
         ws.append([
@@ -184,6 +185,7 @@ async def export_companies_excel(
             company.career_url or "",
             getattr(company, "career_url_source", "auto"),
             getattr(company, "scrape_status", "") or "",
+            getattr(company, "scrape_error", "") or "",
             company.last_scraped.strftime("%Y-%m-%d %H:%M") if company.last_scraped else "",
             active_jobs or 0,
             "Yes" if company.is_enabled else "No",

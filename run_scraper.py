@@ -115,10 +115,12 @@ async def scrape_company(session_factory, company_id: int, company_data: dict, s
                     if ats_jobs is not None:
                         count = await upsert_jobs(session, ats_jobs, company_id=company.id)
                         company.scrape_status = "OK" if count > 0 else "EMPTY"
+                        company.scrape_error = None
                         status = company.scrape_status
                     else:
                         count = 0
                         company.scrape_status = "SPA_DETECTED"
+                        company.scrape_error = None
                         status = "SPA_DETECTED"
 
                     if company.scrape_status == "EMPTY":
@@ -156,15 +158,19 @@ async def scrape_company(session_factory, company_id: int, company_data: dict, s
                     if ats_jobs is not None:
                         count = await upsert_jobs(session, ats_jobs, company_id=company.id)
                         company.scrape_status = "OK" if count > 0 else "EMPTY"
+                        company.scrape_error = None
                         status = company.scrape_status
                     else:
                         company.scrape_status = "SPA_DETECTED"
+                        company.scrape_error = None
                 elif status == "UNCHANGED":
                     pass
                 elif count > 0:
                     company.scrape_status = "OK"
+                    company.scrape_error = None
                 else:
                     company.scrape_status = "EMPTY"
+                    company.scrape_error = None
 
                 if company.scrape_status == "EMPTY":
                     await session.execute(
@@ -186,6 +192,7 @@ async def scrape_company(session_factory, company_id: int, company_data: dict, s
                 from api.models import Company
                 company = await session.get(Company, company_id)
                 company.scrape_status = "HTTP_ERROR"
+                company.scrape_error = f"HTTP {exc.response.status_code} on {exc.request.url}"
                 company.last_scraped = now
 
                 if exc.response.status_code in (404, 410):
@@ -222,6 +229,7 @@ async def scrape_company(session_factory, company_id: int, company_data: dict, s
                 company = await session.get(Company, company_id)
                 if company:
                     company.scrape_status = "ERROR"
+                    company.scrape_error = str(exc)[:500]
                     company.last_scraped = now
                     await session.commit()
             return 0, "ERROR"
