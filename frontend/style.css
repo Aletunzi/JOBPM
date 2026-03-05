@@ -163,11 +163,11 @@ html, body {
   background: white;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
-  padding: 16px;
+  padding: 20px;
   transition: box-shadow 0.15s ease, border-color 0.15s ease;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .job-card:hover {

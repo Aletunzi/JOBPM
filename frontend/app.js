@@ -231,25 +231,75 @@ function resolveLocationFilter(raw) {
   return { city: translated, geo: null };
 }
 
-// Display-only normalisation of location_raw (for card rendering)
-function normalizeLocationCity(raw) {
+// ISO 2-letter country codes → English country name
+const ISO_COUNTRY_CODES = {
+  "de": "Germany",         "gb": "United Kingdom",  "us": "United States",
+  "fr": "France",          "es": "Spain",            "it": "Italy",
+  "nl": "Netherlands",     "be": "Belgium",          "ch": "Switzerland",
+  "at": "Austria",         "se": "Sweden",           "no": "Norway",
+  "dk": "Denmark",         "fi": "Finland",          "pl": "Poland",
+  "ie": "Ireland",         "pt": "Portugal",         "cz": "Czech Republic",
+  "hu": "Hungary",         "ro": "Romania",          "gr": "Greece",
+  "hr": "Croatia",         "ca": "Canada",           "au": "Australia",
+  "sg": "Singapore",       "jp": "Japan",            "cn": "China",
+  "il": "Israel",          "ae": "United Arab Emirates", "tr": "Turkey",
+  "br": "Brazil",          "mx": "Mexico",           "ar": "Argentina",
+  "co": "Colombia",        "cl": "Chile",            "in": "India",
+  "za": "South Africa",    "nz": "New Zealand",      "uk": "United Kingdom",
+};
+
+// Sub-regions that map to their parent country
+const SUBREGION_TO_COUNTRY = {
+  "england": "United Kingdom",       "scotland": "United Kingdom",
+  "wales": "United Kingdom",         "northern ireland": "United Kingdom",
+  "bavaria": "Germany",              "north rhine-westphalia": "Germany",
+  "catalonia": "Spain",              "cataluña": "Spain",
+  "île-de-france": "France",         "ile-de-france": "France",
+  "lombardy": "Italy",               "lombardia": "Italy",
+  "ontario": "Canada",               "british columbia": "Canada",
+  "quebec": "Canada",                "new south wales": "Australia",
+  "victoria": "Australia",           "queensland": "Australia",
+};
+
+// Display-only normalisation: formats location_raw as "City, Country" (English)
+function formatLocation(raw) {
   if (!raw) return null;
-  const lower = raw.toLowerCase().trim();
-  const cityPart = lower.split(",")[0].trim();
-  if (LOCATION_ALIAS[cityPart]) {
-    const rest = raw.includes(",") ? raw.substring(raw.indexOf(",")) : "";
-    return LOCATION_ALIAS[cityPart] + rest;
+  const parts = raw.split(",").map(s => s.trim()).filter(Boolean);
+  if (parts.length === 0) return null;
+
+  // Normalise city name (translate non-English aliases)
+  let city = parts[0];
+  const cityLower = city.toLowerCase();
+  if (LOCATION_ALIAS[cityLower]) city = LOCATION_ALIAS[cityLower];
+
+  if (parts.length === 1) return city;
+
+  // Scan from the end to find the country
+  let country = null;
+  for (let i = parts.length - 1; i >= 1; i--) {
+    const part = parts[i];
+    const lower = part.toLowerCase();
+    if (ISO_COUNTRY_CODES[lower]) {
+      country = ISO_COUNTRY_CODES[lower];
+      break;
+    }
+    if (SUBREGION_TO_COUNTRY[lower]) {
+      if (!country) country = SUBREGION_TO_COUNTRY[lower];
+      continue;
+    }
+    // Plain country name (translate if needed)
+    country = LOCATION_ALIAS[lower] ? LOCATION_ALIAS[lower] : part;
+    break;
   }
-  for (const [alias, en] of Object.entries(LOCATION_ALIAS)) {
-    if (lower.includes(alias)) return raw.replace(new RegExp(alias, "gi"), en);
-  }
-  return raw;
+
+  return country ? `${city}, ${country}` : city;
 }
 
 function timeSince(isoString) {
   const diff = Date.now() - new Date(isoString).getTime();
   const h = Math.floor(diff / 3600000);
   const d = Math.floor(h / 24);
+  if (d > 30) return "> 1 month";
   if (d > 0) return `${d}d ago`;
   if (h > 0) return `${h}h ago`;
   return "Just now";
@@ -262,7 +312,7 @@ function renderCard(job) {
       <div class="flex items-start justify-between gap-2">
         <div class="flex-1 min-w-0">
           ${isNew ? '<span class="badge badge-new mb-1">&#9679; New</span>' : ""}
-          <h3 class="font-semibold text-gray-900 text-sm leading-snug truncate" title="${escHtml(job.title)}">${escHtml(job.title)}</h3>
+          <h3 class="font-semibold text-gray-900 text-base leading-snug truncate" title="${escHtml(job.title)}">${escHtml(job.title)}</h3>
           <p class="text-gray-500 text-xs mt-0.5 truncate">${escHtml(job.company_name)}</p>
         </div>
         <a href="${escHtml(job.url)}" target="_blank" rel="noopener noreferrer" class="btn-apply flex-shrink-0">
@@ -270,7 +320,7 @@ function renderCard(job) {
         </a>
       </div>
       <div class="flex items-center justify-between text-xs text-gray-400 pt-1 border-t border-gray-100">
-        <span>${escHtml(normalizeLocationCity(job.location_raw) || "—")}</span>
+        <span>${escHtml(formatLocation(job.location_raw) || "—")}</span>
         <span>${timeSince(job.posted_date || job.first_seen)}</span>
       </div>
     </div>
