@@ -1,0 +1,20 @@
+name: Keep Alive
+
+on:
+  schedule:
+    - cron: "0 9 1 * *"  # 09:00 UTC on the 1st of every month
+  workflow_dispatch:
+
+jobs:
+  keep-alive:
+    name: Prevent workflow deactivation
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+
+    steps:
+      - name: Re-enable scheduled workflows
+        uses: gautamkrishnar/keepalive-workflow@v2
+        with:
+          # Commit to the default branch if the repo has been inactive for 50+ days
+          time_elapsed: 50
