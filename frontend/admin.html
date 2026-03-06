@@ -526,7 +526,9 @@
           TIMEOUT:      { label: "Timeout",    color: "#f97316" },
           ERROR:        { label: "Error",      color: "#dc2626" },
         };
-        const healthEntries = Object.entries(d.scrape_health || {}).sort((a, b) => b[1] - a[1]);
+        const healthRaw = Object.fromEntries(Object.keys(STATUS_STYLE).map(k => [k, 0]));
+        Object.assign(healthRaw, d.scrape_health || {});
+        const healthEntries = Object.entries(healthRaw).sort((a, b) => b[1] - a[1]);
         document.getElementById("card-database").innerHTML = [
           `<div class="pt-1">
             <div class="flex items-baseline justify-between gap-2">
