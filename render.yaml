@@ -9,7 +9,7 @@ services:
     name: pmjobs-api
     runtime: python
     plan: free          # upgrade to starter ($7/mo) to avoid cold starts
-    buildCommand: pip install -r requirements.txt && python migrate_v3_website_url.py && python migrate_workflow_runs.py && python migrate_v4_cleanup.py
+    buildCommand: pip install -r requirements.txt && python migrate_v3_website_url.py && python migrate_workflow_runs.py && python migrate_v4_cleanup.py && python migrate_v5_url_timestamps.py && python migrate_v6_scrape_error.py
     startCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     envVars:
@@ -19,6 +19,12 @@ services:
           property: connectionString
       - key: API_KEY
         generateValue: true   # Render generates a random value; copy it to use in Lovable
+      - key: OPENAI_API_KEY
+        sync: false            # set manually in Render dashboard — required for the LLM scraper
+      - key: GEMINI_API_KEY
+        sync: false            # set manually in Render dashboard — used by career-discovery
+      - key: PERPLEXITY_API_KEY
+        sync: false            # set manually in Render dashboard — used by career-discovery
       - key: PROXYCURL_API_KEY
         sync: false            # set manually in Render dashboard
       - key: PROXYCURL_DAILY_CAP
