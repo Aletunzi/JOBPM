@@ -57,6 +57,25 @@ async def clear_cache(_key: str = Depends(require_api_key)):
 
 
 
+@app.post("/api/scrape", tags=["admin"])
+async def trigger_scrape(_key: str = Depends(require_api_key)):
+    """Manually trigger the scraper (runs in-process, may be slow)."""
+    import os
+    if not os.environ.get("OPENAI_API_KEY"):
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="OPENAI_API_KEY not configured on this server — trigger scrape via GitHub Actions instead",
+        )
+    try:
+        from run_scraper import main as run_main
+        import asyncio
+        asyncio.create_task(run_main())
+        cache_clear()
+        return {"status": "scrape started"}
+    except Exception as exc:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(exc))
+
+
 @app.get("/health", tags=["system"], include_in_schema=False)
 async def health_check():
     return {"status": "ok"}
