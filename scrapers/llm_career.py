@@ -16,8 +16,14 @@ import asyncio
 import hashlib
 import json
 import logging
+import os
 from typing import Optional
 from urllib.parse import urlparse
+
+# Ensure Playwright finds browsers in the project directory on Render,
+# where the default cache path (/opt/render/.cache) does not persist across deploys.
+if not os.environ.get("PLAYWRIGHT_BROWSERS_PATH") and os.path.isdir("/opt/render/project"):
+    os.environ["PLAYWRIGHT_BROWSERS_PATH"] = "/opt/render/project/.playwright-browsers"
 
 import html2text
 import httpx
