@@ -56,18 +56,6 @@ async def clear_cache(_key: str = Depends(require_api_key)):
     return {"status": "cache cleared"}
 
 
-@app.post("/api/scrape", tags=["admin"])
-async def trigger_scrape(_key: str = Depends(require_api_key)):
-    """Manually trigger the scraper (runs in-process, may be slow)."""
-    try:
-        from run_scraper import main as run_main
-        import asyncio
-        asyncio.create_task(run_main())
-        cache_clear()
-        return {"status": "scrape started"}
-    except Exception as exc:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(exc))
-
 
 @app.get("/health", tags=["system"], include_in_schema=False)
 async def health_check():
