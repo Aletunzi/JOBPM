@@ -94,7 +94,9 @@ async def list_companies(
         conditions.append(Company.career_url.is_(None))
 
     if status:
-        conditions.append(Company.scrape_status == status.upper())
+        s_list = [s.strip().upper() for s in status.split(",") if s.strip()]
+        if s_list:
+            conditions.append(Company.scrape_status.in_(s_list))
 
     where_clause = and_(*conditions) if conditions else True
 
