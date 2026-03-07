@@ -2,7 +2,7 @@ name: Scraper else 300
 
 on:
   schedule:
-    - cron: "0 7 * * *"  # 07:00 UTC (08:00 CET) — once daily
+    - cron: "0 19 * * *"  # 19:00 UTC (20:00 CET) — once daily
   workflow_dispatch:        # allow manual trigger from GitHub UI
 
 jobs:
