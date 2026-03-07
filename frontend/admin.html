@@ -404,11 +404,11 @@
         HTTP_ERROR:   ["#dc2626", "Error"],
         TIMEOUT:      ["#f97316", "Error"],
         EMPTY:        ["#6b7280", "Empty"],
-        SPA_DETECTED: ["#dc2626", "Error"],
+        SPA_DETECTED: ["#7c3aed", "SPA"],
         ERROR:        ["#dc2626", "Error"],
       };
       const [color, label] = cfg[status] || ["#6b7280", status];
-      const isError = label === "Error";
+      const isError = label === "Error" || label === "SPA";
       const tooltip = isError && errorDetail
         ? ` title="${esc(errorDetail)}" style="color:${color};cursor:help"`
         : ` style="color:${color}"`;
